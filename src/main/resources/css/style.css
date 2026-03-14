@@ -1,0 +1,16 @@
+#header-menu {
+    -fx-background-color: #ED9502;
+}
+
+#header-menu .button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: black;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-padding: 5 15 5 15;
+}
+
+#header-menu .button:hover {
+    -fx-text-fill: black;
+}
