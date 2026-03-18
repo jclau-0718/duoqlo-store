@@ -55,7 +55,7 @@ public class UserDAO extends DataAccessObject<User> {
     @Override
     public int getID(User user) {
 
-        String sql = "SELECT user_id from users where username = ?";
+        String sql = "SELECT user_id FROM users WHERE username = ?";
 
         try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
@@ -75,12 +75,12 @@ public class UserDAO extends DataAccessObject<User> {
         }
     }
 
-    public static String getUserRole(User user){
-        String sql = "SELECT role from users where user_id = ?";
+    public String getRole(int userID){
+        String sql = "SELECT role FROM users WHERE user_id = ?";
 
         try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setInt(1, user.getID());
+            pstmt.setInt(1, userID);
             ResultSet rs = pstmt.executeQuery();
 
             if(rs.next()){
@@ -96,14 +96,54 @@ public class UserDAO extends DataAccessObject<User> {
         }
     }
 
-    public static boolean usernameExists(String username){
+    public int getIDByUsername(String username) {
+
         String sql = "SELECT user_id from users where username = ?";
+
+        try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+
+            if(rs.next()){
+                int userID = rs.getInt("user_id");
+                return userID;
+            }
+
+            return -1; //user_id not found
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1; //user_id not found
+        }
+    }
+
+    public boolean usernameExists(String username){
+        String sql = "SELECT user_id FROM users WHERE username = ?";
 
         try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
             pstmt.setString(1, username);
             ResultSet rs = pstmt.executeQuery();
 
             return rs.next();
+
+        } catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean checkCredentials(String username, String password){
+        String sql = "SELECT user_id FROM users WHERE username = ? AND password = ?";
+
+        try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            return rs.next();
+
         } catch (SQLException e){
             e.printStackTrace();
             return false;

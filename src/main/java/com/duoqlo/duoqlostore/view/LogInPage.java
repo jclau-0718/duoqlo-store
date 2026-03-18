@@ -1,7 +1,7 @@
 package com.duoqlo.duoqlostore.view;
 
-import com.duoqlo.duoqlostore.controller.LogInPageHandler;
-import com.duoqlo.duoqlostore.model.UserDAO;
+import com.duoqlo.duoqlostore.controller.LogInController;
+import com.duoqlo.duoqlostore.controller.SceneManager;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
@@ -11,10 +11,12 @@ import java.util.Objects;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 public class LogInPage {
-    public static ImageView createLogo(){
+    private LogInController controller = new LogInController();
+
+    public ImageView createLogo(){
         int logoHeight = 80;
 
-        Image logo = new Image(Objects.requireNonNull(HomePage.class.getResource("/logo.png")).toExternalForm());
+        Image logo = new Image(Objects.requireNonNull(UserDashboard.class.getResource("/logo.png")).toExternalForm());
         ImageView logoView = new ImageView(logo);
         logoView.setFitHeight(logoHeight);
         logoView.setPreserveRatio(true);
@@ -22,7 +24,7 @@ public class LogInPage {
         return logoView;
     }
 
-    public static TextField createUsernameField(){
+    public TextField createUsernameField(){
         TextField usernameField = new TextField();
         usernameField.setId("input-field");
         usernameField.setPromptText("Username");
@@ -30,19 +32,28 @@ public class LogInPage {
         usernameField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (!newVal) { // TextField lost focus
                 String username = usernameField.getText().trim();
-                if (!UserDAO.usernameExists(username)) {
+                if (!controller.checkUsername(username)) {
                     // Set border to red
                     usernameField.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+                } else {
+                    usernameField.setStyle("");
                 }
             }
         });
+
         return usernameField;
     }
 
-    public static StackPane createPasswordField(){
-        PasswordField passwordInputField = new PasswordField();
-        passwordInputField.setId("input-field");
-        passwordInputField.setPromptText("Password");
+    public PasswordField createPasswordField() {
+
+        PasswordField passwordField = new PasswordField();
+        passwordField.setId("input-field");
+        passwordField.setPromptText("Password");
+
+        return passwordField;
+    }
+
+    public StackPane createPasswordBox(PasswordField passwordField) {
 
         FontIcon eyeIcon = new FontIcon("far-eye");
         eyeIcon.setIconColor(Color.GREY);
@@ -54,61 +65,54 @@ public class LogInPage {
         showPassButton.setVisible(false);
 
         // Show eye icon only when focused
-        passwordInputField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+        passwordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             showPassButton.setVisible(newVal);
         });
 
-        StackPane passwordField = new StackPane();
-        passwordField.getChildren().addAll(passwordInputField,showPassButton);
-        passwordField.setAlignment(showPassButton, Pos.BOTTOM_RIGHT);
+        StackPane passwordPane = new StackPane();
+        passwordPane.getChildren().addAll(passwordField,showPassButton);
+        passwordPane.setAlignment(showPassButton, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(showPassButton, new Insets(0, 5, 7, 0));
 
-        return passwordField;
+        return passwordPane;
     }
 
-    public static VBox createInputField(){
-        VBox inputField = new VBox();
-        inputField.getChildren().addAll(createUsernameField(),createPasswordField());
-
-        return inputField;
-    }
-
-    public static VBox createButtons(){
-        Button logInButton = new Button("Log In");
-        logInButton.setId("log-in-button");
-
-        Button signUpButton = new Button("Sign Up?");
-        signUpButton.setId(("sign-up-button"));
-
-        //Instance of event handler
-        LogInPageHandler handler = new LogInPageHandler();
-
-        logInButton.setOnAction(handler);
-        signUpButton.setOnAction(handler);
-
-        VBox box = new VBox();
-        box.getChildren().addAll(logInButton,signUpButton);
-
-        return box;
-    }
-
-    public static VBox createLogInForm(){
+    public VBox createLogInForm(){
         int height = 300;
         int width = 300;
+
+        //Logo
         HBox logoBox = new HBox(createLogo());
         logoBox.setAlignment(Pos.CENTER);
         logoBox.setPadding(new Insets(15,0,15,0));
 
-        HBox buttonBox = new HBox(createButtons());
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-        buttonBox.setPadding(new Insets(60,0,0,0));
+        //Log In Button
+        Button logInButton = new Button("Log In");
+        logInButton.setId("log-in-button");
+
+        //Sign Up Button
+        Button signUpButton = new Button("Sign Up?");
+        signUpButton.setId(("sign-up-button"));
+
+        //TextFields
+        TextField usernameField = createUsernameField();
+        PasswordField passwordField = createPasswordField();
+
+        logInButton.setOnAction(e-> SceneManager.switchScene(e,
+                                                controller.openDashboard(usernameField.getText(),passwordField.getText())));
+
+        VBox buttonBox = new VBox(5, logInButton,signUpButton);
+
+        HBox buttonRow = new HBox(buttonBox);
+        buttonRow.setAlignment(Pos.CENTER_RIGHT);
+        buttonRow.setPadding(new Insets(60,0,0,0));
 
         VBox logInBox = new VBox();
         logInBox.getChildren().addAll(
                 logoBox,
-                createUsernameField(),
-                createPasswordField(),
-                buttonBox
+                usernameField,
+                createPasswordBox(passwordField),
+                buttonRow
         );
         logInBox.setMaxHeight(height);
         logInBox.setMaxWidth(width);

@@ -17,8 +17,8 @@ public class TableCreator {
                 last_name TEXT NOT NULL,
                 email TEXT NOT NULL,
                 address TEXT NOT NULL,
-                role TEXT CHECK(role IN('CUSTOMER','ADMIN'))
-                is_active INTEGER DEFAULT 1CHECK(is_active IN(0,1))
+                role TEXT CHECK(role IN('CUSTOMER','ADMIN')),
+                is_active INTEGER DEFAULT 1 CHECK(is_active IN(0,1))
                 );
                 """;
 

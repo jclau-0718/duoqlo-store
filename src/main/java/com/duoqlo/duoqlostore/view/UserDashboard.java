@@ -8,11 +8,11 @@ import javafx.geometry.*;
 import java.util.Objects;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-public class HomePage {
+public class UserDashboard {
     static int logoHeight = 50;
     static int iconSize = 19;
 
-    public static HBox createHeader(){
+    public HBox createHeader(){
         HBox header = new HBox(5); //Button-to-Button space
         header.setId("header-menu");
         header.setMaxWidth(Double.MAX_VALUE);
@@ -21,7 +21,7 @@ public class HomePage {
         header.setAlignment(Pos.CENTER); // vertically centers all children
 
         //Add Logo
-        Image logo = new Image(Objects.requireNonNull(HomePage.class.getResource("/logo.png")).toExternalForm());
+        Image logo = new Image(Objects.requireNonNull(UserDashboard.class.getResource("/logo.png")).toExternalForm());
         ImageView logoView = new ImageView(logo);
         logoView.setFitHeight(logoHeight);
         logoView.setPreserveRatio(true);
@@ -68,7 +68,7 @@ public class HomePage {
         return header;
     }
 
-    public static HBox createFilterMenu(){
+    public HBox createFilterMenu(){
         int tbPad = 20;
         int leftPad = 63;
         MenuButton size = new MenuButton("Size");
@@ -82,7 +82,7 @@ public class HomePage {
         return filterMenu;
     }
 
-    public static ScrollPane createProductMenu(){
+    public ScrollPane createProductMenu(){
         TilePane productGrid = new TilePane();
         productGrid.setHgap(20);
         productGrid.setVgap(20);

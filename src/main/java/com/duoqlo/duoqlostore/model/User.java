@@ -23,6 +23,10 @@ public class User {
         this.user_id = user_id;
     }
 
+    public void setPassword(String password){
+        this.password = password;
+    }
+
     public int getID() {
         return this.user_id;
     }

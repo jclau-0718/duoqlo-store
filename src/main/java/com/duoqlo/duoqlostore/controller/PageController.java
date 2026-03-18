@@ -11,7 +11,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.Objects;
 
-import com.duoqlo.duoqlostore.view.HomePage;
+import com.duoqlo.duoqlostore.view.UserDashboard;
 
 public class PageController extends Application {
     @Override
@@ -26,8 +26,10 @@ public class PageController extends Application {
 //        root.setCenter(HomePage.createProductMenu());
 
         //LogIn Page
+        LogInPage logInPage = new LogInPage();
+
         BorderPane root = new BorderPane();
-        root.setCenter(LogInPage.createLogInForm());
+        root.setCenter(logInPage.createLogInForm());
         Platform.runLater(() -> {root.requestFocus();}); //Remove initial focus on Username TextField
         root.setOnMouseClicked(e -> root.requestFocus()); //Allow unfocus on TextField
 
@@ -35,11 +37,15 @@ public class PageController extends Application {
         TableCreator.createTable();
 
         Scene scene = new Scene(root, windowWidth, windowHeight);
-        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/css/login-page.css")).toExternalForm());
+        scene.getStylesheets().add(
+                Objects.requireNonNull(
+                        getClass().getResource("/css/login-page.css")
+                ).toExternalForm()
+        );
 
         stage.setTitle("DUOQLO");
         stage.setScene(scene);
-        stage.getIcons().add(new Image(Objects.requireNonNull(HomePage.class.getResourceAsStream("/logo.png"))));
+        stage.getIcons().add(new Image(Objects.requireNonNull(UserDashboard.class.getResourceAsStream("/logo.png"))));
         stage.show();
         stage.centerOnScreen();
     }
