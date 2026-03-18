@@ -1,0 +1,120 @@
+package com.duoqlo.duoqlostore.model;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class TableCreator {
+
+    public static void createTable(){
+        //USERS Table
+        final String usersSQL = """
+                CREATE TABLE IF NOT EXISTS users (
+                user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                first_name TEXT NOT NULL,
+                last_name TEXT NOT NULL,
+                email TEXT NOT NULL,
+                address TEXT NOT NULL,
+                role TEXT CHECK(role IN('CUSTOMER','ADMIN'))
+                is_active INTEGER DEFAULT 1CHECK(is_active IN(0,1))
+                );
+                """;
+
+        //PRODUCT Table
+        final String productSQL = """
+                CREATE TABLE IF NOT EXISTS product (
+                product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                category_id INTEGER NOT NULL,
+                product_name TEXT UNIQUE NOT NULL,
+                description TEXT NOT NULL,
+                image TEXT NOT NULL,
+                FOREIGN KEY (category_id) REFERENCES category(category_id)
+                );
+                """;
+
+        //PRODUCTSIZE Table
+        final String productSizeSQL = """
+                CREATE TABLE IF NOT EXISTS productsize (
+                product_size_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                product_id INTEGER NOT NULL,
+                size TEXT NOT NULL,
+                stock_quantity INTEGER NOT NULL,
+                price INTEGER NOT NULL,
+                FOREIGN KEY (product_id) REFERENCES product(product_id) ON DELETE RESTRICT
+                );
+                """;
+
+        //CAETGORY Table
+        final String categorySQL = """
+                CREATE TABLE IF NOT EXISTS category (
+                category_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                category_name TEXT UNIQUE NOT NULL
+                );
+                """;
+
+        //CART Table
+        final String cartSQL = """
+                CREATE TABLE IF NOT EXISTS cart (
+                cart_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                product_size_id INTEGER NOT NULL,
+                product_quantity INTEGER NOT NULL,
+                added_date TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                FOREIGN KEY (product_size_id) REFERENCES productsize(product_size_id)
+                );
+                """;
+
+        //ORDERS Table
+        final String ordersSQL = """
+                CREATE TABLE IF NOT EXISTS orders (
+                order_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                order_date TEXT NOT NULL,
+                total_price INTEGER NOT NULL,
+                status TEXT DEFAULT 'PENDING' CHECK(status IN('PENDING','DONE')),
+                shipping_add TEXT NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(user_id)
+                );
+                """;
+
+        //ORDERITEM Table
+        final String orderitemSQL = """
+                CREATE TABLE IF NOT EXISTS orderitem (
+                orderitem_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_id INTEGER NOT NULL,
+                product_size_id INTEGER NOT NULL,
+                quantity INTEGER NOT NULL,
+                price INTEGER NOT NULL,
+                FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
+                FOREIGN KEY (product_size_id) REFERENCES productsize(product_size_id)
+                );
+                """;
+
+        String[] SQLStatements = {
+                usersSQL,
+                productSQL,
+                productSizeSQL,
+                categorySQL,
+                cartSQL,
+                ordersSQL,
+                orderitemSQL
+        };
+
+        try (Connection conn = ConnectDB.connect();
+             Statement stmt = conn.createStatement()){
+            stmt.execute("PRAGMA foreign_keys = ON;");
+
+            for(String sql : SQLStatements){
+                stmt.execute(sql);
+            }
+
+            System.out.println("All tables created successfully!");
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
+}

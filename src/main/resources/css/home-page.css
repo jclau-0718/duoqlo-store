@@ -1,0 +1,123 @@
+.root {
+    -fx-background-color: #F0EDED;
+}
+
+#header-menu {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); /* Floating effect */
+}
+
+#header-menu, #category-menu{
+    /*-fx-background-color: #ED9502;*/
+    -fx-background-color: #F0EDED;
+}
+
+#header-menu .button{
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-padding: 5 10 5 10;
+}
+
+#header-menu .button:hover {
+    -fx-text-fill: black;
+}
+
+#category-menu .button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-family: 'Arial';
+    -fx-text-fill: #EE5702; /* Orange colour */
+    -fx-font-weight: bold;
+    -fx-font-size: 16;
+    -fx-cursor: hand;
+    -fx-padding: 0 0 5 0;
+}
+
+#category-menu .button:hover {
+    -fx-text-fill: #EE5702;
+    -fx-border-color: transparent transparent #EE5702 transparent;
+    -fx-border-width: 0 0 2 0;
+}
+
+#filter-menu .menu-button {
+    -fx-font-family: Arial;
+    -fx-font-size: 14;
+    -fx-background-color: #F0EDED;
+    -fx-border-radius: 15;
+    -fx-border-color: #DADADA;
+    -fx-cursor: hand;
+}
+
+#filter-menu .menu-button .arrow {
+    -fx-shape: "M26.297 12.625l-11.594 11.578c-0.391 0.391-1.016 0.391-1.406 0l-11.594-11.578c-0.391-0.391-0.391-1.031 0-1.422l2.594-2.578c0.391-0.391 1.016-0.391 1.406 0l8.297 8.297 8.297-8.297c0.391-0.391 1.016-0.391 1.406 0l2.594 2.578c0.391 0.391 0.391 1.031 0 1.422z";
+}
+
+.scroll-pane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* The main scrollbar area */
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+/* The track (the background path of the scrollbar) */
+.scroll-bar .track {
+    -fx-background-color: #E6E3E3; /* Slightly darker than #F0EDED background */
+    -fx-background-radius: 10;     /* Rounded edges */
+    -fx-border-color: transparent;
+}
+
+/* The thumb (the part you click and drag) */
+.scroll-bar .thumb {
+    -fx-background-color: #8B8B8B; /* Darker grey than background */
+    -fx-background-radius: 10;     /* Rounded edges to match your product cards */
+}
+
+/* Thumb hover effect for better UI feedback */
+.scroll-bar .thumb:hover {
+    -fx-background-color: #636363; /* A darker shade of grey when hovered */
+}
+
+/* The buttons at the ends of the scrollbar */
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 2;
+    -fx-cursor: hand;
+}
+
+/* Hover effect for the buttons */
+.scroll-bar .increment-button:hover,
+.scroll-bar .decrement-button:hover {
+    -fx-background-color: #E6E3E3; /* Light grey circle on hover */
+    -fx-background-radius: 100;
+}
+
+/* The actual arrow shapes inside the buttons */
+.scroll-bar .vertical .increment-arrow {
+    -fx-shape: "M0 128C0 110.3 7.1 93.5 19.8 81l376.4 0c16.9 0 32.3 7.1 45 19.8s19.8 28.1 19.8 45-7.1 33.7-19.8 45l-144 128c-11.9 10.6-27.6 16.7-44.2 16.7s-32.3-6.1-44.2-16.7L19.8 218C7.1 206.7 0 189.9 0 173z"; /* A clean chevron SVG path */
+    -fx-background-color: #E6E3E3;
+    -fx-padding: 2; /* Controls the size of the arrow */
+}
+
+.scroll-bar .vertical .decrement-arrow {
+    -fx-shape: "M0 128C0 110.3 7.1 93.5 19.8 81L163.8 17C175.7 6.1 191.4 0 208 0s32.3 6.1 44.2 17l144 128c12.7 11.3 19.8 28.1 19.8 45s-7.1 33.7-19.8 45-28.1 19.8-45 19.8L64 256c-16.9 0-32.3-7.1-45-19.8s-19.8-28.1-19.8-45z"; /* A clean chevron SVG path */
+    -fx-background-color: #E6E3E3;
+    -fx-padding: 2;
+}
+
+/* Hide horizontal arrows */
+.scroll-bar:horizontal .increment-arrow,
+.scroll-bar:horizontal .decrement-arrow {
+    -fx-shape: "";
+    -fx-padding: 0;
+}
+

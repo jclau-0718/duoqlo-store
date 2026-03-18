@@ -1,0 +1,40 @@
+.label, #input-field {
+    -fx-font-family: Arial;
+    -fx-font-size: 18;
+}
+
+#input-field {
+    -fx-background-color: transparent;
+    -fx-border-width: 0 0 2 0;              /* only bottom border */
+    -fx-border-color: #EE5702;              /* orange bottom line */
+    -fx-prompt-text-fill: gray;             /* placeholder text color */
+    -fx-text-fill: black;
+    -fx-padding: 58 0 10 0;
+}
+
+#showpass-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-cursor: hand;
+}
+
+#log-in-button, #sign-up-button {
+    -fx-font-family: Arial;
+}
+
+#log-in-button {
+    -fx-background-color: #EE5702;
+    -fx-background-radius: 25;
+    -fx-text-fill: white;
+    -fx-font-size: 18;
+    /*-fx-border-color: transparent;*/
+    -fx-cursor: hand;
+}
+
+#sign-up-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 16;
+    -fx-cursor: hand;
+    -fx-padding: 0 0 0 0;
+}
