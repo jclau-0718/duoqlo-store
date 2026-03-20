@@ -1,31 +1,32 @@
 package com.duoqlo.duoqlostore.view;
 
+import com.duoqlo.duoqlostore.controller.CartController;
+import com.duoqlo.duoqlostore.controller.DashboardController;
+import com.duoqlo.duoqlostore.model.User;
+import javafx.event.ActionEvent;
+import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.geometry.*;
 import java.util.Objects;
+
+import javafx.stage.Stage;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-public class UserDashboard {
+public class UserDashboard extends BasePage{
+    DashboardController controller = new DashboardController();
+
     static int logoHeight = 50;
     static int iconSize = 19;
 
+    public UserDashboard(){
+        super();
+    }
+
     public HBox createHeader(){
-        HBox header = new HBox(5); //Button-to-Button space
-        header.setId("header-menu");
-        header.setMaxWidth(Double.MAX_VALUE);
-        header.setPrefHeight(10);
-        header.setPadding(new Insets(13)); //Space between all button and HBox edge
-        header.setAlignment(Pos.CENTER); // vertically centers all children
-
-        //Add Logo
-        Image logo = new Image(Objects.requireNonNull(UserDashboard.class.getResource("/logo.png")).toExternalForm());
-        ImageView logoView = new ImageView(logo);
-        logoView.setFitHeight(logoHeight);
-        logoView.setPreserveRatio(true);
-
         //Spacer
         Region spacer1 = new Region();
         Region spacer2 = new Region();
@@ -56,6 +57,7 @@ public class UserDashboard {
         cartIcon.setIconSize(iconSize);
         cartIcon.setIconColor(Color.web("#EE5702"));
         Button cartButton = new Button("",cartIcon);
+        cartButton.setOnAction(e -> controller.openCartPage(e));
 
         //Profile Button
         FontIcon profileIcon = new FontIcon("far-user");
@@ -63,7 +65,12 @@ public class UserDashboard {
         profileIcon.setIconColor(Color.web("#EE5702"));
         Button profileButton = new Button("",profileIcon);
 
-        header.getChildren().addAll(logoView,spacer1,catMenu,spacer2,searchButton,cartButton,profileButton);
+        //Button Box
+        HBox buttonBox = new HBox(10);
+        buttonBox.getChildren().addAll(searchButton,cartButton,profileButton);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        HBox header = createHeaderBox(catMenu, buttonBox);
 
         return header;
     }
@@ -112,5 +119,31 @@ public class UserDashboard {
         }
 
         return scrollPane;
+    }
+
+    public Scene initializeUserDash(){
+        UserDashboard userDash = new UserDashboard();
+
+        BorderPane root = new BorderPane();
+        root.setTop(userDash.createHeader());
+        root.setCenter(userDash.createProductMenu());
+
+        Scene scene = new Scene(root, windowWidth, windowHeight);
+        scene.getStylesheets().add(
+                Objects.requireNonNull(
+                        getClass().getResource("/css/home-page.css")
+                ).toExternalForm()
+        );
+
+        return scene;
+    }
+
+    public Scene initializeAdminDash(){
+        AdminDashboard adminDash = new AdminDashboard();
+
+        BorderPane root = new BorderPane();
+        root.setTop(adminDash.createPage());
+
+        return new Scene(root, windowWidth, windowHeight);
     }
 }

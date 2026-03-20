@@ -1,15 +1,46 @@
-.label, #input-field {
+#login-box {
+    -fx-background-color: white;
+    -fx-background-radius: 5;
+}
+
+.label, #text-field {
     -fx-font-family: Arial;
     -fx-font-size: 18;
 }
 
-#input-field {
+#text-field {
     -fx-background-color: transparent;
-    -fx-border-width: 0 0 2 0;              /* only bottom border */
-    -fx-border-color: #EE5702;              /* orange bottom line */
     -fx-prompt-text-fill: gray;             /* placeholder text color */
     -fx-text-fill: black;
-    -fx-padding: 58 0 10 0;
+    -fx-padding: 10 5 5 5;
+}
+
+#text-field-box {
+    -fx-background-color: transparent;
+    -fx-border-color: #EBEBEB #EBEBEB #EE5702 #EBEBEB;
+    -fx-border-width: 3 3 3 3;
+    -fx-border-radius: 5;
+}
+
+#text-field-box-error {
+    -fx-background-color: transparent;
+    -fx-border-color: #EE0202 #EE0202 #EE0202 #EE0202;
+    -fx-border-width: 3 3 3 3;
+    -fx-border-radius: 5;
+}
+
+#text-field-box-focus {
+    -fx-background-color: transparent;
+    -fx-border-color: #EBEBEB #EBEBEB #EE5702 #EBEBEB;  /* grey grey orange grey */
+    -fx-border-width: 3.5 3.5 3.5 3.5;
+    -fx-border-radius: 5;
+}
+
+#text-field-box-focus-error {
+    -fx-background-color: transparent;
+    -fx-border-color: #EE0202 #EE0202 #EE0202 #EE0202; /* grey grey red grey */
+    -fx-border-width: 3.5 3.5 3.5 3.5;
+    -fx-border-radius: 5;
 }
 
 #showpass-button {
@@ -18,23 +49,27 @@
     -fx-cursor: hand;
 }
 
+#error-msg {
+    -fx-text-fill: red;
+    -fx-font-size: 14;
+}
+
 #log-in-button, #sign-up-button {
     -fx-font-family: Arial;
+    -fx-font-size: 18;
+    -fx-border-radius: 5;
+    -fx-border-width: 2;
 }
 
 #log-in-button {
-    -fx-background-color: #EE5702;
-    -fx-background-radius: 25;
+    -fx-background-color: #EE5702;          /* orange color */
+    -fx-border-color: #EE5702;
     -fx-text-fill: white;
-    -fx-font-size: 18;
-    /*-fx-border-color: transparent;*/
     -fx-cursor: hand;
 }
 
 #sign-up-button {
     -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-font-size: 16;
+    -fx-border-color: #EBEBEB;
     -fx-cursor: hand;
-    -fx-padding: 0 0 0 0;
 }

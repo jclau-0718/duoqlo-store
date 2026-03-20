@@ -9,6 +9,9 @@ public class User {
     private String email;
     private String address;
     private String role;
+    private int is_active;
+
+    private UserDAO userDAO = new UserDAO();
 
     public User(String username){
         this.username = username;
@@ -19,6 +22,9 @@ public class User {
         this.username = username;
     }
 
+    public User(int user_id){
+        this.user_id = user_id;
+    }
     public void setID(int user_id){
         this.user_id = user_id;
     }
@@ -57,6 +63,22 @@ public class User {
 
     public String getRole(){
         return this.role;
+    }
+
+    public String getRole(int user_id){
+        return userDAO.getRole(user_id);
+    }
+
+    public void setInfo(int user_id, String username, String password, String first_name, String last_name, String email, String address, String role, int is_active){
+        this.user_id = user_id;
+        this.username = username;
+        this.password = password;
+        this.firstName = first_name;
+        this.lastName = last_name;
+        this.email = email;
+        this.address = address;
+        this.role = role;
+        this.is_active = is_active;
     }
 
 }

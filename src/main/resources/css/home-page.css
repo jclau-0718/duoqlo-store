@@ -2,12 +2,17 @@
     -fx-background-color: #F0EDED;
 }
 
+#logo-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0 0 0 0;
+}
+
 #header-menu {
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); /* Floating effect */
 }
 
 #header-menu, #category-menu{
-    /*-fx-background-color: #ED9502;*/
     -fx-background-color: #F0EDED;
 }
 

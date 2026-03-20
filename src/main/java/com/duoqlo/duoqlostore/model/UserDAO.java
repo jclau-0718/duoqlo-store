@@ -118,6 +118,42 @@ public class UserDAO extends DataAccessObject<User> {
         }
     }
 
+    public User getUserByUsername(String username){
+        User user = new User(username);
+
+        String sql = "SELECT * FROM users WHERE username = ?";
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, username);
+
+            ResultSet rs = pstmt.executeQuery();
+            ResultSetMetaData meta = rs.getMetaData();
+
+            if(rs.next()){
+
+
+                int id = rs.getInt("user_id");
+                String pass = rs.getString("password");
+                String fn = rs.getString("first_name");
+                String ln = rs.getString("last_name");
+                String e = rs.getString("email");
+                String add = rs.getString("address");
+                String r = rs.getString("role");
+                int is_act = rs.getInt("is_active");
+
+                user.setInfo(id, username, pass, fn, ln, e, add, r, is_act);
+            }
+
+            return user;
+
+        } catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public boolean usernameExists(String username){
         String sql = "SELECT user_id FROM users WHERE username = ?";
 
@@ -149,4 +185,8 @@ public class UserDAO extends DataAccessObject<User> {
             return false;
         }
     }
+
+//    public User getUserByUsername(String username){
+//        String sql = "SELECT user_id FROM users WHERE username = ? AND password = ?";
+//    }
 }
