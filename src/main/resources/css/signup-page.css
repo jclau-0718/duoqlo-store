@@ -1,53 +1,55 @@
-#login-box {
+#signup-form {
     -fx-background-color: white;
     -fx-background-radius: 5;
+}
+
+#signup-title {
+    -fx-text-fill: #EE5702;
+    -fx-font-family: Arial;
+    -fx-font-size: 25;
+    -fx-font-weight: bold;
+}
+
+#section-title {
+    -fx-text-fill: #BEBEBE;
+    -fx-font-size: 15;
 }
 
 #text-field, #text-field-error, #text-field-focus, #text-field-focus-error,
 #pass-textfield, #pass-textfield-box, #pass-textfield-box-error, #pass-textfield-box-focus, #pass-textfield-box-focus-error{
     -fx-font-family: Arial;
-    -fx-font-size: 18;
+    -fx-font-size: 15;
 }
+
+#text-field, #text-field-error, #text-field-focus, #text-field-focus-error {
+    -fx-background-color: transparent;
+    -fx-border-radius: 5;
+    -fx-prompt-text-fill: gray;             /* placeholder text color */
+    -fx-text-fill: black;
+    /*-fx-padding: 15 14 13 14;*/
+    -fx-padding: 8 10 8 10;
+}
+
 
 #text-field {
     -fx-background-color: transparent;
     -fx-border-color: #EBEBEB #EBEBEB #EE5702 #EBEBEB;
     -fx-border-width: 3 3 3 3;
-    -fx-border-radius: 5;
-    -fx-prompt-text-fill: gray;             /* placeholder text color */
-    -fx-text-fill: black;
-    -fx-padding: 18 17 16 17;
-
 }
 
 #text-field-error {
-    -fx-background-color: transparent;
     -fx-border-color: #EE0202 #EE0202 #EE0202 #EE0202;
     -fx-border-width: 3 3 3 3;
-    -fx-border-radius: 5;
-    -fx-prompt-text-fill: gray;             /* placeholder text color */
-    -fx-text-fill: black;
-    -fx-padding: 18 17 16 17;
 }
 
 #text-field-focus {
-    -fx-background-color: transparent;
     -fx-border-color: #EBEBEB #EBEBEB #EE5702 #EBEBEB;  /* grey grey orange grey */
     -fx-border-width: 3.5 3.5 3.5 3.5;
-    -fx-border-radius: 5;
-    -fx-prompt-text-fill: gray;             /* placeholder text color */
-    -fx-text-fill: black;
-    -fx-padding: 18 17 16 17;
 }
 
 #text-field-focus-error {
-    -fx-background-color: transparent;
     -fx-border-color: #EE0202 #EE0202 #EE0202 #EE0202; /* grey grey red grey */
     -fx-border-width: 3.5 3.5 3.5 3.5;
-    -fx-border-radius: 5;
-    -fx-prompt-text-fill: gray;             /* placeholder text color */
-    -fx-text-fill: black;
-    -fx-padding: 18 17 16 17;
 }
 
 #pass-textfield {
@@ -88,20 +90,16 @@
     -fx-border-radius: 5;
 }
 
-#showpass-button {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-cursor: hand;
-}
 
-#error-msg {
-    -fx-text-fill: red;
-    -fx-font-size: 14;
+#description {
+    -fx-text-fill: black;
+    -fx-font-family: Arial;
+    -fx-font-size: 13;
 }
 
 #primary-button, #secondary-button {
     -fx-font-family: Arial;
-    -fx-font-size: 18;
+    -fx-font-size: 15;
     -fx-border-radius: 5;
     -fx-border-width: 2;
 }

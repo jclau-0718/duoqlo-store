@@ -1,5 +1,6 @@
 package com.duoqlo.duoqlostore.view;
 
+import com.duoqlo.duoqlostore.controller.Navigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -7,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -21,10 +23,12 @@ public class BasePage {
 
     protected HBox searchBar;
     protected Button backButton;
+    protected Button forwardButton;
 
     public BasePage(){
         this.searchBar = createSearchBar();
         this.backButton = createBackButton();
+        this.forwardButton = createForwardButton();
     }
 
     public HBox createHeaderBox(HBox middleHBox, HBox rightBox) {
@@ -92,7 +96,51 @@ public class BasePage {
                 -fx-background-color: transparent;
                 -fx-border-color: transparent;
                 """);
+        if(Navigator.backIsEmpty()){
+            backButton.setDisable(true);
+        } else {
+            backButton.setDisable(false);
+        }
 
         return backButton;
+    }
+
+    public Button createForwardButton(){
+        FontIcon forwardIcon = new FontIcon("fas-arrow-right");
+        forwardIcon.setIconColor(Color.web("EE5702")); //Orange color
+
+        Button forwardButton = new Button("", forwardIcon);
+        forwardButton.setStyle("""
+                -fx-background-color: transparent;
+                -fx-border-color: transparent;
+                """);
+        if(Navigator.forwardIsEmpty()){
+            forwardButton.setDisable(true);
+        } else {
+            forwardButton.setDisable(false);
+        }
+
+        return forwardButton;
+    }
+
+    public BorderPane createNavigationBar(){
+        BorderPane navBar = new BorderPane();
+        navBar.setLeft(backButton);
+        navBar.setRight(forwardButton);
+
+        return navBar;
+    }
+
+    public void setButtonStyle(Button button){
+        button.setStyle("""
+                -fx-background-color: #EE5702;
+                -fx-border-color: #EE5702;
+                -fx-border-radius: 5;
+                -fx-border-width: 2;
+                -fx-text-fill: white;
+                -fx-cursor: hand;
+                -fx-font-family: Arial;
+                -fx-font-size: 18;
+                """);
     }
 }

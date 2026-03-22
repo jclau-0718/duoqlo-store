@@ -7,9 +7,9 @@ public class UserDAO extends DataAccessObject<User> {
     @Override
     public void insert(User user){
         String sql = """
-                INSERT INTO users\s
-                (username, password, first_name, last_name, email, address, role)
-                VALUES (?,?,?,?,?,?,?)
+                INSERT INTO users
+                (username, password, first_name, last_name, email, address_line1, address_line2, city, postal_code, state, role)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)
                 """;
         try(Connection conn = ConnectDB.connect();
             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
@@ -19,8 +19,12 @@ public class UserDAO extends DataAccessObject<User> {
             pstmt.setString(3, user.getFirstName());
             pstmt.setString(4, user.getLastName());
             pstmt.setString(5, user.getEmail());
-            pstmt.setString(6, user.getAddress());
-            pstmt.setString(7, user.getRole());
+            pstmt.setString(6, user.getAddressLine1());
+            pstmt.setString(7, user.getAddressLine2());
+            pstmt.setString(8, user.getCity());
+            pstmt.setInt(9, user.getPostalCode());
+            pstmt.setString(10, user.getState());
+            pstmt.setString(11, user.getRole());
 
             //Insert data
             pstmt.executeUpdate();
@@ -31,6 +35,8 @@ public class UserDAO extends DataAccessObject<User> {
                 int generatedId = rs.getInt(1);
                 user.setID(generatedId); // if you allow setter
             }
+
+            System.out.println("User added!");
 
         } catch (SQLException e){
             e.printStackTrace();
@@ -143,7 +149,7 @@ public class UserDAO extends DataAccessObject<User> {
                 String r = rs.getString("role");
                 int is_act = rs.getInt("is_active");
 
-                user.setInfo(id, username, pass, fn, ln, e, add, r, is_act);
+//                user.setInfo(id, username, pass, fn, ln, e, add, r, is_act);
             }
 
             return user;

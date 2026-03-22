@@ -1,5 +1,6 @@
 package com.duoqlo.duoqlostore.controller;
 
+import com.duoqlo.duoqlostore.view.SignUpPage;
 import com.duoqlo.duoqlostore.view.UserDashboard;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
@@ -11,6 +12,8 @@ import javafx.stage.Stage;
 import java.util.Objects;
 
 public class SceneManager {
+    private static SignUpPage signUpPage;
+
     public static void switchScene(ActionEvent e, Parent root) {
         Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
         Scene scene = new Scene(root, 1000, 750);
@@ -36,4 +39,5 @@ public class SceneManager {
     public static Parent createAdminDash(){
         return null;
     }
+
 }

@@ -21,7 +21,7 @@ public class CartPage extends BasePage{
         HBox labelBox = new HBox(label);
         labelBox.setAlignment(Pos.CENTER);
 
-        HBox searchBar = searchBar();
+        HBox searchBar = createSearchBar();
 
         HBox header = createHeaderBox(labelBox, searchBar);
 
@@ -42,7 +42,7 @@ public class CartPage extends BasePage{
         Scene scene = new Scene(root, windowWidth, windowHeight);
         scene.getStylesheets().add(
                 Objects.requireNonNull(
-                        getClass().getResource("/css/home-page.css")
+                        getClass().getResource("/css/cart-page.css")
                 ).toExternalForm()
         );
 

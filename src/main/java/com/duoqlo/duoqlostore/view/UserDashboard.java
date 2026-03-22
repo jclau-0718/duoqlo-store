@@ -22,16 +22,12 @@ public class UserDashboard extends BasePage{
     static int logoHeight = 50;
     static int iconSize = 19;
 
-    public UserDashboard(){
-        super();
-    }
-
     public HBox createHeader(){
         //Spacer
-        Region spacer1 = new Region();
-        Region spacer2 = new Region();
-        HBox.setHgrow(spacer1, Priority.ALWAYS);
-        HBox.setHgrow(spacer2, Priority.ALWAYS);
+        Region leftSpacer = new Region();
+        Region rightSpacer = new Region();
+        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
         //Category Buttons
         Button womenButton = new Button("WOMEN");
@@ -75,9 +71,14 @@ public class UserDashboard extends BasePage{
         return header;
     }
 
+    public UserDashboard(){
+        super();
+    }
+
     public HBox createFilterMenu(){
         int tbPad = 20;
         int leftPad = 63;
+
         MenuButton size = new MenuButton("Size");
         MenuButton colour = new MenuButton("Colour");
         MenuButton price = new MenuButton("Price");
@@ -96,11 +97,6 @@ public class UserDashboard extends BasePage{
         productGrid.setPrefColumns(3);
         productGrid.setAlignment(Pos.CENTER);
 
-        VBox productSection = new VBox(createFilterMenu(),productGrid);
-
-        ScrollPane scrollPane = new ScrollPane(productSection);
-        scrollPane.setFitToWidth(true);
-
         for (int i = 1; i <= 20; i++) {
             VBox item = new VBox();
             item.setPrefSize(200, 300);
@@ -117,6 +113,11 @@ public class UserDashboard extends BasePage{
             item.getChildren().addAll(label, buttonBox);
             productGrid.getChildren().add(item);
         }
+
+        VBox productSection = new VBox(createFilterMenu(),productGrid);
+
+        ScrollPane scrollPane = new ScrollPane(productSection);
+        scrollPane.setFitToWidth(true);
 
         return scrollPane;
     }

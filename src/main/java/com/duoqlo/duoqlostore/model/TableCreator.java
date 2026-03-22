@@ -16,7 +16,12 @@ public class TableCreator {
                 first_name TEXT NOT NULL,
                 last_name TEXT NOT NULL,
                 email TEXT NOT NULL,
-                address TEXT NOT NULL,
+                address_line1 TEXT NOT NULL,
+                address_line2 TEXT,
+                city TEXT,
+                postal_code INTEGER,
+                state TEXT,
+                country TEXT DEFAULT 'MALAYSIA',
                 role TEXT CHECK(role IN('CUSTOMER','ADMIN')),
                 is_active INTEGER DEFAULT 1 CHECK(is_active IN(0,1))
                 );
