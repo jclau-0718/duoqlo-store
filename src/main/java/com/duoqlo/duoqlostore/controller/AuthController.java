@@ -5,25 +5,42 @@ import com.duoqlo.duoqlostore.model.UserDAO;
 import com.duoqlo.duoqlostore.view.LogInPage;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
 
 public class AuthController {
-    private UserDAO userDAO = new UserDAO();
+    public UserDAO userDAO = new UserDAO();
     private AuthService auth = new AuthService();
-    private PostcodeService postcodeService = new PostcodeService();
+    public PostcodeService postcodeService = new PostcodeService();
+
+    private boolean registered = false;
+    private final boolean[] textFieldError = {false};
+    private final boolean[] passFieldError = {false};
+
+    public boolean getRegistered() {
+        return registered;
+    }
+
+    public void setTextFieldError(boolean hasError) {
+        this.textFieldError[0] = hasError;
+    }
+
+    public void setPassFieldError(boolean hasError) {
+        this.passFieldError[0] = hasError;
+    }
 
     public boolean checkCredentials(String username, String password){
         return userDAO.checkCredentials(username, password);
     }
 
-    public void handleLogIn(ActionEvent e, String username, String password) {
+    public boolean handleLogIn(ActionEvent e, String username, String password) {
         try {
-            User loggedInUser = auth.login(username, password);
+            User loggedInUser = userDAO.getUserByCredentials(username, password);
 
             if (loggedInUser != null) {
                 DashboardController dashboardController = new DashboardController();
@@ -33,194 +50,148 @@ public class AuthController {
                 Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
 
                 dashboardController.openDashboard(stage);
+                return true;
+            } else {
+                return false;
             }
         } catch (Exception ex){
             ex.printStackTrace();
+            return false;
         }
     }
 
-    public Parent openDashboard(String username, String password){
-        System.out.println("Trying login: " + username + ", " + password);
+    public void updateUsernameFieldStyle(TextField textField, Label errorLabel) {
+        boolean focused = textField.isFocused();
 
-        //Authentication valid
-        if(checkCredentials(username, password)){
-            int userID = userDAO.getIDByUsername(username);
-            String role;
+        textField.getStyleClass().removeAll("error","valid");
 
-            role = userDAO.getRole(userID);
-            if(role != null && role.equals("CUSTOMER")){
-                return SceneManager.createUserDash();
-            } else if(role != null && role.equals("ADMIN")){
-                return SceneManager.createAdminDash();
-            } else {
-                System.out.println("Role not recognized for userID: " + userID);
+        if(textFieldError[0]) {
+            textField.getStyleClass().add("error");
+            errorLabel.setText("Please enter a valid username.");
+            errorLabel.setVisible(true);
+        } else if (textField.getText().isEmpty()) {
+            textField.getStyleClass().add("error");
+            errorLabel.setText("Please enter a username.");
+            errorLabel.setVisible(true);
+        } else {
+            textField.getStyleClass().add("valid");
+            errorLabel.setText("");
+            errorLabel.setVisible(false);
+
+            if (!focused && textField.getText().isEmpty()) {
+                textField.getStyleClass().remove("valid");
             }
         }
-        else {
-            System.out.println("Invalid username or password!");
-        }
 
-        return null;
+        System.out.println("Styling(after): "+textField.getStyleClass());
     }
+    public void updatePassFieldStyle(HBox passwordBox, TextField passwordField, Label errorLabel){
+        boolean focused = passwordField.isFocused();
 
-    public void updateTextFieldStyle(TextField textField, boolean isFocused, boolean hasError) {
-        String id;
+        passwordBox.getStyleClass().removeAll("error","valid");
 
-        if (!isFocused && !hasError) {            //Not focused and no error
-            id = "text-field";
-        } else if (!isFocused && hasError) {      //Not focused and has error
-            id = "text-field-error";
-        } else if (isFocused && !hasError) {      //Focused and no error
-            id = "text-field-focus";
-        } else {                                  //Focused and has error
-            id = "text-field-focus-error";
+        if (focused) {
+            if (!passwordBox.getStyleClass().contains("focused")) {
+                passwordBox.getStyleClass().add("focused");
+            }
+        } else {
+            passwordBox.getStyleClass().remove("focused");
         }
 
-        textField.setId(id);
-    }
+        if(passFieldError[0]) {
+            passwordBox.getStyleClass().add("error");
+            errorLabel.setText("Please enter a valid password.");
+            errorLabel.setVisible(true);
+        } else if (passwordField.getText().isEmpty()) {
+            passwordBox.getStyleClass().add("error");
+            errorLabel.setText("Please enter a password.");
+            errorLabel.setVisible(true);
+        } else {
+            passwordBox.getStyleClass().add("valid");
+            errorLabel.setText("");
+            errorLabel.setVisible(false);
 
-    // Username Constraints
-    // 1. Must contain >=5 characters (done)
-    // 2. Acceptable: Alphabets, numbers, _ and - (done)
-    // 3. Restriction: spaces and special symbols (done)
-    // 4. Cannot start with _ or - (done)
-    // 5. Prevent consecutive special characters
-
-    public Label createUsernameError(String username){
-
-        if(username.equals("")){
-            return new Label("Invalid username");
+            if (!focused && passwordField.getText().isEmpty()) {
+                passwordBox.getStyleClass().remove("valid");
+            }
         }
-
-        if(username.startsWith("-") || username.startsWith("_")){
-            return new Label("Cannot start with '-' or '_'");
-        }
-
-        if(username.length() < 5){
-            return new Label("Must be at least 5 characters long");
-        }
-
-        if(username.contains(" ") || username.matches(".*[^\\w-].*")){
-            return new Label("Cannot contain spaces or other special symbols");
-        }
-
-        if(!username.matches("[a-zA-Z0-9_-]+")){
-            return new Label("Only letters, digits, _, and - are allowed");
-        }
-
-        if(username.contains("__") || username.contains("--")){
-            return new Label("Consecutive special characters are not allowed");
-        }
-
-        return new Label(""); //No error
     }
 
     public void setupUsernameValidation (TextField usernameField, Label usernameErrorLabel){
-        // Track focus state
-        final boolean[] isFocused = {false};
 
-        // TEXT LISTENER
         usernameField.textProperty().addListener((obs, oldVal, newVal) -> {
-            String username = newVal.trim();
+            textFieldError[0] = false;
 
-            Label errorMsg = createUsernameError(username);
-            boolean hasError = !errorMsg.getText().isEmpty();
-
-            // Show / hide error
-            if (hasError) {
-                usernameErrorLabel.setText(errorMsg.getText());
-                usernameErrorLabel.setId("error-msg");
-                usernameErrorLabel.setVisible(true);
-                usernameErrorLabel.setManaged(true);
-                usernameErrorLabel.setVisible(true);
-                usernameErrorLabel.setManaged(true);
-            } else {
-                usernameErrorLabel.setText("");
-                usernameErrorLabel.setVisible(false);
-                usernameErrorLabel.setManaged(false);
-                usernameErrorLabel.setVisible(false);
-                usernameErrorLabel.setManaged(false);
-            }
-
-            // Update style
-            updateTextFieldStyle(usernameField, isFocused[0], hasError);
+            updateUsernameFieldStyle(usernameField, usernameErrorLabel);
         });
 
-        // FOCUS LISTENER
+        //Focus Listener (update style only)
         usernameField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            isFocused[0] = newVal;
+            updateUsernameFieldStyle(usernameField, usernameErrorLabel);
+        });
+    }
 
-            String username = usernameField.getText().trim();
-            Label errorMsg = createUsernameError(username);
-            boolean hasError = !errorMsg.getText().isEmpty();
+    public void setupPasswordValidation (HBox passwordBox, PasswordField passwordField, Label passErrorLabel) {
+        passwordField.textProperty().addListener((obs, oldVal, newVal) -> {
+            passFieldError[0] = false;
 
-            if (hasError) {
-                usernameErrorLabel.setText(errorMsg.getText());
-                usernameErrorLabel.setId("error-msg");
-                usernameErrorLabel.setVisible(true);
-                usernameErrorLabel.setManaged(true);
-                usernameErrorLabel.setVisible(true);
-                usernameErrorLabel.setManaged(true);
+            updatePassFieldStyle(passwordBox, passwordField, passErrorLabel);
+        });
 
-            } else {
-                usernameErrorLabel.setText("");
-                usernameErrorLabel.setVisible(false);
-                usernameErrorLabel.setManaged(false);
-                usernameErrorLabel.setVisible(false);
-                usernameErrorLabel.setManaged(false);
-            }
-
-            updateTextFieldStyle(usernameField, newVal, hasError);
+        //Focus Listener (update style only)
+        passwordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            updatePassFieldStyle(passwordBox, passwordField, passErrorLabel);
         });
     }
 
     public void backToLogIn(ActionEvent e) {
         Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
-        stage.setScene(new LogInPage().initialize());
+        LogInPage logInPage = new LogInPage(this); // Pass current controller
+        stage.setScene(logInPage.initialize());
     }
 
-    public boolean setupAddressTracker(TextField postcodeField, TextField cityField, TextField stateField) {
+
+    public void setupAddressTracker(TextField postcodeField, TextField cityField, TextField stateField) {
         final boolean[] hasAddr = {false};
 
         postcodeField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if(newVal.length() == 5){
-                Address addr = postcodeService.lookup(newVal);
+            Address addr = postcodeService.lookup(newVal);
 
-                if (addr != null) {
+            if (addr != null) { //Address found
+                if (newVal.length() == 5) {
                     cityField.setText(addr.getCity());
                     cityField.setEditable(false);
 
                     stateField.setText(addr.getState());
                     stateField.setEditable(false);
+
                     hasAddr[0] = true;
-                } else {
-                    hasAddr[0] = false;
                 }
             } else {
-                cityField.setText(null);
-                stateField.setText(null);
+                cityField.setText("");
+                cityField.setEditable(true);
+
+                stateField.setText("");
+                stateField.setEditable(true);
+
                 hasAddr[0] = false;
             }
-
-            cityField.setEditable(true);
-            stateField.setEditable(true);
         });
-
-        return hasAddr[0];
     }
 
-    public void setupPostcodeValidation(TextField postcodeField) {
-        String postcode = postcodeField.getText();
+    public boolean handleSignUp(ArrayList<String> fieldValues){
+        try {
+            User signedUpUser = new User();
+            signedUpUser.setInfo(fieldValues);
 
-        if(!postcode.matches("[0-9]*")){ //Does not contain any numbers
+            userDAO.insert(signedUpUser);
+            registered = true;
+            return true;
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            registered = false;
+            return false;
         }
-    }
-
-    public void handleSignUp(ArrayList<String> fieldValues){
-        User signedUpUser = new User();
-        signedUpUser.setInfo(fieldValues);
-
-        userDAO.insert(signedUpUser);
     }
 }

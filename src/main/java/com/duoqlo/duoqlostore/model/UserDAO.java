@@ -33,7 +33,7 @@ public class UserDAO extends DataAccessObject<User> {
             ResultSet rs = pstmt.getGeneratedKeys();
             if (rs.next()) {
                 int generatedId = rs.getInt(1);
-                user.setID(generatedId); // if you allow setter
+                user.setId(generatedId); // if you allow setter
             }
 
             System.out.println("User added!");
@@ -50,7 +50,7 @@ public class UserDAO extends DataAccessObject<User> {
         try(Connection conn = ConnectDB.connect();
             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            pstmt.setInt(1, user.getID());
+            pstmt.setInt(1, user.getId());
             pstmt.executeUpdate();
 
         } catch (SQLException e){
@@ -104,7 +104,7 @@ public class UserDAO extends DataAccessObject<User> {
 
     public int getIDByUsername(String username) {
 
-        String sql = "SELECT user_id from users where username = ?";
+        String sql = "SELECT user_id FROM users WHERE username = ?";
 
         try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
@@ -160,11 +160,81 @@ public class UserDAO extends DataAccessObject<User> {
         }
     }
 
+    public User getUserByCredentials(String username, String password){
+        if(!usernameExists(username)) {
+            return null;
+        }
+
+        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            User user = new User(username);
+
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+
+            ResultSet rs = pstmt.executeQuery();
+            ResultSetMetaData meta = rs.getMetaData();
+
+            if(rs.next()){
+                user.setId(rs.getInt("user_id"));
+                user.setRole(rs.getString("role"));
+                user.setIs_active(rs.getInt("is_active"));
+
+                return user;
+            } else {
+                return null;
+            }
+
+
+
+        } catch (SQLException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public boolean usernameExists(String username){
         String sql = "SELECT user_id FROM users WHERE username = ?";
 
         try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
             pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+
+            return rs.next();
+
+        } catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean emailExists(String email) {
+        String sql = "SELECT user_id FROM users WHERE email = ?";
+
+        try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setString(1, email);
+            ResultSet rs = pstmt.executeQuery();
+
+            return rs.next();
+
+        } catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean duplicateExists(String username, String firstname, String lastname, String email) {
+        String sql = "SELECT user_id FROM users WHERE username = ? AND first_name = ? AND last_name = ? AND email = ?";
+
+        try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setString(1, username);
+            pstmt.setString(2, firstname);
+            pstmt.setString(3, lastname);
+            pstmt.setString(4, email);
+
             ResultSet rs = pstmt.executeQuery();
 
             return rs.next();

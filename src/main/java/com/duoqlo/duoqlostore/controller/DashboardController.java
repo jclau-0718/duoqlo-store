@@ -26,7 +26,7 @@ public class DashboardController {
     public void openDashboard(Stage stage){
         UserDashboard userDash = new UserDashboard();
 
-        role = user.getRole(user.getID());
+        role = user.getRole(user.getId());
 
         if(role != null) {
             System.out.println("Role: "+role);

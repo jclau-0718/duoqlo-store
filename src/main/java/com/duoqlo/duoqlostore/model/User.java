@@ -35,7 +35,8 @@ public class User {
     public User(int user_id){
         this.user_id = user_id;
     }
-    public void setID(int user_id){
+
+    public void setId(int user_id){
         this.user_id = user_id;
     }
 
@@ -43,7 +44,15 @@ public class User {
         this.password = password;
     }
 
-    public int getID() {
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public void setIs_active(int is_active) {
+        this.is_active = is_active;
+    }
+
+    public int getId() {
         return this.user_id;
     }
 

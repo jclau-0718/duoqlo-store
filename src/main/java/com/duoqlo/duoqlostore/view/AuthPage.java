@@ -1,19 +1,21 @@
 package com.duoqlo.duoqlostore.view;
 
+import com.duoqlo.duoqlostore.model.UserDAO;
+import javafx.animation.*;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import java.util.Objects;
-
 public abstract class AuthPage {
+
     int windowWidth = 1000;
     int windowHeight = 750;
 
@@ -22,6 +24,7 @@ public abstract class AuthPage {
     public TextField createTextField(String promptText) {
         TextField textField = new TextField();
         textField.setPromptText(promptText);
+        textField.setMaxWidth(Double.MAX_VALUE);
         textField.setId("text-field");
         textField.setPadding(new Insets(6,8,8,8));
 
@@ -38,16 +41,33 @@ public abstract class AuthPage {
         return textField;
     }
 
+    public Label createErrorLabel() {
+        Label label = new Label();
+        label.setVisible(false);
+        label.setManaged(true);
+        label.setId("error-msg");
+
+        return label;
+    }
+
+    public VBox createTextFieldBox(TextField textField, Label errorLabel) {
+        VBox box = new VBox(textField, errorLabel);
+        box.setFillWidth(true);
+        box.setId("text-field-box");
+
+        VBox.setMargin(errorLabel, new Insets(3, 0, 0, 0));
+
+        return box;
+    }
+
     public PasswordField createPasswordField(String promptText) {
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText(promptText);
-        passwordField.setId("pass-textfield");
 
         return passwordField;
     }
 
-    public HBox createPasswordBox(PasswordField passwordField) {
-
+    public HBox createPasswordHBox(PasswordField passwordField) {
         FontIcon eyeIcon = new FontIcon("far-eye");
         eyeIcon.setIconColor(Color.GREY);
         eyeIcon.setIconSize(16);
@@ -56,27 +76,36 @@ public abstract class AuthPage {
         showPassButton.setId("showpass-button");
         showPassButton.setFocusTraversable(false); // Prevent stealing focus
         showPassButton.setVisible(false);
-        showPassButton.setMaxHeight(Double.MAX_VALUE);
 
-        HBox passwordBox = new HBox();
+        HBox passwordHBox = new HBox();
+        passwordHBox.getChildren().addAll(passwordField, showPassButton);
+        passwordHBox.setFillHeight(true); //Allow node to expand height until HBox height
+        passwordHBox.getStyleClass().add("password-box");
+        passwordHBox.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(passwordField, Priority.ALWAYS);
+        HBox.setHgrow(showPassButton, Priority.ALWAYS);
 
         passwordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) { //If text field is focused
-                passwordBox.setId("pass-textfield-box-focus");
+                passwordField.setStyle("-fx-prompt-text-fill: transparent");
+                passwordHBox.getStyleClass().add("focused");
             } else {
-                passwordBox.setId("pass-textfield-box");
+                passwordField.setStyle("-fx-prompt-text-fill: gray");
+                passwordHBox.getStyleClass().remove("focused");
             }
             showPassButton.setVisible(newVal);
         });
 
-        passwordBox.getChildren().addAll(passwordField, showPassButton);
-        passwordBox.setId("pass-textfield-box");
-        passwordBox.setFillHeight(true); //Allow node to expand height until HBox height
-        passwordBox.setPadding(new Insets(6,8,8,8));
-        HBox.setHgrow(passwordField, Priority.ALWAYS);
-        HBox.setHgrow(showPassButton, Priority.ALWAYS);
+        return passwordHBox;
+    }
 
-        return passwordBox;
+    public VBox createPasswordVBox(HBox passwordHBox, Label errorLabel) {
+        VBox passwordVBox = new VBox(passwordHBox, errorLabel);
+        passwordVBox.setFillWidth(true);
+
+        VBox.setMargin(errorLabel, new Insets(3, 0, 0, 0));
+
+        return passwordVBox;
     }
 
 
@@ -96,16 +125,55 @@ public abstract class AuthPage {
         return button;
     }
 
-    public Button secondaryButton(String text, String iconCode){
-        FontIcon icon = new FontIcon(iconCode);
+    public HBox popUpBox(FontIcon icon, Label label) {
+        HBox hbox = new HBox(icon, label);
+        hbox.setAlignment(Pos.CENTER);
+        hbox.setPadding(new Insets(20, 10, 20 , 20));
+        hbox.setMaxHeight(50);
+        hbox.setMaxWidth(250);
+        HBox.setMargin(icon, new Insets(0, 7, 0, 0));
 
-        Button button = new Button(text, icon);
-        button.setId("secondary-button");
-        button.setContentDisplay(ContentDisplay.LEFT); // icon on the left
-        button.setMaxWidth(Double.MAX_VALUE);
+        return hbox;
+    }
 
-        icon.iconColorProperty().bind(button.textFillProperty());
+    public void playPopUpAnimation(Node node) {
+        node.setOpacity(0);     //Start invisible
+        node.setTranslateY(-5); //5px above
 
-        return button;
+        //Fade in
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), node);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+
+        //Move down
+        TranslateTransition moveDown = new TranslateTransition(Duration.seconds(0.5), node);
+        moveDown.setFromY(-50);
+        moveDown.setToY(0);
+
+        ParallelTransition enterAnimation = new ParallelTransition(fadeIn, moveDown);
+
+        //Wait for 5 seconds
+        PauseTransition pause = new PauseTransition(Duration.seconds(5));
+
+        // Fade out animation
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), node);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+
+        //Remove node after fade out
+        fadeOut.setOnFinished(event -> {
+            if (node.getParent() != null) {
+                ((javafx.scene.layout.Pane) node.getParent()).getChildren().remove(node);
+            }
+        });
+
+        // Chain all animations
+        SequentialTransition fullAnimation = new SequentialTransition(
+                enterAnimation,
+                pause,
+                fadeOut
+        );
+
+        fullAnimation.play();
     }
 }

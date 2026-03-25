@@ -1,6 +1,7 @@
 package com.duoqlo.duoqlostore.view;
 
 import com.duoqlo.duoqlostore.controller.AuthController;
+import com.duoqlo.duoqlostore.controller.SignUpValidation;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -8,16 +9,26 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.Objects;
+import java.util.*;
 
-public class SignUpPage extends AuthPage {
+public class SignUpPage extends AuthPage{
     private AuthController controller = new AuthController();
+    private SignUpValidation validator = new SignUpValidation(controller, controller.userDAO);
 
     private TextField firstNameField, lastNameField, emailField, address1Field, address2Field,
             cityField, postcodeField, stateField, usernameField;
     private PasswordField passwordField, confirmPassField;
+    private HBox passwordHBox, confirmPassHBox;
+
+    private VBox firstNameBox, lastNameBox, emailBox, address1Box, address2Box,
+            cityBox, postcodeBox, stateBox, countryBox, usernameBox, passwordBox, confirmPassBox;
+
+    private Label firstNameError, lastNameError, emailError, address1Error, address2Error,
+            cityError, postcodeError, stateError, usernameError, passwordError, confirmPassError;
+
+    private Map<TextField, Label> fieldErrorMap = new LinkedHashMap<>();
 
     public Region createLine(){
         Region line = new Region();
@@ -48,19 +59,87 @@ public class SignUpPage extends AuthPage {
         return titleBox;
     }
 
-    public void initFields() {
+    public void initFieldBoxes() {
+        // First Name
         firstNameField = createTextField("First Name");
-        lastNameField = createTextField("Last Name");
-        emailField = createTextField("Email (hello@example.com)");
-        address1Field = createTextField("Address Line 1");
-        address2Field = createTextField("Address Line 2 (Optional)");
-        cityField = createTextField("City");
-        postcodeField = createTextField("Postal Code");
-        stateField = createTextField("State");
+        firstNameError = createErrorLabel();
+        firstNameBox = createTextFieldBox(firstNameField, firstNameError);
 
+        // Last Name
+        lastNameField = createTextField("Last Name");
+        lastNameError = createErrorLabel();
+        lastNameBox = createTextFieldBox(lastNameField, lastNameError);
+
+        // Email
+        emailField = createTextField("Email (hello@example.com)");
+        emailError = createErrorLabel();
+        emailBox = createTextFieldBox(emailField, emailError);
+
+        // Address 1
+        address1Field = createTextField("Address Line 1");
+        address1Error = createErrorLabel();
+        address1Box = createTextFieldBox(address1Field, address1Error);
+
+        // Address 2 (optional)
+        address2Field = createTextField("Address Line 2 (Optional)");
+        address2Error = createErrorLabel();
+        address2Box = createTextFieldBox(address2Field, address2Error);
+
+        // City
+        cityField = createTextField("City");
+        cityError = createErrorLabel();
+        cityBox = createTextFieldBox(cityField, cityError);
+
+        // Postcode
+        postcodeField = createTextField("Postcode");
+        postcodeError = createErrorLabel();
+        postcodeBox = createTextFieldBox(postcodeField, postcodeError);
+
+        // State
+        stateField = createTextField("State");
+        stateError = createErrorLabel();
+        stateBox = createTextFieldBox(stateField, stateError);
+
+        //Country
+        TextField countryField = createTextField("Country");
+        countryField.setText("Malaysia");
+        countryField.setEditable(false);
+        countryField.getStyleClass().add("valid");
+        Label countryError = new Label("");
+        countryBox = createTextFieldBox(countryField, countryError);
+
+        // Username
         usernameField = createTextField("Username");
+        usernameError = createErrorLabel();
+        usernameBox = createTextFieldBox(usernameField, usernameError);
+
+        // Password
         passwordField = createPasswordField("Password");
+        passwordHBox = createPasswordHBox(passwordField);
+        passwordError = createErrorLabel();
+        passwordBox = createPasswordVBox(passwordHBox, passwordError);
+
+        // Confirm Password
         confirmPassField = createPasswordField("Confirm Password");
+        confirmPassHBox = createPasswordHBox(confirmPassField);
+        confirmPassError = createErrorLabel();
+        confirmPassBox = createPasswordVBox(confirmPassHBox, confirmPassError);
+
+        setupAllFieldValidation();
+    }
+
+    public void setupAllFieldValidation() {
+        validator.setupTextFieldValidation(firstNameField, firstNameError);
+        validator.setupTextFieldValidation(lastNameField, lastNameError);
+        validator.setupTextFieldValidation(emailField, emailError);
+        validator.setupTextFieldValidation(address1Field, address1Error);
+        validator.setupTextFieldValidation(address2Field, address2Error);
+        validator.setupTextFieldValidation(cityField, cityError);
+        validator.setupTextFieldValidation(postcodeField, postcodeError);
+        validator.setupTextFieldValidation(stateField, stateError);
+        validator.setupTextFieldValidation(usernameField, usernameError);
+        validator.setupPasswordsValidation(passwordHBox, passwordField, passwordError,
+                                           confirmPassHBox, confirmPassField, confirmPassError, usernameField);
     }
 
     public ArrayList<String> getFieldsValue() {
@@ -80,39 +159,54 @@ public class SignUpPage extends AuthPage {
         return values;
     }
 
+    public void packFieldError() {
+        fieldErrorMap.put(firstNameField, firstNameError);
+        fieldErrorMap.put(lastNameField, lastNameError);
+        fieldErrorMap.put(emailField, emailError);
+        fieldErrorMap.put(address1Field, address1Error);
+        fieldErrorMap.put(address2Field, address2Error);
+        fieldErrorMap.put(cityField, cityError);
+        fieldErrorMap.put(postcodeField, postcodeError);
+        fieldErrorMap.put(stateField, stateError);
+    }
+
     public GridPane personalInfoBox() {
         HBox titleSection = createSectionTitle("Personal Info");
 
-        TextField countryField = createTextField("Country");
-        countryField.setText("Malaysia");
-        countryField.setEditable(false);
-
         GridPane grid = new GridPane();
         grid.add(titleSection,0, 0, 2, 1);
-        grid.add(firstNameField,0, 1, 1, 1);
-        grid.add(lastNameField, 1, 1, 1, 1);
-        grid.add(emailField, 0, 2, 2, 1);
-        grid.add(address1Field, 0, 3, 1, 1);
-        grid.add(address2Field, 1, 3, 1, 1);
-        grid.add(cityField, 0, 4, 1, 1);
-        grid.add(postcodeField, 1, 4, 1, 1);
-        grid.add(stateField, 0, 5, 1, 1);
-        grid.add(countryField, 1, 5, 1, 1);
+        grid.add(firstNameBox, 0, 1, 1, 1);
+        grid.add(lastNameBox, 1, 1, 1, 1);
+        grid.add(emailBox, 0, 2, 2, 1);
+        grid.add(address1Box, 0, 3, 1, 1);
+        grid.add(address2Box, 1, 3, 1, 1);
+        grid.add(cityBox, 0, 4, 1, 1);
+        grid.add(postcodeBox, 1, 4, 1, 1);
+        grid.add(stateBox, 0, 5, 1, 1);
+        grid.add(countryBox, 1, 5, 1, 1);
 
         grid.setHgap(10);
-        grid.setVgap(20);
+        grid.setVgap(15);
 
-        GridPane.setHgrow(firstNameField, Priority.ALWAYS);
-        GridPane.setHgrow(lastNameField, Priority.ALWAYS);
-        GridPane.setHgrow(emailField, Priority.ALWAYS);
-        GridPane.setHgrow(address1Field, Priority.ALWAYS);
-        GridPane.setHgrow(address2Field, Priority.ALWAYS);
-        GridPane.setHgrow(cityField, Priority.ALWAYS);
-        GridPane.setHgrow(postcodeField, Priority.ALWAYS);
-        GridPane.setHgrow(stateField, Priority.ALWAYS);
-        GridPane.setHgrow(countryField, Priority.ALWAYS);
+        GridPane.setHgrow(firstNameBox, Priority.ALWAYS);
+        GridPane.setHgrow(lastNameBox, Priority.ALWAYS);
+        GridPane.setHgrow(emailBox, Priority.ALWAYS);
+        GridPane.setHgrow(address1Box, Priority.ALWAYS);
+        GridPane.setHgrow(address2Box, Priority.ALWAYS);
+        GridPane.setHgrow(cityBox, Priority.ALWAYS);
+        GridPane.setHgrow(postcodeBox, Priority.ALWAYS);
+        GridPane.setHgrow(stateBox, Priority.ALWAYS);
+        GridPane.setHgrow(countryBox, Priority.ALWAYS);
 
         controller.setupAddressTracker(postcodeField, cityField, stateField);
+
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setHgrow(Priority.ALWAYS); // Expand to fill available width
+
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setHgrow(Priority.ALWAYS);
+
+        grid.getColumnConstraints().addAll(col1, col2);
 
         return grid;
     }
@@ -123,16 +217,13 @@ public class SignUpPage extends AuthPage {
         Label description = new Label("Use these details to log in to your account.");
         description.setId("description");
 
-        HBox passwordBox = createPasswordBox(passwordField);
-        HBox confirmPassBox = createPasswordBox(confirmPassField);
-
         VBox loginDetailsBox = new VBox();
-        loginDetailsBox.getChildren().addAll(titleSection, description, usernameField, passwordBox, confirmPassBox);
+        loginDetailsBox.getChildren().addAll(titleSection, description, usernameBox, passwordBox, confirmPassBox);
         VBox.setMargin(titleSection, new Insets(0,0,5,0));
         VBox.setMargin(description, new Insets(0,0,0,0));
-        VBox.setMargin(usernameField,new Insets(5,0,5,0));
-        VBox.setMargin(passwordField,new Insets(5,0,5,0));
-        VBox.setMargin(confirmPassField,new Insets(5,0,5,0));
+        VBox.setMargin(usernameBox,new Insets(5,0,5,0));
+        VBox.setMargin(passwordBox,new Insets(5,0,5,0));
+        VBox.setMargin(confirmPassBox,new Insets(5,0,5,0));
 
         return loginDetailsBox;
     }
@@ -149,8 +240,12 @@ public class SignUpPage extends AuthPage {
 
         backButton.setOnAction(e -> controller.backToLogIn(e));
         nextButton.setOnAction(e -> {
-            BorderPane root = (BorderPane) ((Node) e.getSource()).getScene().getRoot();
-            root.setCenter(loginDetailsForm());
+            if (validator.personalInfoInvalid(fieldErrorMap)) {
+                return;
+            } else {
+                BorderPane root = (BorderPane) ((Node) e.getSource()).getScene().getRoot();
+                root.setCenter(loginDetailsForm());
+            }
         });
 
         return buttonBox;
@@ -168,13 +263,45 @@ public class SignUpPage extends AuthPage {
 
         backButton.setOnAction(e -> {
             BorderPane root = (BorderPane) ((Node) e.getSource()).getScene().getRoot();
+            Platform.runLater(() -> {root.requestFocus();}); //Remove initial focus on Username TextField
+
+            //Revalidate all fields
+            for (Map.Entry<TextField, Label> entry : fieldErrorMap.entrySet()) {
+                validator.revalidateField(entry.getKey(), entry.getValue());
+            }
+
+            root.setCenter(personalInfoForm());
+
             root.setCenter(personalInfoForm());
         });
         signUpButton.setOnAction(e -> {
-            ArrayList<String> fieldValues = getFieldsValue();
-            fieldValues.add("CUSTOMER");
+            try {
+                ArrayList<String> fieldValues = getFieldsValue();
+                fieldValues.add("CUSTOMER");
 
-            controller.handleSignUp(fieldValues);
+                if (!usernameError.getText().isEmpty()) {
+                    usernameField.requestFocus();
+                    usernameField.positionCaret(usernameField.getText().length());
+                    return;
+                } else if (!passwordError.getText().isEmpty()) {
+                    passwordField.requestFocus();
+                    passwordField.positionCaret(passwordField.getText().length());
+                    return;
+                } else if (!confirmPassError.getText().isEmpty()){
+                    confirmPassField.requestFocus();
+                    confirmPassField.positionCaret(confirmPassField.getText().length());
+                } else {
+                    if(controller.handleSignUp(fieldValues)) {
+                        LogInPage logInPage = new LogInPage(controller);
+
+                        Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
+                        stage.setScene(logInPage.initialize());
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
         });
 
         return buttonBox;
@@ -218,7 +345,9 @@ public class SignUpPage extends AuthPage {
     }
 
     public Scene initialize(){
-        initFields();
+        initFieldBoxes();
+//        packPersonalInfoTf();
+        packFieldError();
 
         BorderPane root = new BorderPane();
         root.setCenter(personalInfoForm());

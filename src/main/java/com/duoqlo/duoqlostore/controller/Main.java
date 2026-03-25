@@ -28,7 +28,7 @@ public class Main extends Application {
         TableCreator.createTable();
 
         stage.setTitle("DUOQLO");
-        Navigator.goTo(signUpPage.initialize());
+        Navigator.goTo(logInPage.initialize());
 //        stage.setScene(userDash.initializeUserDash());
 //        stage.getIcons().add(new Image(Objects.requireNonNull(UserDashboard.class.getResourceAsStream("/logo.png"))));
         stage.show();
@@ -38,5 +38,4 @@ public class Main extends Application {
     public static void main(String[] args){
         launch(args);
     }
-
 }

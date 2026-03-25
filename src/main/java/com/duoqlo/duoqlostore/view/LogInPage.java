@@ -7,20 +7,31 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.geometry.*;
 
 import java.util.Objects;
 
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 public class LogInPage extends AuthPage {
+    private AuthController controller;
+
     private final int usernameTopPad = 50;
-    private final int passwordTopPad = usernameTopPad;
+    private final int passwordTopPad = 35;
     private final int buttonTopPad = 60;
 
-    private AuthController controller = new AuthController();
+    private HBox errorBox;
+    private HBox successBox;
+
+    public LogInPage() {
+        this.controller = new AuthController();
+    }
+
+    public LogInPage(AuthController controller) {
+        this.controller = controller;
+    }
 
     public ImageView createLogo(){
         int logoHeight = 60;
@@ -33,23 +44,38 @@ public class LogInPage extends AuthPage {
         return logoView;
     }
 
-    public VBox createUsernameSection(TextField usernameField){
-//        HBox usernameHBox = new HBox(usernameField);
-//
-//        usernameHBox.setId("text-field-box");
-//        HBox.setHgrow(usernameField, Priority.ALWAYS);
-//        usernameHBox.setPadding(new Insets(6,8,8,8));
+    public void showErrorBox(StackPane root) {
+        FontIcon errorIcon = new FontIcon("far-times-circle");
+        errorIcon.setIconColor(Color.RED);
 
-        Label usernameErrorLabel = new Label("");
-        usernameErrorLabel.setVisible(false);
-        usernameErrorLabel.setManaged(false);
+        Label errorLabel = new Label("Invalid username or password.");
+        errorLabel.setId("popup-error");
 
-        controller.setupUsernameValidation(usernameField, usernameErrorLabel);
+        errorBox = popUpBox(errorIcon, errorLabel);
+        errorBox.setId("popup-box");
 
-        VBox usernameBox = new VBox(usernameField, usernameErrorLabel);
-        VBox.setMargin(usernameErrorLabel, new Insets(7,0,7,0));
+        root.getChildren().add(errorBox);
+        StackPane.setAlignment(errorBox, Pos.TOP_CENTER);
+        StackPane.setMargin(errorBox, new Insets(20, 0, 0, 0));
 
-        return usernameBox;
+        playPopUpAnimation(errorBox);
+    }
+
+    public void showSuccessBox(StackPane root) {
+        FontIcon checkIcon = new FontIcon("far-check-circle");
+        checkIcon.setIconColor(Color.LIMEGREEN);
+
+        Label successLabel = new Label("Account created!");
+        successLabel.setId("popup-success");
+
+        successBox = popUpBox(checkIcon, successLabel);
+        successBox.setId("popup-box");
+
+        root.getChildren().add(successBox);
+        StackPane.setAlignment(successBox, Pos.TOP_CENTER);
+        StackPane.setMargin(successBox, new Insets(20, 0, 0, 0));
+
+        playPopUpAnimation(successBox);
     }
 
     public VBox createLogInForm(){
@@ -68,15 +94,37 @@ public class LogInPage extends AuthPage {
 
         //Username Section
         TextField usernameField = createTextField("Username");
-        VBox usernameBox = createUsernameSection(usernameField);
+        Label usernameErrorLabel = createErrorLabel();
+        VBox usernameBox = createTextFieldBox(usernameField, usernameErrorLabel);
         usernameBox.setMinWidth(360);
+
+        controller.setupUsernameValidation(usernameField, usernameErrorLabel);
 
         //Password Section
         PasswordField passwordField = createPasswordField("Password");
-        HBox passwordBox = createPasswordBox(passwordField);
+        HBox passwordHBox = createPasswordHBox(passwordField);
+        Label passwordErrorLabel = createErrorLabel();
+        VBox passwordBox = createPasswordVBox(passwordHBox, passwordErrorLabel);
 
-        logInButton.setOnAction(e ->
-                controller.handleLogIn(e, usernameField.getText(), passwordField.getText()));
+        controller.setupPasswordValidation(passwordHBox, passwordField, passwordErrorLabel);
+
+        logInButton.setOnAction(e -> {
+            if (controller.handleLogIn(e, usernameField.getText(), passwordField.getText())) {
+                return;
+            } else {
+                System.out.println("Entered this condition");
+                controller.setTextFieldError(true);
+                controller.setPassFieldError(true);
+                controller.updateUsernameFieldStyle(usernameField, usernameErrorLabel);
+                controller.updatePassFieldStyle(passwordHBox, passwordField, passwordErrorLabel);
+                StackPane root = (StackPane) ((Node) e.getSource()).getScene().getRoot();
+                root.getChildren().remove(errorBox);
+                showErrorBox(root);
+
+                System.out.println("Styling(in condition): "+usernameField.getStyleClass());
+            }
+        });
+
         signUpButton.setOnAction(e -> {
             Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
             stage.setScene(new SignUpPage().initialize());
@@ -111,8 +159,15 @@ public class LogInPage extends AuthPage {
     }
 
     public Scene initialize(){
-        BorderPane root = new BorderPane();
-        root.setCenter(createLogInForm());
+        BorderPane borderPane = new BorderPane();
+        borderPane.setCenter(createLogInForm());
+
+        StackPane root = new StackPane(borderPane);
+
+        if(controller.getRegistered()) {
+            root.getChildren().remove(successBox);
+            showSuccessBox(root);
+        }
 
         Platform.runLater(() -> {root.requestFocus();}); //Remove initial focus on Username TextField
         root.setOnMouseClicked(e -> root.requestFocus()); //Allow unfocus on TextField
