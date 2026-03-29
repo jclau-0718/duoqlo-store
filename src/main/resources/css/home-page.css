@@ -45,7 +45,7 @@
     -fx-border-width: 0 0 2 0;
 }
 
-#filter-menu .menu-button {
+#filter-bar .menu-button {
     -fx-font-family: Arial;
     -fx-font-size: 14;
     -fx-background-color: #F0EDED;
@@ -54,8 +54,59 @@
     -fx-cursor: hand;
 }
 
-#filter-menu .menu-button .arrow {
+#filter-bar .menu-button .arrow {
     -fx-shape: "M26.297 12.625l-11.594 11.578c-0.391 0.391-1.016 0.391-1.406 0l-11.594-11.578c-0.391-0.391-0.391-1.031 0-1.422l2.594-2.578c0.391-0.391 1.016-0.391 1.406 0l8.297 8.297 8.297-8.297c0.391-0.391 1.016-0.391 1.406 0l2.594 2.578c0.391 0.391 0.391 1.031 0 1.422z";
+}
+
+.product-card {
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 8px;
+    -fx-background-color: white;
+    -fx-background-radius: 8px;
+    /*-fx-padding: 10;*/
+    -fx-effect: drop shadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
+    -fx-transition: all 0.2s ease-in-out; /* Smooth transition */
+}
+
+.product-card:hover {
+    -fx-border-color: #EE5702;
+    -fx-border-radius: 8px;
+    -fx-background-color: white;
+    -fx-background-radius: 8px;
+    /*-fx-padding: 10;*/
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 5);
+    /*-fx-scale-x: 1.02;*/
+    /*-fx-scale-y: 1.02;*/
+    -fx-transition: all 0.2s ease-in-out;
+}
+
+
+.label.no-products {
+    -fx-text-fill: #808080;
+    -fx-font-size: 16px;
+}
+
+.label.gender {
+    -fx-text-fill: #808080;
+    -fx-font-size: 11px;
+}
+
+.label.stock {
+    -fx-text-fill: #808080;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.label.product-name {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-text-fill: #333333;
+}
+
+.label.price {
+    -fx-text-fill: #EE5702;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
 }
 
 .scroll-pane {
@@ -126,3 +177,66 @@
     -fx-padding: 0;
 }
 
+.expanded-product-card {
+    -fx-background-color: white;
+    -fx-background-radius: 15;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 25, 0, 0, 0);
+}
+
+.expanded-product-card:hover {
+    -fx-cursor: move;
+}
+
+.size-button {
+    -fx-background-color: white;
+    -fx-background-radius: 5;
+    -fx-border-color: #ddd;
+    -fx-border-radius: 5;
+    -fx-padding: 5 12;
+    -fx-cursor: hand;
+    -fx-font-size: 12px;
+}
+
+.size-button:hover {
+    -fx-border-color: #EE5702;
+    -fx-text-fill: #EE5702;
+}
+
+.size-button.selected {
+    -fx-background-color: #EE5702;
+    -fx-text-fill: white;
+    -fx-border-color: #ddd;
+}
+
+.primary-button, .secondary-button {
+    -fx-font-family: Arial;
+    -fx-font-size: 14px;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 10 20;
+    /*-fx-font-weight: bold;*/
+}
+
+.primary-button {
+    -fx-background-color: #EE5702;          /* orange color */
+    -fx-border-color: #EE5702;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+
+.secondary-button {
+    -fx-background-color: transparent;
+    -fx-border-color: #EE5702;
+    -fx-cursor: hand;
+    -fx-text-fill: #EE5702;
+}
+
+.right-button, .left-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.right-button .ikonli-font-icon, .left-button .ikonli-font-icon {
+    -fx-icon-size: 16px;
+    -fx-icon-color: #7D7D7D;
+}

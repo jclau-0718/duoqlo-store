@@ -3,6 +3,7 @@ module com.duoqlo.duoqlostore {
     requires javafx.fxml;
     requires javafx.web;
     requires java.sql;
+    requires java.prefs;
 
     requires org.controlsfx.controls;
     requires com.dlsc.formsfx;

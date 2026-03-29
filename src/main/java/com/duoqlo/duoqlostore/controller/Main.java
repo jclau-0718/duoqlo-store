@@ -28,11 +28,12 @@ public class Main extends Application {
         TableCreator.createTable();
 
         stage.setTitle("DUOQLO");
-        Navigator.goTo(logInPage.initialize());
+        Navigator.goTo(userDash.initialize());
 //        stage.setScene(userDash.initializeUserDash());
 //        stage.getIcons().add(new Image(Objects.requireNonNull(UserDashboard.class.getResourceAsStream("/logo.png"))));
         stage.show();
         stage.centerOnScreen();
+        stage.setFullScreen(true);
     }
 
     public static void main(String[] args){

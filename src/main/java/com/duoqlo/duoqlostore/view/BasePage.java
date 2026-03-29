@@ -3,9 +3,11 @@ package com.duoqlo.duoqlostore.view;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -29,6 +31,17 @@ public class BasePage {
         this.searchBar = createSearchBar();
         this.backButton = createBackButton();
         this.forwardButton = createForwardButton();
+    }
+
+    public void addToolTip(Node node, String text) {
+        Tooltip tooltip = new Tooltip(text);
+        tooltip.setShowDelay(javafx.util.Duration.seconds(2));
+        tooltip.setStyle("""
+                -fx-background-color: #C7C4C3;
+                -fx-border-color: #9A9593;
+                -fx-text-fill: black;
+                """);
+        Tooltip.install(node, tooltip);
     }
 
     public HBox createHeaderBox(HBox middleHBox, HBox rightBox) {

@@ -31,7 +31,7 @@ public class DashboardController {
         if(role != null) {
             System.out.println("Role: "+role);
             if (role.equals("CUSTOMER")) {
-                stage.setScene(userDash.initializeUserDash());
+                stage.setScene(userDash.initialize());
             } else if (role.equals("ADMIN")) {
                 stage.setScene(userDash.initializeAdminDash());
             } else {

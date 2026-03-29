@@ -30,8 +30,8 @@ public class SceneManager {
         UserDashboard userDash = new UserDashboard();
 
         BorderPane root = new BorderPane();
-        root.setTop(userDash.createHeader());
-        root.setCenter(userDash.createProductMenu());
+        root.setTop(userDash.buildHeader());
+        root.setCenter(userDash.buildProductGrid());
 
         return root;
     }

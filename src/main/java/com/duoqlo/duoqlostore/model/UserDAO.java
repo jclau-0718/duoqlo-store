@@ -229,7 +229,9 @@ public class UserDAO extends DataAccessObject<User> {
     public boolean duplicateExists(String username, String firstname, String lastname, String email) {
         String sql = "SELECT user_id FROM users WHERE username = ? AND first_name = ? AND last_name = ? AND email = ?";
 
-        try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+
             pstmt.setString(1, username);
             pstmt.setString(2, firstname);
             pstmt.setString(3, lastname);
