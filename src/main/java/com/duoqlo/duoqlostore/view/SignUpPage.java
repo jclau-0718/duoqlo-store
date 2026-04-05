@@ -146,7 +146,7 @@ public class SignUpPage extends AuthPage{
         ArrayList<String> values = new ArrayList<>();
 
         values.add(usernameField.getText());
-        values.add(passwordField.getText());
+        values.add(controller.hashPassword(passwordField.getText()));
         values.add(firstNameField.getText());
         values.add(lastNameField.getText());
         values.add(emailField.getText());
@@ -228,7 +228,7 @@ public class SignUpPage extends AuthPage{
         return loginDetailsBox;
     }
 
-    public HBox firstPageButtonBox() {
+    public HBox personalInfoButtonBox() {
         Button backButton = secondaryButton("BACK");
         Button nextButton = primaryButton("NEXT");
 
@@ -251,7 +251,7 @@ public class SignUpPage extends AuthPage{
         return buttonBox;
     }
 
-    public HBox finalPageButtonBox() {
+    public HBox logInDetailsButtonBox() {
         Button backButton = secondaryButton("BACK");
         Button signUpButton = primaryButton("SIGN UP");
 
@@ -279,19 +279,19 @@ public class SignUpPage extends AuthPage{
                 ArrayList<String> fieldValues = getFieldsValue();
                 fieldValues.add("CUSTOMER");
 
-                if (!usernameError.getText().isEmpty()) {
+                if (!usernameError.getText().isEmpty()) { //Username has error
                     usernameField.requestFocus();
                     usernameField.positionCaret(usernameField.getText().length());
                     return;
-                } else if (!passwordError.getText().isEmpty()) {
+                } else if (!passwordError.getText().isEmpty()) { //Password has error
                     passwordField.requestFocus();
                     passwordField.positionCaret(passwordField.getText().length());
                     return;
-                } else if (!confirmPassError.getText().isEmpty()){
+                } else if (!confirmPassError.getText().isEmpty()){ //Confirm Password has error
                     confirmPassField.requestFocus();
                     confirmPassField.positionCaret(confirmPassField.getText().length());
                 } else {
-                    if(controller.handleSignUp(fieldValues)) {
+                    if(controller.handleSignUp(fieldValues)) { //Create account in database
                         LogInPage logInPage = new LogInPage(controller);
 
                         Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
@@ -301,7 +301,6 @@ public class SignUpPage extends AuthPage{
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-
         });
 
         return buttonBox;
@@ -328,7 +327,7 @@ public class SignUpPage extends AuthPage{
 
     public VBox personalInfoForm() {
         GridPane personalInfoBox = personalInfoBox();
-        HBox buttonBox = firstPageButtonBox();
+        HBox buttonBox = personalInfoButtonBox();
 
         VBox form = createForm(personalInfoBox, buttonBox);
 
@@ -337,7 +336,7 @@ public class SignUpPage extends AuthPage{
 
     public VBox loginDetailsForm() {
         VBox loginDetailsBox = loginDetailsBox();
-        HBox buttonBox = finalPageButtonBox();
+        HBox buttonBox = logInDetailsButtonBox();
 
         VBox form = createForm(loginDetailsBox, buttonBox);
 

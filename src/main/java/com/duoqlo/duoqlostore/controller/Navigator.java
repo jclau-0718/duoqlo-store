@@ -20,16 +20,20 @@ public class Navigator {
 
             if(currentScene != null){
                 backStack.push(stage.getScene());
-            } else {
-                System.out.println("Current Scene is null.");
             }
+            boolean wasMaximized = stage.isMaximized();
+
+            System.out.println("Stage maximized: "+stage.isMaximized());
 
             forwardStack.clear();
             stage.setScene(newScene);
+
+            if (wasMaximized) {
+                stage.setMaximized(true);
+            }
         } else {
             System.out.println("Stage not set!");
         }
-
     }
 
     public static void goBack() {

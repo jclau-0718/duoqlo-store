@@ -8,7 +8,6 @@ public class Product {
     private String productName;
     private String gender;
     private String category;
-    private String subCategory;
     private String description;
     private String imagePath;
     private List<ProductSize> sizes;
@@ -17,15 +16,20 @@ public class Product {
     public Product() {}
 
     public Product(int productId, String productSku, String productName,
-                   String gender, String category, String subCategory,
+                   String gender, String category,
                    String description, String imagePath) {
         this.productId = productId;
         this.productSku = productSku;
         this.productName = productName;
         this.gender = gender;
         this.category = category;
-        this.subCategory = subCategory;
         this.description = description;
+        this.imagePath = imagePath;
+    }
+
+    public Product(int productId, String productName, String imagePath) {
+        this.productId = productId;
+        this.productName = productName;
         this.imagePath = imagePath;
     }
 
@@ -39,8 +43,6 @@ public class Product {
     public String getGender() { return gender; }
 
     public String getCategory() { return category; }
-
-    public String getSubCategory() { return subCategory; }
 
     public String getDescription() { return description; }
 
@@ -57,8 +59,6 @@ public class Product {
     public void setGender(String gender) { this.gender = gender; }
 
     public void setCategory(String category) { this.category = category; }
-
-    public void setSubCategory(String subCategory) { this.subCategory = subCategory; }
 
     public void setDescription(String description) { this.description = description; }
 

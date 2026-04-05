@@ -2,6 +2,7 @@ package com.duoqlo.duoqlostore.model;
 
 import java.util.ArrayList;
 
+
 public class User {
     private int user_id;
     private String username;
@@ -118,5 +119,6 @@ public class User {
         this.state = info.get(9);
         this.role = info.get(10);
     }
+
 
 }

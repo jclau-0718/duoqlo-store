@@ -1,33 +1,37 @@
 package com.duoqlo.duoqlostore.view;
 
 import com.duoqlo.duoqlostore.controller.Navigator;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Objects;
+import java.util.Stack;
 
 public class BasePage {
     protected int windowWidth = 1000;
     protected int windowHeight = 750;
 
+    protected StackPane header;
+    protected HBox actionBox;
+    protected TextField searchField;
     protected HBox searchBar;
+    protected Button enterButton;
     protected Button backButton;
     protected Button forwardButton;
 
+    protected int iconSize = 19;
+
     public BasePage(){
+        this.searchField = createSearchField();
         this.searchBar = createSearchBar();
         this.backButton = createBackButton();
         this.forwardButton = createForwardButton();
@@ -44,8 +48,11 @@ public class BasePage {
         Tooltip.install(node, tooltip);
     }
 
-    public HBox createHeaderBox(HBox middleHBox, HBox rightBox) {
+    public StackPane createHeaderBox(HBox middleHBox, HBox rightBox) {
+        int sidePad = 35;
         int logoHeight = 35;
+        actionBox = rightBox;
+
         Image logo = new Image(Objects.requireNonNull(UserDashboard.class.getResource("/logo.png")).toExternalForm());
         ImageView logoView = new ImageView(logo);
         logoView.setFitHeight(logoHeight);
@@ -55,49 +62,109 @@ public class BasePage {
         logoButton.setGraphic(logoView);
         logoButton.setId("logo-button");
 
-        //Spacer
-        Region spacer1 = new Region();
-        Region spacer2 = new Region();
-        HBox.setHgrow(spacer1, Priority.ALWAYS);
-        HBox.setHgrow(spacer2, Priority.ALWAYS);
+        //Profile Button
+        FontIcon profileIcon = new FontIcon("fas-user");
+        profileIcon.setIconSize(iconSize);
+        profileIcon.setIconColor(Color.web("#EE5702"));
+        Button profileButton = new Button("", profileIcon);
 
-        HBox header = new HBox(5); //Button-to-Button space
+        middleHBox.setMaxWidth(Region.USE_PREF_SIZE);
+
+        actionBox.getChildren().add(profileButton);
+
+        header = new StackPane(); //Button-to-Button space
         header.setId("header-menu");
         header.setMaxWidth(Double.MAX_VALUE);
         header.setPrefHeight(10);
         header.setPadding(new Insets(20)); //Space between all button and HBox edge
-        header.setAlignment(Pos.CENTER); // vertically centers all children
 
-        header.getChildren().addAll(logoButton,spacer1,middleHBox,spacer2,rightBox);
+        header.getChildren().addAll(logoButton, middleHBox, actionBox);
+
+        StackPane.setAlignment(logoButton, Pos.CENTER_LEFT);
+        StackPane.setAlignment(middleHBox, Pos.CENTER);
+        StackPane.setAlignment(actionBox, Pos.CENTER_RIGHT);
+
+        StackPane.setMargin(logoButton, new Insets(0, 0, 0, sidePad));
+        StackPane.setMargin(actionBox, new Insets(0, sidePad, 0, 0));
 
         return header;
     }
 
-    public HBox createSearchBar(){
-        TextField inputField = new TextField();
-        inputField.setStyle("""
-                -fx-border-color: transparent;
-                -fx-background-color: transparent;
-                """);
-        inputField.setPromptText("Type to search");
+    public TextField createSearchField() {
+        TextField searchField = new TextField();
+        searchField.getStyleClass().add("search-field");
+        searchField.setPromptText("Type to search");
 
+        return searchField;
+    }
+
+    public HBox createSearchBar(){
+        int searchBarLength = 250;
         FontIcon searchIcon = new FontIcon("fas-search");
         searchIcon.setIconColor(Color.web("EE5702"));
-        Button searchButton = new Button("", searchIcon);
+        searchIcon.setIconSize(iconSize);
 
-        HBox searchBar = new HBox(5, inputField, searchButton);
+        FontIcon rightIcon = new FontIcon("fas-arrow-right");
+        rightIcon.setIconSize(iconSize);
+        rightIcon.setIconColor(Color.web("ADADAD"));
+
+        enterButton = new Button("", rightIcon);
+        enterButton.setPadding(Insets.EMPTY);
+
+        HBox searchBar = new HBox();
         searchBar.setAlignment(Pos.CENTER_LEFT);
-        searchBar.setPadding(new Insets(0,0,0,0));
-        searchBar.setStyle("""
-                -fx-background-color: #E0E0E0;
-                -fx-background-radius: 20;
-                -fx-border-color: #E0E0E0;
-                -fx-border-radius: 20;
-                -fx-border-width: 1;
-                """);
+        searchBar.setPadding(Insets.EMPTY);
+        searchBar.getStyleClass().add("search-bar");
+        searchBar.setId("search-bar");
         searchBar.setMaxHeight(10);
+        searchBar.setMinWidth(searchBarLength);
+        searchBar.setPrefWidth(searchBarLength);
+        searchBar.setMaxWidth(searchBarLength);
+
+        searchBar.getChildren().addAll(searchIcon, searchField, enterButton);
+        HBox.setHgrow(searchField, Priority.ALWAYS);
+
+        HBox.setMargin(searchIcon, new Insets(0, 3, 0, 5));
+        HBox.setMargin(enterButton, new Insets(0, 5, 0, 3));
+        ListView<String> suggestionList = new ListView<>();
+
+        ObservableList<String> products = FXCollections.observableArrayList(
+                "Phone", "Laptop", "Tablet", "Headphones", "Camera", "Charger"
+        );
+
+        VBox searchVBox = new VBox();
+        searchVBox.getChildren().addAll(searchBar, suggestionList);
+
+        searchField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if(newVal) {
+                searchBar.getStyleClass().add("focused");
+                enterButton.setStyle("-fx-opacity: 1");
+            } else {
+                searchBar.getStyleClass().remove("focused");
+                enterButton.setStyle("-fx-opacity: 0.5");
+            }
+        });
 
         return searchBar;
+    }
+
+    public VBox showSearchBox() {
+        ListView<String> suggestionList = new ListView<>();
+
+        ObservableList<String> products = FXCollections.observableArrayList(
+                "Phone", "Laptop", "Tablet", "Headphones", "Camera", "Charger"
+        );
+
+        VBox searchBox = new VBox();
+        searchBox.getChildren().addAll(searchBar, suggestionList);
+
+        for (Node node: actionBox.getChildren()) {
+            if(node instanceof HBox) {
+
+            }
+        }
+
+        return searchBox;
     }
 
     public Button createBackButton(){

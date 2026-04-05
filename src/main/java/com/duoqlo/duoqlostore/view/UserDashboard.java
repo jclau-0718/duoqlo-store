@@ -4,11 +4,10 @@ import com.duoqlo.duoqlostore.controller.DashboardController;
 import com.duoqlo.duoqlostore.model.Product;
 import com.duoqlo.duoqlostore.model.ProductDAO;
 import com.duoqlo.duoqlostore.model.ProductSize;
-import javafx.animation.PauseTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
 import javafx.beans.binding.Bindings;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -21,11 +20,11 @@ import javafx.scene.paint.Color;
 import javafx.geometry.*;
 
 import java.io.File;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -37,6 +36,10 @@ public class UserDashboard extends BasePage {
     private Map<Integer, List<ProductSize>> sizesCache = new HashMap<>();
     private Map<String, List<Image>> imageCache = new ConcurrentHashMap<>();
     private List<Product> allProducts; // Cache all products
+    private List<Product> displayedProducts = new ArrayList<>();
+
+    private Map<String, MenuItem> sizeMenuItems = new HashMap<>();
+    private Map<String, MenuItem> categoryMenuItems = new HashMap<>();
 
     private StackPane body;
     private Rectangle overlay;
@@ -45,31 +48,40 @@ public class UserDashboard extends BasePage {
     private ScaleTransition modalScaleIn;
     private ScaleTransition modalScaleOut;
 
-    static int logoHeight = 50;
-    static int iconSize = 19;
+    private StackPane loadingPane;
+    private Label loadingLabel;
 
     private TilePane productGrid;
     private Label stockLabel;
-    private String currentFilter = "ALL";
+
+    private ComboBox<String> sizeCombo;
+    private ComboBox<String> categoryCombo;
+    private ComboBox<String> priceCombo;
+    private ComboBox<String> sortCombo;
+    private javafx.beans.value.ChangeListener<String> sortComboListener;
+
+    private HBox sortBox;
 
     private int cardWidth = 200;
     private int cardHeight = cardWidth + 180;
     private int enlargedWidth = cardWidth + 350;
     private int enlargedHeight = enlargedWidth + 180;
 
+    private String currentFilter = "ALL";
+    private String sizeSelected = null;
+    private String categorySelected = null;
+    private String priceSelected = null;
+    private String sortingSelected = null;
+    private boolean isSorted = false;
+
     private boolean isSizesSelected = false;
+    private boolean[] isDisabled = {false};
 
     public UserDashboard() {
         super();
     }
 
-    public HBox buildHeader() {
-        //Spacer
-        Region leftSpacer = new Region();
-        Region rightSpacer = new Region();
-        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
-        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
-
+    public StackPane buildHeader() {
         //Category Buttons
         Button allButton = new Button("ALL");
         Button womenButton = new Button("WOMEN");
@@ -98,48 +110,140 @@ public class UserDashboard extends BasePage {
             loadProductsByGender("WOMEN");
         });
 
-        //Search Button
-        FontIcon searchIcon = new FontIcon("fas-search");
-        searchIcon.setIconSize(iconSize);
-        searchIcon.setIconColor(Color.web("#EE5702"));
-        Button searchButton = new Button("", searchIcon);
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if(newVal.isEmpty()) {
+                loadAllProducts();
+            }
+        });
+
+        searchField.setOnAction(e -> {
+            enterButton.fire();
+        });
+
+        enterButton.setOnAction(e -> {
+            String text = searchField.getText();
+
+            loadProductsByName(text);
+        });
 
         //Cart Button
         FontIcon cartIcon = new FontIcon("fas-shopping-cart");
         cartIcon.setIconSize(iconSize);
         cartIcon.setIconColor(Color.web("#EE5702"));
         Button cartButton = new Button("", cartIcon);
-        cartButton.setOnAction(e -> controller.openCartPage(e));
+        cartButton.setOnAction(e -> controller.openCartPage());
 
-        //Profile Button
-        FontIcon profileIcon = new FontIcon("far-user");
-        profileIcon.setIconSize(iconSize);
-        profileIcon.setIconColor(Color.web("#EE5702"));
-        Button profileButton = new Button("", profileIcon);
+//        //Profile Button
+//        FontIcon profileIcon = new FontIcon("fas-user");
+//        profileIcon.setIconSize(iconSize);
+//        profileIcon.setIconColor(Color.web("#EE5702"));
+//        Button profileButton = new Button("", profileIcon);
 
         //Button Box
-        HBox buttonBox = new HBox(10);
-        buttonBox.getChildren().addAll(searchButton, cartButton, profileButton);
-        buttonBox.setAlignment(Pos.CENTER);
+        HBox actionBox = new HBox(10);
+        actionBox.setMinWidth(300);
+        actionBox.setPrefWidth(300);
+        actionBox.setMaxWidth(300);
+        actionBox.getChildren().addAll(searchBar, cartButton);
+        actionBox.setAlignment(Pos.CENTER_RIGHT);
 
-        HBox header = createHeaderBox(catMenu, buttonBox);
+        header = createHeaderBox(catMenu, actionBox);
 
         return header;
     }
 
-    public HBox buildFilterBar() {
+//    public BorderPane buildFilterBar() {
+//        int tbPad = 20;
+//        int sidePad = 63;
+//
+//        sizeMenu = new MenuButton("Size");
+//        categoryMenu = new MenuButton("Category");
+//        priceMenu = new MenuButton("Price (RM)");
+//
+//        FontIcon sortIcon = new FontIcon("fas-sort");
+//        sortButton = new MenuButton("Sort by", sortIcon);
+//        sortButton.getStyleClass().add("sorting-menu");
+//
+//        HBox filterBox = new HBox(10, sizeMenu, categoryMenu, priceMenu);
+//        filterBox.getStyleClass().add("filter-box");
+//
+//        BorderPane filterBar = new BorderPane();
+//        filterBar.setLeft(filterBox);
+//        filterBar.setRight(sortButton);
+//
+//        filterBar.setPadding(new Insets(tbPad, sidePad, tbPad, sidePad));
+//        return filterBar;
+//    }
+
+    public BorderPane buildFilterBar() {
         int tbPad = 20;
-        int leftPad = 63;
+        int sidePad = 63;
+        int comboLength = 120;
 
-        MenuButton size = new MenuButton("Size");
-        MenuButton colour = new MenuButton("Colour");
-        MenuButton price = new MenuButton("Price");
+        sizeCombo = new ComboBox<>();
+        sizeCombo.setPromptText("All sizes");
+        sizeCombo.setPrefWidth(120);
+        sizeCombo.getStyleClass().add("filter-combo");
 
-        HBox filterMenu = new HBox(10, size, colour, price);
-        filterMenu.setId("filter-bar");
-        filterMenu.setPadding(new Insets(tbPad, 0, tbPad, leftPad));
+        categoryCombo = new ComboBox<>();
+        categoryCombo.setPromptText("All categories");
+        categoryCombo.setPrefWidth(150);
+        categoryCombo.getStyleClass().add("filter-combo");
 
-        return filterMenu;
+        priceCombo = new ComboBox<>();
+        priceCombo.setPromptText("All prices");
+        priceCombo.setPrefWidth(150);
+        priceCombo.getStyleClass().add("filter-combo");
+
+        FontIcon sortIcon = new FontIcon("fas-sort");
+        sortIcon.setIconSize(16);
+        sortIcon.setIconColor(Color.web("EE5702"));
+        sortCombo = new ComboBox<>();
+        sortCombo.setPromptText("Sort by");
+        sortCombo.setPrefWidth(60);
+        sortCombo.setMaxWidth(175);
+        sortCombo.getStyleClass().add("sort-combo");
+        sortCombo.setButtonCell(new ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Sort by");  // Default text when nothing selected
+                } else {
+                    setText("Sort by: " + item);  // Prefix + selected value
+                }
+                setAlignment(Pos.CENTER_LEFT);
+            }
+        });
+
+        sortCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.isEmpty()) {
+                // Calculate needed width for the full text
+                String fullText = "Sort by: " + newVal;
+                javafx.scene.text.Text textHelper = new javafx.scene.text.Text(fullText);
+                textHelper.setFont(sortCombo.getButtonCell().getFont());
+                double textWidth = textHelper.getLayoutBounds().getWidth();
+
+                // Add padding for the arrow button and some margins
+                double neededWidth = Math.min(textWidth + 40, 250);
+
+                // Animate or just set the new width
+                sortCombo.setPrefWidth(neededWidth);
+            }
+        });
+
+        sortBox = new HBox(sortIcon, sortCombo);
+        sortBox.setAlignment(Pos.CENTER_LEFT);
+
+        HBox filterBox = new HBox(10, sizeCombo, categoryCombo, priceCombo);
+        filterBox.getStyleClass().add("filter-box");
+
+        BorderPane filterBar = new BorderPane();
+        filterBar.setLeft(filterBox);
+        filterBar.setRight(sortBox);
+
+        filterBar.setPadding(new Insets(tbPad, sidePad, tbPad, sidePad));
+        return filterBar;
     }
 
     public ScrollPane buildProductGrid() {
@@ -159,8 +263,6 @@ public class UserDashboard extends BasePage {
     }
 
     public Scene initialize() {
-        // Load all data once during initialization
-        loadAllDataOnce();
 
         body = new StackPane();
 
@@ -171,7 +273,9 @@ public class UserDashboard extends BasePage {
         overlay.widthProperty().bind(body.widthProperty());
         overlay.heightProperty().bind(body.heightProperty());
 
-        body.getChildren().addAll(buildProductGrid(), overlay);
+        loadingPane = createLoadingPane();
+
+        body.getChildren().addAll(buildProductGrid(), overlay, loadingPane);
 
         BorderPane root = new BorderPane();
         root.setTop(buildHeader());
@@ -183,6 +287,9 @@ public class UserDashboard extends BasePage {
                         getClass().getResource("/css/home-page.css")
                 ).toExternalForm()
         );
+
+        // Load all data once during initialization
+        loadAllDataOnce();
 
         return scene;
     }
@@ -197,26 +304,341 @@ public class UserDashboard extends BasePage {
     }
 
     private void loadAllDataOnce() {
-        // Load all products
-        allProducts = productDAO.getAllProducts();
+        loadingPane.setVisible(true);
 
-        // Preload all sizes for all products at once
         Task<Void> preloadTask = new Task<>() {
             @Override
             protected Void call() {
+                updateMessage("Fetching products...");
+                allProducts = productDAO.getAllProducts();
+
+                updateMessage("Loading product sizes...");
                 for (Product product : allProducts) {
                     getCachedProductSizes(product.getProductId());
                 }
+
+                updateMessage("Loading product images...");
+                preloadAllImages();
+
+                updateMessage("Preparing UI...");
                 return null;
             }
         };
 
+        // Bind label to task message
+        loadingLabel.textProperty().bind(preloadTask.messageProperty());
+
         preloadTask.setOnSucceeded(e -> {
-            // After sizes are loaded, display products
-            displayProducts(allProducts);
+            for (Product product : allProducts) {
+                getCachedProductSizes(product.getProductId()); // Already doing this
+            }
+
+            loadAllProducts();
+            setupSizeMenu();
+            setupCategoryMenu();
+            setupPriceMenu();
+            setupSortingMenu();
+            loadingPane.setVisible(false);
         });
 
         new Thread(preloadTask).start();
+    }
+
+    private void preloadAllImages() {
+        for (Product product : allProducts) {
+            String imagePath = product.getImagePath();
+            if (imagePath != null && !imagePath.isEmpty() && !imageCache.containsKey(imagePath)) {
+                List<Image> images = loadImagesFromPath(imagePath);
+                if (!images.isEmpty()) {
+                    imageCache.put(imagePath, images);
+                }
+            }
+        }
+    }
+
+    private void setupSizeMenu() {
+        List<String> sizeList = productDAO.getDistinctSizes();
+        sizeCombo.getItems().clear();
+        sizeCombo.getItems().add("All sizes");
+        sizeCombo.getItems().addAll(sizeList);
+        sizeCombo.getSelectionModel().clearSelection();
+        sizeCombo.setValue(null);  // show prompt
+        sizeCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.toLowerCase().contains("all")) {
+                sizeSelected = null;
+                sizeCombo.getStyleClass().remove("selected");
+            } else {
+                sizeSelected = newVal;
+                sizeCombo.getStyleClass().add("selected");
+            }
+            applyFilters();
+        });
+    }
+
+    private void setupCategoryMenu() {
+        Set<String> uniqueCategories = new HashSet<>();
+        for (Product product : allProducts) {
+            uniqueCategories.add(toTitleCase(product.getCategory()));  // Convert to title case
+        }
+
+        categoryCombo.getItems().clear();
+        categoryCombo.getItems().add("All categories");
+        categoryCombo.getItems().addAll(uniqueCategories);
+        categoryCombo.getSelectionModel().clearSelection();
+        categoryCombo.setValue(null);
+
+        categoryCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && newVal.toLowerCase().contains("all")) {
+                categorySelected = null;
+                categoryCombo.getStyleClass().remove("selected");
+            } else {
+                categorySelected = newVal.toUpperCase();
+                categoryCombo.getStyleClass().add("selected");
+            }
+            applyFilters();
+        });
+    }
+
+    private void setupPriceMenu() {
+        List<String> priceRanges = Arrays.asList("Below RM30", "RM30 - RM40", "Above RM40");
+        priceCombo.getItems().clear();
+        priceCombo.getItems().add("All prices");
+        priceCombo.getItems().addAll(priceRanges);
+        priceCombo.getSelectionModel().clearSelection();
+        priceCombo.setValue(null);
+        priceCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if(newVal.toLowerCase().contains("all")) {
+                priceSelected = null;
+                priceCombo.getStyleClass().remove("selected");
+            } else {
+                priceSelected = newVal;
+                priceCombo.getStyleClass().add("selected");
+            }
+            applyFilters();
+        });
+    }
+
+    private void setupSortingMenu() {
+        List<String> sortingList = new ArrayList<>();
+
+        sortingList.add("Name (A - Z)");
+        sortingList.add("Name (Z - A)");
+        sortingList.add("Price (Low - High)");
+        sortingList.add("Price (High - Low)");
+
+        sortCombo.getItems().addAll(sortingList);
+
+        sortComboListener = (obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.isEmpty()) {
+                isSorted = true;
+
+                boolean hasResetButton = sortBox.getChildren().stream()
+                        .anyMatch(node -> node.getStyleClass().contains("reset-button"));
+
+                if (!hasResetButton) {
+                    sortBox.getChildren().add(createResetButton());
+                }
+
+                sortingSelected = newVal;
+                sortCombo.getStyleClass().add("selected");
+                applyFilters();
+            }
+        };
+
+        sortCombo.valueProperty().addListener(sortComboListener);
+    }
+
+    private void applyFilters() {
+        List<Product> filtered = new ArrayList<>(displayedProducts);
+
+        // Filter size
+        if (sizeSelected != null) {
+            filtered = filtered.stream()
+                    .filter(product -> {
+                        List<ProductSize> sizes = getCachedProductSizes(product.getProductId());
+                        return sizes.stream().anyMatch(ps -> ps.getSize().equals(sizeSelected));
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        // Filter category
+        if (categorySelected != null) {
+            filtered = filtered.stream()
+                    .filter(product -> categorySelected.equals(product.getCategory()))
+                    .collect(Collectors.toList());
+        }
+
+        double min = 0;
+        double max = 0;
+
+        // Filter price
+        if (priceSelected != null) {
+            switch (priceSelected) {
+                case "Below RM30":
+                    min = 0;
+                    max = 30;
+                    break;
+
+                case "RM30 - RM40":
+                    min = 30;
+                    max = 40;
+                    break;
+
+                case "Above RM40":
+                    min = 40;
+                    max = Double.MAX_VALUE;
+                    break;
+            }
+
+            final double finalMin = min;
+            final double finalMax = max;
+
+                filtered = filtered.stream()
+                        .filter(product -> {
+                            List<ProductSize> sizes = getCachedProductSizes(product.getProductId());
+                            double lowestPrice = sizes.stream().mapToDouble(ProductSize::getPrice).min().orElse(0);
+                            return lowestPrice >= finalMin && lowestPrice < finalMax;
+                        })
+                        .collect(Collectors.toList());
+        }
+
+        if (sortingSelected != null) {
+
+            switch (sortingSelected) {
+                case "Name (A - Z)":
+                    filtered.sort(Comparator.comparing(Product::getProductName,
+                            String.CASE_INSENSITIVE_ORDER));
+                    break;
+                case "Name (Z - A)":
+                    filtered.sort(Comparator.comparing(Product::getProductName,
+                            String.CASE_INSENSITIVE_ORDER.reversed()));
+                    break;
+                case "Price (Low - High)":
+                    filtered.sort(Comparator.comparingDouble(this::getLowestPrice));
+                    break;
+                case "Price (High - Low)":
+                    filtered.sort(Comparator.comparingDouble(this::getLowestPrice).reversed());
+                    break;
+            }
+        }
+
+        displayProducts(filtered);
+    }
+
+    private Button createResetButton() {
+        FontIcon Xicon = new FontIcon("fas-times");
+        Xicon.setIconSize(16);
+        Button resetButton = new Button("", Xicon);
+        resetButton.getStyleClass().add("reset-button");
+        resetButton.setOnAction(e -> {
+            sortCombo.valueProperty().removeListener(sortComboListener);
+
+            sortCombo.setValue(null);
+            sortCombo.setPromptText("Sort by");
+            sortCombo.setPrefWidth(60);
+            sortCombo.getStyleClass().remove("selected");
+
+            sortingSelected = null;
+            isSorted = false;
+
+            sortBox.getChildren().remove(resetButton);
+
+            applyFilters();
+
+            sortCombo.valueProperty().addListener(sortComboListener);
+        });
+
+        return resetButton;
+    }
+
+    private double getLowestPrice(Product product) {
+        List<ProductSize> sizes = getCachedProductSizes(product.getProductId());
+        return sizes.stream()
+                .mapToDouble(ProductSize::getPrice)
+                .min()
+                .orElse(0);
+    }
+
+    private String toTitleCase(String text) {
+        if (text == null || text.isEmpty()) return text;
+
+        String[] words = text.toLowerCase().split(" ");
+        StringBuilder result = new StringBuilder();
+
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                // Handle hyphenated words (e.g., "round-neck" -> "Round-Neck")
+                if (word.contains("-")) {
+                    String[] parts = word.split("-");
+                    for (int i = 0; i < parts.length; i++) {
+                        if (!parts[i].isEmpty()) {
+                            result.append(Character.toUpperCase(parts[i].charAt(0)))
+                                    .append(parts[i].substring(1));
+                            if (i < parts.length - 1) {
+                                result.append("-");
+                            }
+                        }
+                    }
+                    result.append(" ");
+                }
+                // Handle words with apostrophes (e.g., "women's" -> "Women's")
+                else if (word.contains("'")) {
+                    String[] parts = word.split("'");
+                    result.append(Character.toUpperCase(parts[0].charAt(0)))
+                            .append(parts[0].substring(1))
+                            .append("'");
+                    if (parts.length > 1 && !parts[1].isEmpty()) {
+                        result.append(Character.toUpperCase(parts[1].charAt(0)))
+                                .append(parts[1].substring(1));
+                    }
+                    result.append(" ");
+                }
+                // Normal words
+                else {
+                    result.append(Character.toUpperCase(word.charAt(0)))
+                            .append(word.substring(1))
+                            .append(" ");
+                }
+            }
+        }
+
+        return result.toString().trim();
+    }
+
+    private List<Image> loadImagesFromPath(String imagePath) {
+        List<Image> images = new ArrayList<>();
+
+        try {
+            File folder = new File(imagePath);
+            if (folder.exists() && folder.isDirectory()) {
+                File[] files = folder.listFiles((dir, name) ->
+                        name.toLowerCase().endsWith(".jpg") ||
+                                name.toLowerCase().endsWith(".png") ||
+                                name.toLowerCase().endsWith(".jpeg")
+                );
+
+                if (files != null) {
+                    for (File file : files) {
+                        Image img = new Image(file.toURI().toString(), true);
+                        images.add(img);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading images from path: " + imagePath);
+            e.printStackTrace();
+        }
+
+        if (images.isEmpty()) {
+            // Add placeholder if no images found
+            try {
+                images.add(new Image(getClass().getResourceAsStream("/images/placeholder.png")));
+            } catch (Exception e) {
+                System.err.println("Could not load placeholder image");
+            }
+        }
+
+        return images;
     }
 
     private void displayProducts(List<Product> products) {
@@ -240,12 +662,21 @@ public class UserDashboard extends BasePage {
     private void loadAllProducts() {
         // Use cached products instead of database query
         displayProducts(allProducts);
+        displayedProducts = allProducts;
     }
 
     private void loadProductsByGender(String gender) {
         // Filter from cached products instead of database query
         List<Product> filteredProducts = allProducts.stream()
-                .filter(product -> gender.equals(product.getGender()))
+                .filter(product -> gender.equals(product.getGender()) || "UNISEX".equals(product.getGender()))
+                .collect(Collectors.toList());
+        displayProducts(filteredProducts);
+        displayedProducts = filteredProducts;
+    }
+
+    private void loadProductsByName(String name) {
+        List<Product> filteredProducts = allProducts.stream()
+                .filter(product -> product.getProductName().toLowerCase().contains(name.toLowerCase()))
                 .collect(Collectors.toList());
         displayProducts(filteredProducts);
     }
@@ -333,18 +764,28 @@ public class UserDashboard extends BasePage {
         productImage.setFitWidth(cardWidth - 3);
         productImage.setPreserveRatio(true);
 //        productImage.setSmooth(true);
-        productImage.setImage(new Image(getClass().getResourceAsStream("/images/placeholder.png")));
 
-
+        // Try to get images from cache first
         String imagePath = product.getImagePath();
-        if (imagePath != null && !imagePath.isEmpty()) {
-            loadImageAsync(productImage, imagePath, carousel);
+        if (imagePath != null && !imagePath.isEmpty() && imageCache.containsKey(imagePath)) {
+            List<Image> cachedImages = imageCache.get(imagePath);
+            carousel.setImages(cachedImages);
+            Image firstImage = carousel.getCurrentImage();
+            if (firstImage != null) {
+                productImage.setImage(firstImage);
+            }
+        } else {
+            productImage.setImage(new Image(getClass().getResourceAsStream("/images/placeholder.png")));
+            if (imagePath != null && !imagePath.isEmpty()) {
+                loadImageAsync(productImage, imagePath, carousel);
+            }
         }
 
         Button rightButton = new Button();
         rightButton.setGraphic(new FontIcon("fas-chevron-right"));
         rightButton.getStyleClass().add("right-button");
         rightButton.setVisible(false);
+        rightButton.setMaxHeight(Double.MAX_VALUE);
 
         rightButton.setOnAction(e -> {
             Image nextImage = carousel.next();
@@ -364,6 +805,7 @@ public class UserDashboard extends BasePage {
         leftButton.setGraphic(new FontIcon("fas-chevron-left"));
         leftButton.getStyleClass().add("left-button");
         leftButton.setVisible(false);
+        leftButton.setMaxHeight(Double.MAX_VALUE);
 
         leftButton.setOnAction(e -> {
             Image prevImage = carousel.previous();
@@ -397,13 +839,52 @@ public class UserDashboard extends BasePage {
         return imageContainer;
     }
 
+    public Button createDisabledButton(String text) {
+        Button button = new Button(text);
+
+        Line line1 = new Line();
+        Line line2 = new Line();
+
+        StackPane graphic = new StackPane(line1, line2);
+
+        // Bind to graphic size instead of button
+        line1.endXProperty().bind(graphic.widthProperty());
+        line1.endYProperty().bind(graphic.heightProperty());
+
+        line2.startXProperty().bind(graphic.widthProperty());
+        line2.endYProperty().bind(graphic.heightProperty());
+
+        line1.setStrokeWidth(2);
+        line2.setStrokeWidth(2);
+
+        // Show only when disabled
+        line1.visibleProperty().bind(button.disabledProperty());
+        line2.visibleProperty().bind(button.disabledProperty());
+
+        // Prevent graphic from forcing size
+        graphic.setMouseTransparent(true);
+        graphic.setPickOnBounds(false);
+
+        button.setGraphic(graphic);
+
+        return button;
+    }
+
     private HBox getSizeButtons(List<ProductSize> productSizes) {
         HBox sizeButtons = new HBox(8); // Added spacing
         sizeButtons.setAlignment(Pos.CENTER_LEFT);
 
         if (productSizes != null && !productSizes.isEmpty()) {
             for (ProductSize size : productSizes) {
-                Button button = new Button(size.getSize());
+                Button button = new Button(size.getSize());;
+                if (size.getStockQuantity() <= 0) {
+//                    button.setDisable(true);
+                    isDisabled[0] = true;
+                    button.addEventFilter(ActionEvent.ACTION, e -> e.consume());
+                    button.getStyleClass().add("disabled");
+//                    button.addEventFilter(MouseEvent.MOUSE_CLICKED, e -> e.consume());
+                }
+
                 button.getStyleClass().add("size-button");
 
                 // Store the size data in the button's user data
@@ -468,7 +949,7 @@ public class UserDashboard extends BasePage {
 
         // Close button at top right
         Button closeButton = new Button("✕");
-        closeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #666; -fx-font-size: 20px; -fx-cursor: hand; -fx-font-weight: bold;");
+        closeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #666; -fx-font-size: 20px; -fx-cursor: hand; -fx-font-weight: bold; -fx-padding: 0");
         closeButton.setOnAction(e -> closeExpandedCard());
 
         HBox headerBox = new HBox();
@@ -480,21 +961,33 @@ public class UserDashboard extends BasePage {
         productImage.setFitWidth(230);
         productImage.setPreserveRatio(true);
         productImage.setSmooth(true);
-        productImage.setImage(new Image(getClass().getResourceAsStream("/images/placeholder.png")));
 
+        // Try to get images from cache first
         String imagePath = product.getImagePath();
-        if (imagePath != null && !imagePath.isEmpty()) {
-            loadImageAsync(productImage, imagePath, carousel);
+        if (imagePath != null && !imagePath.isEmpty() && imageCache.containsKey(imagePath)) {
+            List<Image> cachedImages = imageCache.get(imagePath);
+            carousel.setImages(cachedImages);
+            Image firstImage = carousel.getCurrentImage();
+            if (firstImage != null) {
+                productImage.setImage(firstImage);
+            }
+        } else {
+            productImage.setImage(new Image(getClass().getResourceAsStream("/images/placeholder.png")));
+            if (imagePath != null && !imagePath.isEmpty()) {
+                loadImageAsync(productImage, imagePath, carousel);
+            }
         }
 
         // Center the image
         StackPane imageContainer = new StackPane(productImage);
         imageContainer.setAlignment(Pos.CENTER);
 
+//        imageContainer.setStyle("-fx-border-color: black");
+
         // Gender Label
         Label genderLabel = new Label(product.getGender());
         genderLabel.getStyleClass().add("gender");
-        genderLabel.setStyle("-fx-background-color: #f0f0f0; -fx-padding: 5 10; -fx-background-radius: 5; -fx-font-size: 12px;");
+        genderLabel.setStyle("");
 
         // Product Name
         Label nameLabel = new Label(product.getProductName());
@@ -502,7 +995,7 @@ public class UserDashboard extends BasePage {
         nameLabel.setWrapText(true);
 
         // Category
-        Label categoryLabel = new Label(product.getCategory() + " - " + product.getSubCategory());
+        Label categoryLabel = new Label(product.getCategory());
         categoryLabel.setStyle("-fx-text-fill: #666; -fx-font-size: 12px;");
 
         // Description
@@ -614,21 +1107,19 @@ public class UserDashboard extends BasePage {
                 priceLabel,
                 sizeLabel,
                 sizeStockPane,
-//                sizeButtonBox != null ? sizeButtonBox : new Label("No sizes available"),
-//                stockLabel,
                 buttonBox
         );
-        VBox.setMargin(genderLabel, new Insets(5, 0, 0, 0));
+        VBox.setMargin(genderLabel, new Insets(10, 0, 0, 0));
         VBox.setMargin(buttonBox, new Insets(10, 0, 0, 0));
+
+//        headerBox.setStyle("-fx-border-color: red; -fx-padding: 0");
 
         VBox mainLayout = new VBox();
         mainLayout.getChildren().addAll(headerBox, imageContainer, contentBox);
         mainLayout.setAlignment(Pos.TOP_CENTER);
+        VBox.setMargin(headerBox, new Insets(0, 10, 10, 0));
 
         card.getChildren().add(mainLayout);
-
-        // Make card draggable
-        makeDraggable(card);
 
         return card;
     }
@@ -674,31 +1165,31 @@ public class UserDashboard extends BasePage {
         }
     }
 
-    private void makeDraggable(VBox card) {
-        final double[] dragDelta = new double[2];
-
-        card.setOnMousePressed(event -> {
-            dragDelta[0] = card.getLayoutX() - event.getSceneX();
-            dragDelta[1] = card.getLayoutY() - event.getSceneY();
-            card.setCursor(Cursor.MOVE);
-        });
-
-        card.setOnMouseDragged(event -> {
-            double newX = event.getSceneX() + dragDelta[0];
-            double newY = event.getSceneY() + dragDelta[1];
-
-            // Keep within bounds
-            newX = Math.max(0, Math.min(newX, body.getWidth() - card.getWidth()));
-            newY = Math.max(0, Math.min(newY, body.getHeight() - card.getHeight()));
-
-            card.setLayoutX(newX);
-            card.setLayoutY(newY);
-        });
-
-        card.setOnMouseReleased(event -> {
-            card.setCursor(Cursor.HAND);
-        });
-    }
+//    private void makeDraggable(VBox card) {
+//        final double[] dragDelta = new double[2];
+//
+//        card.setOnMousePressed(event -> {
+//            dragDelta[0] = card.getLayoutX() - event.getSceneX();
+//            dragDelta[1] = card.getLayoutY() - event.getSceneY();
+//            card.setCursor(Cursor.MOVE);
+//        });
+//
+//        card.setOnMouseDragged(event -> {
+//            double newX = event.getSceneX() + dragDelta[0];
+//            double newY = event.getSceneY() + dragDelta[1];
+//
+//            // Keep within bounds
+//            newX = Math.max(0, Math.min(newX, body.getWidth() - card.getWidth()));
+//            newY = Math.max(0, Math.min(newY, body.getHeight() - card.getHeight()));
+//
+//            card.setLayoutX(newX);
+//            card.setLayoutY(newY);
+//        });
+//
+//        card.setOnMouseReleased(event -> {
+//            card.setCursor(Cursor.HAND);
+//        });
+//    }
 
     private void showToast(String message) {
         Label toast = new Label(message);
@@ -739,7 +1230,7 @@ public class UserDashboard extends BasePage {
         Label descriptionLabel = new Label("Description: " + (product.getDescription() != null ? product.getDescription() : "No description available"));
         descriptionLabel.setWrapText(true);
 
-        Label categoryLabel = new Label("Category: " + product.getCategory() + " - " + product.getSubCategory());
+        Label categoryLabel = new Label("Category: " + product.getCategory());
 
         // Size and price table - use cached sizes
         List<ProductSize> sizes = getCachedProductSizes(product.getProductId());
@@ -799,19 +1290,9 @@ public class UserDashboard extends BasePage {
                         );
 
                         for (File file : files) {
-                                Image img = new Image(file.toURI().toString(), true);
-                                images.add(img);
+                            Image img = new Image(file.toURI().toString(), true);
+                            images.add(img);
                         }
-
-//                        if (files != null && files.length > 0) {
-//
-//                            Arrays.sort(files, Comparator.comparing(File::getName));
-//
-//                            for (File file : files) {
-//                                Image img = new Image(file.toURI().toString(), true);
-//                                images.add(img);
-//                            }
-//                        }
                     }
                 }
 
@@ -854,6 +1335,26 @@ public class UserDashboard extends BasePage {
         if (allProducts != null) {
             allProducts.clear();
         }
+    }
+
+    private StackPane createLoadingPane() {
+        StackPane pane = new StackPane();
+        pane.setStyle("-fx-background-color: rgba(0,0,0,0.6);");
+
+        VBox box = new VBox(10);
+        box.setAlignment(Pos.CENTER);
+
+        ProgressIndicator spinner = new ProgressIndicator();
+
+        loadingLabel = new Label("Loading...");
+        loadingLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+
+        box.getChildren().addAll(spinner, loadingLabel);
+        pane.getChildren().add(box);
+
+        pane.setVisible(false);
+
+        return pane;
     }
 }
 

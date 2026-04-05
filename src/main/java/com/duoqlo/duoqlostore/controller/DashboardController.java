@@ -1,19 +1,10 @@
 package com.duoqlo.duoqlostore.controller;
 
 import com.duoqlo.duoqlostore.model.User;
-import com.duoqlo.duoqlostore.view.AdminDashboard;
 import com.duoqlo.duoqlostore.view.CartPage;
 import com.duoqlo.duoqlostore.view.UserDashboard;
 import javafx.event.ActionEvent;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-
-import javax.swing.*;
-import java.util.Objects;
 
 public class DashboardController {
     private User user;
@@ -43,11 +34,11 @@ public class DashboardController {
         }
     }
 
-    public void openCartPage(ActionEvent e){
+    public void openCartPage(){
         CartController cartController = new CartController();
+        CartPage cartPage = new CartPage();
 
         cartController.setUser(this.user);
-        cartController.initCartPage(e);
-
+        Navigator.goTo(cartPage.initialize());
     }
 }

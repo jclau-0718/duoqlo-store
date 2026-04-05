@@ -35,7 +35,6 @@ public class AdminProductUploader extends Application {
     private TextArea descArea;
     private ComboBox<String> genderCombo;
     private ComboBox<String> categoryCombo;
-    private ComboBox<String> subCategoryCombo;
     private List<File> selectedImageFiles;
     private HBox imageBox = new HBox(10);
 
@@ -44,7 +43,6 @@ public class AdminProductUploader extends Application {
     private ObservableList<SizeRow> sizeRows = FXCollections.observableArrayList();
 
     // Centralized data storage
-    private Map<String, String> currentSubCategoriesMap = new LinkedHashMap<>();
     private Map<String, String> genderIdMap = new HashMap<>();
     private Map<String, String> categoryIdMap = new HashMap<>();
 
@@ -53,8 +51,6 @@ public class AdminProductUploader extends Application {
     private String currentGenderId = null;
     private String currentCategory = null;
     private String currentCategoryId = null;
-    private String currentSubCategory = null;
-    private String currentSubCategoryId = null;
 
     // Navigation
     private BorderPane mainLayout;
@@ -173,23 +169,15 @@ public class AdminProductUploader extends Application {
         grid.add(categoryLabel, 0, 3);
         grid.add(categoryCombo, 1, 3);
 
-        // Row 4: Sub-Category
-        Label subCategoryLabel = new Label("Sub-Category:*");
-        subCategoryCombo = new ComboBox<>();
-        subCategoryCombo.setPrefWidth(400);
-        subCategoryCombo.setDisable(true);
-        grid.add(subCategoryLabel, 0, 4);
-        grid.add(subCategoryCombo, 1, 4);
-
-        // Row 5: Description
+        // Row 4: Description
         Label descLabel = new Label("Description:");
         descArea = new TextArea();
         descArea.setPrefRowCount(4);
         descArea.setPrefWidth(400);
-        grid.add(descLabel, 0, 5);
-        grid.add(descArea, 1, 5);
+        grid.add(descLabel, 0, 4);
+        grid.add(descArea, 1, 4);
 
-        // Row 6: Product Images
+        // Row 5 Product Images
         Label imagesLabel = new Label("Product Images:*");
         Button browseButton = new Button("Browse Images");
         browseButton.setStyle("-fx-background-color: #EE5702; -fx-text-fill: white;");
@@ -197,63 +185,63 @@ public class AdminProductUploader extends Application {
         VBox imageSection = new VBox(10);
         imageSection.getChildren().addAll(browseButton, imageBox);
 
-        grid.add(imagesLabel, 0, 6);
-        grid.add(imageSection, 1, 6);
+        grid.add(imagesLabel, 0, 5);
+        grid.add(imageSection, 1, 5);
 
         // Setup category cascade
         setupCategoryCascade();
 
         // Browse button action
         browseButton.setOnAction(e -> {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("Select Product Images");
-                fileChooser.getExtensionFilters().add(
-                        new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp")
-                );
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select Product Images");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp")
+            );
 
-                //Load last used directory
-                String lastPath = configProps.getProperty(LAST_IMAGE_PATH_KEY, System.getProperty("user.home"));
-                File lastDirectory = new File(lastPath);
-                if (lastDirectory.exists() && lastDirectory.isDirectory()) {
-                    fileChooser.setInitialDirectory(lastDirectory);
+            //Load last used directory
+            String lastPath = configProps.getProperty(LAST_IMAGE_PATH_KEY, System.getProperty("user.home"));
+            File lastDirectory = new File(lastPath);
+            if (lastDirectory.exists() && lastDirectory.isDirectory()) {
+                fileChooser.setInitialDirectory(lastDirectory);
+            }
+
+            selectedImageFiles = fileChooser.showOpenMultipleDialog(primaryStage);
+
+            // Save the parent directory (one level up)
+            if (selectedImageFiles != null && !selectedImageFiles.isEmpty()) {
+                File firstFile = selectedImageFiles.get(0);
+                File imageFolder = firstFile.getParentFile();
+                File parentFolder = imageFolder != null ? imageFolder.getParentFile() : null;
+
+                if (parentFolder != null && parentFolder.exists()) {
+                    configProps.setProperty(LAST_IMAGE_PATH_KEY, parentFolder.getAbsolutePath());
+                    saveConfig();
+                    System.out.println("Saved path: " + parentFolder.getAbsolutePath());
+                } else if (imageFolder != null && imageFolder.exists()) {
+                    // Fallback to image folder if parent doesn't exist
+                    configProps.setProperty(LAST_IMAGE_PATH_KEY, imageFolder.getAbsolutePath());
+                    saveConfig();
                 }
+            }
 
-                selectedImageFiles = fileChooser.showOpenMultipleDialog(primaryStage);
-
-                // Save the parent directory (one level up)
-                if (selectedImageFiles != null && !selectedImageFiles.isEmpty()) {
-                    File firstFile = selectedImageFiles.get(0);
-                    File imageFolder = firstFile.getParentFile();
-                    File parentFolder = imageFolder != null ? imageFolder.getParentFile() : null;
-
-                    if (parentFolder != null && parentFolder.exists()) {
-                        configProps.setProperty(LAST_IMAGE_PATH_KEY, parentFolder.getAbsolutePath());
-                        saveConfig();
-                        System.out.println("Saved path: " + parentFolder.getAbsolutePath());
-                    } else if (imageFolder != null && imageFolder.exists()) {
-                        // Fallback to image folder if parent doesn't exist
-                        configProps.setProperty(LAST_IMAGE_PATH_KEY, imageFolder.getAbsolutePath());
-                        saveConfig();
+            imageBox.getChildren().clear();
+            if (selectedImageFiles != null && !selectedImageFiles.isEmpty()) {
+                for (File file : selectedImageFiles) {
+                    try {
+                        Image img = new Image(file.toURI().toString(), 100, 100, true, true);
+                        ImageView imgView = new ImageView(img);
+                        imgView.setStyle("-fx-border-color: #cccccc; -fx-border-radius: 5px; -fx-padding: 2px;");
+                        imageBox.getChildren().add(imgView);
+                    } catch (Exception ex) {
+                        System.err.println("Error loading image: " + ex.getMessage());
                     }
                 }
 
-                imageBox.getChildren().clear();
-                if (selectedImageFiles != null && !selectedImageFiles.isEmpty()) {
-                    for (File file : selectedImageFiles) {
-                        try {
-                            Image img = new Image(file.toURI().toString(), 100, 100, true, true);
-                            ImageView imgView = new ImageView(img);
-                            imgView.setStyle("-fx-border-color: #cccccc; -fx-border-radius: 5px; -fx-padding: 2px;");
-                            imageBox.getChildren().add(imgView);
-                        } catch (Exception ex) {
-                            System.err.println("Error loading image: " + ex.getMessage());
-                        }
-                    }
-
-                    Label countLabel = new Label(selectedImageFiles.size() + " images selected");
-                    countLabel.setStyle("-fx-text-fill: green; -fx-font-size: 10px;");
-                    imageBox.getChildren().add(countLabel);
-                }
+                Label countLabel = new Label(selectedImageFiles.size() + " images selected");
+                countLabel.setStyle("-fx-text-fill: green; -fx-font-size: 10px;");
+                imageBox.getChildren().add(countLabel);
+            }
         });
 
         // Next Button
@@ -271,7 +259,7 @@ public class AdminProductUploader extends Application {
                 // Get ID from pre-loaded map
                 currentGenderId = genderIdMap.get(currentGender);
 
-                // Filter categories by gender (you need a method to get categories by gender)
+                // Filter categories by gender
                 List<String> categoriesForGender = productDao.getCategoryNameWithGender(currentGender);
 
                 if (categoriesForGender != null && !categoriesForGender.isEmpty()) {
@@ -283,14 +271,8 @@ public class AdminProductUploader extends Application {
                     categoryCombo.setDisable(true);
                     showAlert(Alert.AlertType.WARNING, "No categories available for " + currentGender);
                 }
-
-                subCategoryCombo.setDisable(true);
-                subCategoryCombo.getItems().clear();
-                currentSubCategory = null;
-                currentSubCategoryId = null;
             } else {
                 categoryCombo.setDisable(true);
-                subCategoryCombo.setDisable(true);
             }
             updateAutoSku();
         });
@@ -300,30 +282,6 @@ public class AdminProductUploader extends Application {
             if (currentCategory != null) {
                 // Get ID from pre-loaded map
                 currentCategoryId = categoryIdMap.get(currentCategory);
-
-                // Load subcategories from database
-                Map<String, String> subCategoriesMap = productDao.getSubCategoriesWithNames(currentCategory);
-
-                if (subCategoriesMap != null && !subCategoriesMap.isEmpty()) {
-                    currentSubCategoriesMap = subCategoriesMap;
-                    subCategoryCombo.setItems(FXCollections.observableArrayList(subCategoriesMap.keySet()));
-                    subCategoryCombo.setDisable(false);
-                    subCategoryCombo.getSelectionModel().clearSelection();
-                } else {
-                    subCategoryCombo.getItems().clear();
-                    subCategoryCombo.setDisable(true);
-                    showAlert(Alert.AlertType.WARNING, "No sub-categories found for " + currentCategory);
-                }
-            } else {
-                subCategoryCombo.setDisable(true);
-            }
-            updateAutoSku();
-        });
-
-        subCategoryCombo.setOnAction(e -> {
-            currentSubCategory = subCategoryCombo.getValue();
-            if (currentSubCategory != null && currentSubCategoriesMap != null) {
-                currentSubCategoryId = currentSubCategoriesMap.get(currentSubCategory);
             }
             updateAutoSku();
         });
@@ -349,13 +307,13 @@ public class AdminProductUploader extends Application {
     }
 
     private void updateAutoSku() {
-        if (currentGenderId != null && currentCategoryId != null && currentSubCategoryId != null) {
+        if (currentGenderId != null && currentCategoryId != null) {
             int nextId = getNextProductId();
-            String sku = currentGenderId + "-" + currentCategoryId + "-" + currentSubCategoryId + "-" + nextId;
+            String sku = currentGenderId + "-" + currentCategoryId + "-" + nextId;
             autoSkuLabel.setText(sku);
             autoSkuLabel.setStyle("-fx-text-fill: #EE5702; -fx-font-weight: bold; -fx-font-size: 12px;");
         } else {
-            autoSkuLabel.setText("Select gender, category, and sub-category to generate SKU");
+            autoSkuLabel.setText("Select gender and category to generate SKU");
             autoSkuLabel.setStyle("-fx-text-fill: #999999; -fx-font-style: italic;");
         }
     }
@@ -372,10 +330,6 @@ public class AdminProductUploader extends Application {
         }
         if (currentCategory == null) {
             showAlert(Alert.AlertType.ERROR, "Please select category.");
-            return;
-        }
-        if (currentSubCategory == null) {
-            showAlert(Alert.AlertType.ERROR, "Please select sub-category.");
             return;
         }
         if (selectedImageFiles == null || selectedImageFiles.isEmpty()) {
@@ -527,7 +481,7 @@ public class AdminProductUploader extends Application {
         // Validate size rows
         List<SizeRow> validRows = new ArrayList<>();
         for (SizeRow row : sizeRows) {
-            String size = row.getSizeField().getText().trim();
+            String size = row.getSizeField().getText().trim().toUpperCase();
             String stock = row.getStockField().getText().trim();
             String price = row.getPriceField().getText().trim();
 
@@ -555,16 +509,16 @@ public class AdminProductUploader extends Application {
 
         try {
             // Get form values using the stored current selections
-            String name = nameField.getText().trim();
+            String name = toTitleCase(nameField.getText().trim());
             String productSKU = autoSkuLabel.getText();
             String description = descArea.getText().trim();
 
             // Build product folder path using stored values
-            Path productPath = buildProductPath(currentSubCategory, name, productSKU);
+            Path productPath = buildProductPath(currentCategory, name, productSKU);
             String imagePath = productPath.toString();
 
             // Save to database
-            int productId = saveProductToDatabase(productSKU, name, currentSubCategoryId, currentGenderId, imagePath, description);
+            int productId = saveProductToDatabase(productSKU, name, currentCategoryId, currentGenderId, imagePath, description);
 
             if (productId > 0) {
                 // Save size variants
@@ -597,12 +551,11 @@ public class AdminProductUploader extends Application {
             message.append("Name: ").append(name).append("\n");
             message.append("SKU: ").append(productSKU).append("\n");
             message.append("Gender: ").append(currentGender).append("\n");
-            message.append("Category: ").append(currentCategory).append("\n");
-            message.append("Sub-Category: ").append(currentSubCategory).append("\n\n");
+            message.append("Category: ").append(currentCategory).append("\n\n");
             message.append("Sizes:\n");
 
             for (SizeRow row : validRows) {
-                String size = row.getSizeField().getText().trim();
+                String size = row.getSizeField().getText().trim().toUpperCase();
                 String stock = row.getStockField().getText().trim();
                 String price = row.getPriceField().getText().trim();
                 message.append("  - ").append(size).append(" | Stock: ").append(stock).append(" | RM ").append(price).append("\n");
@@ -625,9 +578,9 @@ public class AdminProductUploader extends Application {
         }
     }
 
-    private int saveProductToDatabase(String sku, String name, String subCategoryId, String genderId,
+    private int saveProductToDatabase(String sku, String name, String categoryId, String genderId,
                                       String imagePath, String description) throws SQLException {
-        String query = "INSERT INTO product (product_sku, product_name, subcategory_id, gender_id, image_path, description) " +
+        String query = "INSERT INTO product (product_sku, product_name, category_id, gender_id, image_path, description) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
@@ -635,7 +588,7 @@ public class AdminProductUploader extends Application {
 
             pstmt.setString(1, sku);
             pstmt.setString(2, name);
-            pstmt.setString(3, subCategoryId);
+            pstmt.setString(3, categoryId);
             pstmt.setString(4, genderId);
             pstmt.setString(5, imagePath);
             pstmt.setString(6, description);
@@ -670,12 +623,12 @@ public class AdminProductUploader extends Application {
         }
     }
 
-    private Path buildProductPath(String subCategory, String productName, String sku) {
+    private Path buildProductPath(String category, String productName, String sku) {
         String sanitizedName = productName.replaceAll("[^a-zA-Z0-9\\s]", "_").replaceAll("\\s+", "_");
         String productFolder = sku + "_" + sanitizedName;
         String projectPath = System.getProperty("user.dir");
 
-        return Paths.get(projectPath, "products", currentGender, currentCategory, subCategory, productFolder);
+        return Paths.get(projectPath, "products", currentGender, category, productFolder);
     }
 
     private String getFileExtension(String filename) {
@@ -692,8 +645,6 @@ public class AdminProductUploader extends Application {
         genderCombo.getSelectionModel().clearSelection();
         categoryCombo.getItems().clear();
         categoryCombo.setDisable(true);
-        subCategoryCombo.getItems().clear();
-        subCategoryCombo.setDisable(true);
         imageBox.getChildren().clear();
         selectedImageFiles = null;
 
@@ -702,9 +653,6 @@ public class AdminProductUploader extends Application {
         currentGenderId = null;
         currentCategory = null;
         currentCategoryId = null;
-        currentSubCategory = null;
-        currentSubCategoryId = null;
-        currentSubCategoriesMap.clear();
 
         autoSkuLabel.setText("Will be auto-generated after selections");
 
@@ -742,6 +690,23 @@ public class AdminProductUploader extends Application {
         alert.setTitle(type == Alert.AlertType.ERROR ? "Error" : "Success");
         alert.setHeaderText(null);
         alert.showAndWait();
+    }
+
+    private String toTitleCase(String text) {
+        if (text == null || text.isEmpty()) return text;
+
+        String[] words = text.toLowerCase().split(" ");
+        StringBuilder result = new StringBuilder();
+
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                result.append(Character.toUpperCase(word.charAt(0)))
+                        .append(word.substring(1))
+                        .append(" ");
+            }
+        }
+
+        return result.toString().trim();
     }
 
     // Inner class to hold size row data

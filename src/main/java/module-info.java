@@ -4,6 +4,7 @@ module com.duoqlo.duoqlostore {
     requires javafx.web;
     requires java.sql;
     requires java.prefs;
+    requires jbcrypt;
 
     requires org.controlsfx.controls;
     requires com.dlsc.formsfx;
@@ -14,6 +15,8 @@ module com.duoqlo.duoqlostore {
     requires java.desktop;
     requires java.xml.crypto;
 
+    exports com.duoqlo.duoqlostore;
+    opens com.duoqlo.duoqlostore to javafx.fxml;
     exports com.duoqlo.duoqlostore.view;
     opens com.duoqlo.duoqlostore.view to javafx.fxml;
     exports com.duoqlo.duoqlostore.controller;

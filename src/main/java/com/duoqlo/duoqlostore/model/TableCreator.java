@@ -30,7 +30,8 @@ public class TableCreator {
         final String genderSQL = """
                 CREATE TABLE IF NOT EXISTS gender (
                     gender_id TEXT PRIMARY KEY,
-                    gender TEXT NOT NULL
+                    gender TEXT NOT NULL,
+                    display_order INTEGER NOT NULL
                 );
                 """;
 
@@ -43,28 +44,18 @@ public class TableCreator {
                 );
                 """;
 
-        final String subCategorySQL = """
-                CREATE TABLE IF NOT EXISTS subcategory (
-                    subcategory_id TEXT PRIMARY KEY,
-                    subcategory_name TEXT NOT NULL,
-                    category_id TEXT NOT NULL,
-                    display_order INTEGER NOT NULL,
-                    FOREIGN KEY (category_id) REFERENCES category(category_id) ON DELETE CASCADE
-                );
-                """;
-
         //PRODUCT Table
         final String productSQL = """
                 CREATE TABLE IF NOT EXISTS product (
                       product_id INTEGER PRIMARY KEY AUTOINCREMENT,
                       product_sku TEXT UNIQUE NOT NULL,
                       product_name TEXT NOT NULL,
-                      subcategory_id TEXT NOT NULL,
+                      category_id TEXT NOT NULL,
                       gender_id TEXT NOT NULL,
                       image_path TEXT NOT NULL,
                       description TEXT NOT NULL,
                       added_at TIMESTAMP DEFAULT (datetime('now', 'localtime')),
-                      FOREIGN KEY (subcategory_id) REFERENCES subcategory(subcategory_id) ON DELETE CASCADE,
+                      FOREIGN KEY (category_id) REFERENCES category(category_id) ON DELETE CASCADE,
                       FOREIGN KEY (gender_id) REFERENCES gender(gender_id) ON DELETE CASCADE
                   );
                 """;
@@ -113,7 +104,7 @@ public class TableCreator {
                 CREATE TABLE IF NOT EXISTS orderitem (
                 orderitem_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 order_id INTEGER NOT NULL,
-                product_size_id INTEGER NOT NULL,
+                productsize_id INTEGER NOT NULL,
                 quantity INTEGER NOT NULL,
                 price INTEGER NOT NULL,
                 FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
@@ -121,42 +112,15 @@ public class TableCreator {
                 );
                 """;
 
-        final String insertCatSQL = """
-                INSERT OR IGNORE INTO category (category_id, category_name, gender_id) VALUES
-                ('ST', 'SHIRTS', 'U'),
-                ('PT', 'PANTS', 'U'),
-                ('SK', 'SOCKS', 'U'),
-                ('DS', 'DRESSES', 'W');
-                """;
-
-        final String insertSubCatSQL = """
-                INSERT OR IGNORE INTO subcategory (subcategory_id, subcategory_name, category_id, display_order) VALUES
-                ('RN', 'ROUND-NECK SHIRT', 'ST', 1),
-                ('PT', 'POLO T-SHIRT', 'ST', 2),
-                ('BD', 'BUTTON-DOWN SHIRT', 'ST', 3),
-                ('HD', 'HOODIE', 'ST', 4),
-                ('SH', 'SHORTS', 'PT', 5),
-                ('TR', 'TROUSERS', 'PT', 6),
-                ('WL', 'WOOL SOCKS', 'SK', 7),
-                ('CT', 'COTTON SOCKS', 'SK', 8),
-                ('BF', 'BAMBOO FIBRE SOCKS', 'SK', 9),
-                ('NY', 'NYLON SOCKS', 'SK', 10),
-                ('PE', 'POLYESTER SOCKS', 'SK', 11),
-                ('MS', 'MIDI SKIRT', 'DS', 12);
-                """;
-
         String[] SQLStatements = {
                 usersSQL,
                 genderSQL,
                 categorySQL,
-                subCategorySQL,
                 productSQL,
                 productSizeSQL,
                 cartSQL,
                 ordersSQL,
                 orderitemSQL,
-                insertCatSQL,
-                insertSubCatSQL
         };
 
         try (Connection conn = ConnectDB.connect();

@@ -112,7 +112,6 @@ public class LogInPage extends AuthPage {
             if (controller.handleLogIn(e, usernameField.getText(), passwordField.getText())) {
                 return;
             } else {
-                System.out.println("Entered this condition");
                 controller.setTextFieldError(true);
                 controller.setPassFieldError(true);
                 controller.updateUsernameFieldStyle(usernameField, usernameErrorLabel);

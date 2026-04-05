@@ -10,6 +10,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.ArrayList;
 
@@ -38,26 +39,39 @@ public class AuthController {
         return userDAO.checkCredentials(username, password);
     }
 
-    public boolean handleLogIn(ActionEvent e, String username, String password) {
+    public boolean handleLogIn(ActionEvent e, String username, String enteredPassword) {
         try {
-            User loggedInUser = userDAO.getUserByCredentials(username, password);
+            if (userDAO.usernameExists(username)) {
+                String storedPassword = userDAO.getPasswordByUsername(username);
 
-            if (loggedInUser != null) {
-                DashboardController dashboardController = new DashboardController();
+                boolean passwordValid = verifyPassword(enteredPassword, storedPassword);
 
-                dashboardController.setUser(loggedInUser);
+                if(passwordValid) {
+                    User loggedInUser = userDAO.getUserByUsername(username);
 
-                Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
+                    if (loggedInUser != null) {
+                        DashboardController dashboardController = new DashboardController();
 
-                dashboardController.openDashboard(stage);
-                return true;
-            } else {
-                return false;
+                        dashboardController.setUser(loggedInUser);
+
+                        Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
+
+                        dashboardController.openDashboard(stage);
+                        return true;
+                    }
+                }
             }
+
+            return false;
+
         } catch (Exception ex){
             ex.printStackTrace();
             return false;
         }
+    }
+
+    private boolean verifyPassword(String enteredPassword, String storedPassword) {
+        return BCrypt.checkpw(enteredPassword, storedPassword);
     }
 
     public void updateUsernameFieldStyle(TextField textField, Label errorLabel) {
@@ -193,5 +207,9 @@ public class AuthController {
             registered = false;
             return false;
         }
+    }
+
+    public String hashPassword(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 }
