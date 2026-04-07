@@ -1,9 +1,7 @@
 package com.duoqlo.duoqlostore.view;
 
 import com.duoqlo.duoqlostore.controller.DashboardController;
-import com.duoqlo.duoqlostore.model.Cart;
-import com.duoqlo.duoqlostore.model.Product;
-import com.duoqlo.duoqlostore.model.ProductSize;
+import com.duoqlo.duoqlostore.model.*;
 
 import javafx.animation.*;
 import javafx.beans.binding.Bindings;
@@ -19,6 +17,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Screen;
 import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -36,8 +35,8 @@ public class UserDashboard extends BasePage {
     private ScaleTransition modalScaleIn;
     private ScaleTransition modalScaleOut;
 
-    private StackPane loadingPane;
-    private Label loadingLabel;
+    private Label loadingLabel = new Label("");
+    private StackPane loadingPane = createLoadingPane(loadingLabel);
 
     private TilePane productGrid;
     private Label stockLabel;
@@ -78,6 +77,13 @@ public class UserDashboard extends BasePage {
         super();
         this.controller = controller;
     }
+
+    @Override
+    protected User getCurrentUser() {
+        return controller.getUser();
+    }
+
+    public StackPane getBody() { return this.body; };
 
     public StackPane buildHeader() {
         //Category Buttons
@@ -126,7 +132,7 @@ public class UserDashboard extends BasePage {
         //Cart Button
         FontIcon cartIcon = new FontIcon("fas-shopping-cart");
         cartIcon.setIconSize(iconSize);
-        cartIcon.setIconColor(Color.web("#EE5702"));
+        cartIcon.setIconColor(themeColor);
         Button cartButton = new Button("", cartIcon);
         cartButton.setOnAction(e -> controller.openCartPage());
 
@@ -164,7 +170,7 @@ public class UserDashboard extends BasePage {
 
         FontIcon sortIcon = new FontIcon("fas-sort");
         sortIcon.setIconSize(16);
-        sortIcon.setIconColor(Color.web("EE5702"));
+        sortIcon.setIconColor(themeColor);
         sortCombo = new ComboBox<>();
         sortCombo.setPromptText("Sort by");
         sortCombo.setPrefWidth(60);
@@ -419,11 +425,11 @@ public class UserDashboard extends BasePage {
         priceLabel.getStyleClass().add("price");
 
         Button viewButton = new Button("View Details");
-        viewButton.setStyle("-fx-background-color: #EE5702; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 15; -fx-background-radius: 5;");
+        viewButton.setStyle("-fx-background-color: #FE6C01; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 15; -fx-background-radius: 5;");
         viewButton.setOnAction(e -> showProductDetails(product));
 
         Button cartButton = new Button("Add to Cart");
-        cartButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #EE5702; -fx-border-color: #EE5702; -fx-border-radius: 5; -fx-padding: 5 15;");
+        cartButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #FE6C01; -fx-border-color: #FE6C01; -fx-border-radius: 5; -fx-padding: 5 15;");
 
         HBox buttonBox = new HBox(10, viewButton, cartButton);
         buttonBox.setAlignment(Pos.CENTER);
@@ -800,7 +806,7 @@ public class UserDashboard extends BasePage {
             } else {
                 int productSizeId = controller.getSizeId(product.getProductId(), sizeSelected);
                 productQuantity = Integer.parseInt(quantityField.getText());
-                double subTotal = Double.parseDouble(priceLabel.getText());
+                double subTotal = Double.parseDouble(priceLabel.getText().substring(3));
 
                 if (controller.addToCart(productSizeId, productQuantity, subTotal)) {
                     alert.setAlertType(AlertMsg.AlertMsgType.SUCCESS);
@@ -1039,25 +1045,25 @@ public class UserDashboard extends BasePage {
         dialog.showAndWait();
     }
 
-    private StackPane createLoadingPane() {
-        StackPane pane = new StackPane();
-        pane.setStyle("-fx-background-color: rgba(0,0,0,0.6);");
-
-        VBox box = new VBox(10);
-        box.setAlignment(Pos.CENTER);
-
-        ProgressIndicator spinner = new ProgressIndicator();
-
-        loadingLabel = new Label("Loading...");
-        loadingLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
-
-        box.getChildren().addAll(spinner, loadingLabel);
-        pane.getChildren().add(box);
-
-        pane.setVisible(false);
-
-        return pane;
-    }
+//    private StackPane createLoadingPane() {
+//        StackPane pane = new StackPane();
+//        pane.setStyle("-fx-background-color: rgba(0,0,0,0.6);");
+//
+//        VBox box = new VBox(10);
+//        box.setAlignment(Pos.CENTER);
+//
+//        ProgressIndicator spinner = new ProgressIndicator();
+//
+//        loadingLabel = new Label("Loading...");
+//        loadingLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+//
+//        box.getChildren().addAll(spinner, loadingLabel);
+//        pane.getChildren().add(box);
+//
+//        pane.setVisible(false);
+//
+//        return pane;
+//    }
 
     public void cleanup() {
         controller.cleanup();
@@ -1073,7 +1079,7 @@ public class UserDashboard extends BasePage {
         overlay.widthProperty().bind(body.widthProperty());
         overlay.heightProperty().bind(body.heightProperty());
 
-        loadingPane = createLoadingPane();
+        loadingPane = createLoadingPane(loadingLabel);
 
         body.getChildren().addAll(buildProductGrid(), overlay, loadingPane);
 
@@ -1081,7 +1087,10 @@ public class UserDashboard extends BasePage {
         root.setTop(buildHeader());
         root.setCenter(body);
 
-        Scene scene = new Scene(root, windowWidth, windowHeight);
+        Scene scene = new Scene(root,
+                Screen.getPrimary().getVisualBounds().getWidth(),
+                Screen.getPrimary().getVisualBounds().getHeight());
+
         scene.getStylesheets().add(
                 Objects.requireNonNull(
                         getClass().getResource("/css/home-page.css")

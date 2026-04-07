@@ -4,7 +4,7 @@
 }
 
 #signup-title {
-    -fx-text-fill: #EE5702;
+    -fx-text-fill: #FE6C01;
     -fx-font-family: Arial;
     -fx-font-size: 25;
     -fx-font-weight: bold;
@@ -39,7 +39,7 @@
 }
 
 .text-field:focused, .text-field.valid, .text-field.valid:focused, .password-box.focused , .password-box.valid{
-    -fx-border-color: #D4D4D4 #D4D4D4 #EE5702 #D4D4D4;  /* grey grey orange grey */
+    -fx-border-color: #D4D4D4 #D4D4D4 #FE6C01 #D4D4D4;  /* grey grey orange grey */
 }
 
 .text-field.error:focused, .password-box.error.focused {
@@ -83,8 +83,8 @@
 }
 
 #primary-button {
-    -fx-background-color: #EE5702;          /* orange color */
-    -fx-border-color: #EE5702;
+    -fx-background-color: #FE6C01;          /* orange color */
+    -fx-border-color: #FE6C01;
     -fx-text-fill: white;
     -fx-cursor: hand;
 }

@@ -164,7 +164,7 @@ public class LogInPage extends AuthPage {
         StackPane root = new StackPane(borderPane);
 
         if(controller.getRegistered()) {
-            root.getChildren().remove(successBox);
+//            root.getChildren().remove(successBox);
 
             alert.setAlertType(AlertMsg.AlertMsgType.SUCCESS);
             alert.show(root, "Account created!", Pos.TOP_CENTER);

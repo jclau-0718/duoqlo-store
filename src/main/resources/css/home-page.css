@@ -66,7 +66,7 @@
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-font-family: 'Arial';
-    -fx-text-fill: #EE5702; /* Orange colour */
+    -fx-text-fill: #FE6C01; /* Orange colour */
     -fx-font-weight: bold;
     -fx-font-size: 16;
     -fx-cursor: hand;
@@ -74,8 +74,8 @@
 }
 
 #category-menu .button:hover {
-    -fx-text-fill: #EE5702;
-    -fx-border-color: transparent transparent #EE5702 transparent;
+    -fx-text-fill: #FE6C01;
+    -fx-border-color: transparent transparent #FE6C01 transparent;
     -fx-border-width: 0 0 2 0;
 }
 
@@ -96,11 +96,11 @@
 }
 
 .filter-combo.selected { /* Style field after selected */
-    -fx-border-color: #EE5702;
+    -fx-border-color: #FE6C01;
 }
 
 .filter-combo.selected .list-cell { /* Style field text after selected */
-    -fx-text-fill: #EE5702;
+    -fx-text-fill: #FE6C01;
 }
 
 .combo-box .list-cell {
@@ -113,14 +113,14 @@
 
 .combo-box .list-view .list-cell:selected,
 .combo-box.selected .list-view .list-cell:selected{ /* Style field when selected */
-    -fx-background-color: #EE5702;
+    -fx-background-color: #FE6C01;
     -fx-text-fill: white;
 }
 
 .combo-box .list-view .list-cell:hover,
 .combo-box.selected .list-view .list-cell:hover { /* Style options when selected */
     -fx-background-color: #F0EDED;
-    -fx-text-fill: #EE5702;
+    -fx-text-fill: #FE6C01;
 }
 
 .sort-combo {
@@ -157,7 +157,7 @@
 }
 
 .menu-item:focused .label {
-    -fx-text-fill: #EE5702;  /* text color on hover */
+    -fx-text-fill: #FE6C01;  /* text color on hover */
 }
 
 .sorting-menu {
@@ -241,7 +241,7 @@
 }
 
 .label.price {
-    -fx-text-fill: #EE5702;
+    -fx-text-fill: #FE6C01;
     -fx-font-weight: bold;
     -fx-font-size: 16px;
 }
@@ -260,7 +260,7 @@
 .label.expanded-price {
     -fx-font-size: 24px;
     -fx-font-weight: bold;
-    -fx-text-fill: #EE5702;
+    -fx-text-fill: #FE6C01;
 }
 
 .label.select-quantity, .label.select-size {
@@ -389,12 +389,12 @@
 }
 
 .size-button:hover {
-    -fx-border-color: #EE5702;
-    -fx-text-fill: #EE5702;
+    -fx-border-color: #FE6C01;
+    -fx-text-fill: #FE6C01;
 }
 
 .size-button.selected {
-    -fx-background-color: #EE5702;
+    -fx-background-color: #FE6C01;
     -fx-text-fill: white;
     -fx-border-color: #ddd;
 }
@@ -415,17 +415,17 @@
 }
 
 .primary-button {
-    -fx-background-color: #EE5702;          /* orange color */
-    -fx-border-color: #EE5702;
+    -fx-background-color: #FE6C01;          /* orange color */
+    -fx-border-color: #FE6C01;
     -fx-text-fill: white;
     -fx-cursor: hand;
 }
 
 .secondary-button {
     -fx-background-color: transparent;
-    -fx-border-color: #EE5702;
+    -fx-border-color: #FE6C01;
     -fx-cursor: hand;
-    -fx-text-fill: #EE5702;
+    -fx-text-fill: #FE6C01;
 }
 
 .right-button, .left-button {

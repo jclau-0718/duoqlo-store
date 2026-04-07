@@ -22,7 +22,7 @@
 }
 
 #cart-label {
-    -fx-text-fill: #EE5702;
+    -fx-text-fill: #FE6C01;
     -fx-font-family: Arial;
     -fx-font-size: 25;
     -fx-font-weight: bold;
@@ -63,34 +63,147 @@
 
 .item-box {
     -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
 }
 
-.order-summary-box {
-    -fx-background-color: #D9D9D9;
-}
-
-.section-title {
-    -fx-font-weight: bold;
-}
-
-.total-box .label {
+.label.name, .label.unit-price {
+    -fx-text-fill: black;
     -fx-font-size: 15;
     -fx-font-weight: bold;
 }
 
-.primary-button, .secondary-button {
-    -fx-font-family: Arial;
-    -fx-font-size: 14px;
-    -fx-border-radius: 5;
-    -fx-background-radius: 5;
-    -fx-padding: 10 20;
-    /*-fx-font-weight: bold;*/
+.label.category, .label.size, .label.quantity, .label.subtotal {
+    -fx-text-fill: black;
+    -fx-font-size: 13;
 }
 
-.primary-button {
-    -fx-background-color: #EE5702;          /* orange color */
-    -fx-border-color: #EE5702;
+.label.size-value, .label.quantity-value {
+    -fx-text-fill: black;
+    -fx-font-size: 13;
+    -fx-font-weight: bold;
+}
+
+.label.subtotal-value {
+    -fx-text-fill: black;
+    -fx-font-size: 19;
+    -fx-font-weight: bold;
+}
+
+.cart-row {
+    -fx-padding: 10;
+}
+
+.order-summary-box {
+    -fx-background-color: #D9D9D9;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 10;
+}
+
+.section-title {
+    -fx-font-size: 15;
+    -fx-font-weight: bold;
+}
+
+.summary-details-box {
+    -fx-font-size: 13;
+}
+
+.total-box .label {
+    -fx-font-size: 19;
+    -fx-font-weight: bold;
+}
+
+.content-box {
+    -fx-padding: 30;
+}
+
+/*.scroll-pane {*/
+/*    -fx-background: transparent;*/
+/*}*/
+
+.scroll-pane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+/*.scroll-pane .viewport {*/
+/*    -fx-background-color: transparent;*/
+/*}*/
+
+/*!* The main scrollbar area *!*/
+/*.scroll-bar:vertical,*/
+/*.scroll-bar:horizontal {*/
+/*    -fx-background-color: transparent;*/
+/*}*/
+
+/*!* The track (the background path of the scrollbar) *!*/
+/*.scroll-bar .track {*/
+/*    -fx-background-color: #E6E3E3; !* Slightly darker than #F0EDED background *!*/
+/*    -fx-background-radius: 10;     !* Rounded edges *!*/
+/*    -fx-border-color: transparent;*/
+/*}*/
+
+/*!* The thumb (the part you click and drag) *!*/
+/*.scroll-bar .thumb {*/
+/*    -fx-background-color: #8B8B8B; !* Darker grey than background *!*/
+/*    -fx-background-radius: 10;     !* Rounded edges to match your product cards *!*/
+/*}*/
+
+/*!* Thumb hover effect for better UI feedback *!*/
+/*.scroll-bar .thumb:hover {*/
+/*    -fx-background-color: #636363; !* A darker shade of grey when hovered *!*/
+/*}*/
+
+/*!* The buttons at the ends of the scrollbar *!*/
+/*.scroll-bar .increment-button,*/
+/*.scroll-bar .decrement-button {*/
+/*    -fx-background-color: transparent;*/
+/*    -fx-padding: 2;*/
+/*    -fx-cursor: hand;*/
+/*}*/
+
+/*!* Hover effect for the buttons *!*/
+/*.scroll-bar .increment-button:hover,*/
+/*.scroll-bar .decrement-button:hover {*/
+/*    -fx-background-color: #E6E3E3; !* Light grey circle on hover *!*/
+/*    -fx-background-radius: 100;*/
+/*}*/
+
+/*!* The actual arrow shapes inside the buttons *!*/
+/*.scroll-bar .vertical .increment-arrow {*/
+/*    -fx-shape: "M0 128C0 110.3 7.1 93.5 19.8 81l376.4 0c16.9 0 32.3 7.1 45 19.8s19.8 28.1 19.8 45-7.1 33.7-19.8 45l-144 128c-11.9 10.6-27.6 16.7-44.2 16.7s-32.3-6.1-44.2-16.7L19.8 218C7.1 206.7 0 189.9 0 173z"; !* A clean chevron SVG path *!*/
+/*    -fx-background-color: #E6E3E3;*/
+/*    -fx-padding: 2; !* Controls the size of the arrow *!*/
+/*}*/
+
+/*.scroll-bar .vertical .decrement-arrow {*/
+/*    -fx-shape: "M0 128C0 110.3 7.1 93.5 19.8 81L163.8 17C175.7 6.1 191.4 0 208 0s32.3 6.1 44.2 17l144 128c12.7 11.3 19.8 28.1 19.8 45s-7.1 33.7-19.8 45-28.1 19.8-45 19.8L64 256c-16.9 0-32.3-7.1-45-19.8s-19.8-28.1-19.8-45z"; !* A clean chevron SVG path *!*/
+/*    -fx-background-color: #E6E3E3;*/
+/*    -fx-padding: 2;*/
+/*}*/
+
+/*!* Hide horizontal arrows *!*/
+/*.scroll-bar:horizontal .increment-arrow,*/
+/*.scroll-bar:horizontal .decrement-arrow {*/
+/*    -fx-shape: "";*/
+/*    -fx-padding: 0;*/
+/*}*/
+
+.remove-button, .checkout-button {
+    -fx-font-family: Arial;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-border-color: #FE6C01;
+    -fx-border-radius: 5;
+    -fx-background-color: #FE6C01;          /* orange color */
+    -fx-background-radius: 5;
     -fx-text-fill: white;
     -fx-cursor: hand;
+}
+
+.remove-button {
+    -fx-padding: 5 10;
 }
 

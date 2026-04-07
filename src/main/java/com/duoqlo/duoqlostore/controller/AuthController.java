@@ -17,7 +17,6 @@ import java.util.ArrayList;
 
 public class AuthController {
     public UserDAO userDAO = new UserDAO();
-    private AuthService auth = new AuthService();
     public PostcodeService postcodeService = new PostcodeService();
 
     private boolean registered = false;
@@ -99,7 +98,6 @@ public class AuthController {
             }
         }
 
-        System.out.println("Styling(after): "+textField.getStyleClass());
     }
     public void updatePassFieldStyle(HBox passwordBox, TextField passwordField, Label errorLabel){
         boolean focused = passwordField.isFocused();

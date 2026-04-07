@@ -16,15 +16,21 @@ import org.kordamp.ikonli.javafx.FontIcon;
 public class AlertMsg {
     public enum AlertMsgType {
         INFORMATION,
+        CONFIRMATION,
         WARNING,
         ERROR,
         SUCCESS
         }
 
     private AlertMsgType type;
+
     private String text;
     private FontIcon icon;
     private Color color;
+
+    private Runnable onConfirm;
+    private Runnable onCancel;
+
     private VBox popupBox = new VBox();
 
     public AlertMsg() {};
@@ -32,6 +38,14 @@ public class AlertMsg {
     public AlertMsg(AlertMsgType type) {
         this.type = type;
         setupInfo();
+    }
+
+    public void setOnConfirm(Runnable onConfirm) {
+        this.onConfirm = onConfirm;
+    }
+
+    public void setOnCancel(Runnable onCancel) {
+        this.onCancel = onCancel;
     }
 
     private void setupInfo() {
@@ -42,18 +56,23 @@ public class AlertMsg {
                 color = Color.BLUE;
                 break;
 
+            case CONFIRMATION:
+                iconCode = "fas-question-circle";
+                color = Color.BLUE;
+                break;
+
             case WARNING:
                 iconCode = "fas-exclamation-triangle";
                 color = Color.YELLOW;
                 break;
 
             case ERROR:
-                iconCode = "far-times-circle";
+                iconCode = "fas-times-circle";
                 color = Color.RED;
                 break;
 
             case SUCCESS:
-                iconCode = "far-check-circle";
+                iconCode = "fas-check-circle";
                 color = Color.LIMEGREEN;
                 break;
         }
@@ -73,6 +92,8 @@ public class AlertMsg {
         }
 
         popupBox.getChildren().clear();
+
+        icon.setIconSize(30);
 
         String rgb = String.format(
                 "rgb(%d, %d, %d)",
@@ -107,7 +128,7 @@ public class AlertMsg {
         HBox contentBox = new HBox(icon, label);
 //        contentBox.setMinHeight(Double.POSITIVE_INFINITY);
         contentBox.setAlignment(Pos.CENTER);
-        HBox.setMargin(icon, new Insets(0, 7, 0, 0));
+        HBox.setMargin(icon, new Insets(0, 20, 0, 0));
 
         popupBox.getChildren().addAll(closeHBox, contentBox);
         popupBox.setStyle("""
@@ -116,11 +137,52 @@ public class AlertMsg {
                 -fx-padding: 5 10 20 10;
                 """);
 
+        if (type == AlertMsgType.CONFIRMATION) {
+            Button confirmButton = new Button("Confirm");
+            confirmButton.setStyle("""
+                    -fx-background-color: #FE6C01;
+                    -fx-background-radius: 5;
+                    -fx-border-color: #FE6C01;
+                    -fx-border-radius: 5;
+                    -fx-text-fill: white;
+                    -fx-font-size: 10;
+                    """);
+            confirmButton.setOnAction(e -> {
+                if (onConfirm != null) {
+                    onConfirm.run();
+                }
+
+                exitAnimation().play();
+            });
+
+            Button cancelButton = new Button("Cancel");
+            cancelButton.setStyle("""
+                    -fx-background-color: white;
+                    -fx-background-radius: 5;
+                    -fx-border-color: #FE6C01;
+                    -fx-border-radius: 5;
+                    -fx-text-fill: #FE6C01;
+                    -fx-font-size: 10;
+                    """);
+            cancelButton.setOnAction(e -> {
+                if (onCancel != null) {
+                    onCancel.run();
+                }
+
+                exitAnimation().play();
+            });
+
+            HBox buttonBox = new HBox(7, cancelButton, confirmButton);
+            buttonBox.setAlignment(Pos.CENTER_RIGHT);
+
+            popupBox.getChildren().add(buttonBox);
+            VBox.setMargin(buttonBox, new Insets(7, 0, 0, 0));
+        }
+
         popupBox.setMaxHeight(60);
         popupBox.setMaxWidth(250);
         VBox.setVgrow(contentBox, Priority.ALWAYS);
         VBox.setMargin(contentBox, new Insets(10, 0, 0, 0));
-
 
         root.getChildren().add(popupBox);
         StackPane.setAlignment(popupBox, pos);
@@ -147,9 +209,25 @@ public class AlertMsg {
 
         ParallelTransition enterAnimation = new ParallelTransition(fadeIn, moveDown);
 
-        //Wait for 5 seconds
-        PauseTransition pause = new PauseTransition(Duration.seconds(5));
+        if(type == AlertMsgType.CONFIRMATION) {
+            enterAnimation.play();
+            return;
+        } else {
+            //Wait for 5 seconds
+            PauseTransition pause = new PauseTransition(Duration.seconds(5));
 
+            // Chain all animations
+            SequentialTransition fullAnimation = new SequentialTransition(
+                    enterAnimation,
+                    pause,
+                    exitAnimation()
+            );
+
+            fullAnimation.play();
+        }
+    }
+
+    private FadeTransition exitAnimation() {
         // Fade out animation
         FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), popupBox);
         fadeOut.setFromValue(1);
@@ -162,13 +240,6 @@ public class AlertMsg {
             }
         });
 
-        // Chain all animations
-        SequentialTransition fullAnimation = new SequentialTransition(
-                enterAnimation,
-                pause,
-                fadeOut
-        );
-
-        fullAnimation.play();
+        return fadeOut;
     }
 }

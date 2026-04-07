@@ -1,6 +1,8 @@
 package com.duoqlo.duoqlostore.view;
 
+import com.duoqlo.duoqlostore.controller.DashboardController;
 import com.duoqlo.duoqlostore.controller.Navigator;
+import com.duoqlo.duoqlostore.model.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -16,7 +18,11 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.util.Objects;
 import java.util.Stack;
 
-public class BasePage {
+public abstract class BasePage {
+    protected abstract User getCurrentUser();
+
+    private User user;
+
     protected int windowWidth = 1000;
     protected int windowHeight = 750;
 
@@ -29,6 +35,8 @@ public class BasePage {
     protected Button forwardButton;
 
     protected int iconSize = 19;
+
+    protected Color themeColor = Color.web("FE6C01");
 
     public BasePage(){
         this.searchField = createSearchField();
@@ -61,11 +69,18 @@ public class BasePage {
         Button logoButton = new Button();
         logoButton.setGraphic(logoView);
         logoButton.setId("logo-button");
+        logoButton.setOnAction(e -> {
+            DashboardController dashboardController = new DashboardController();
+            dashboardController.setUser(getCurrentUser());
+
+            UserDashboard userDash = new UserDashboard(dashboardController);
+            Navigator.goTo(userDash.initialize());
+        });
 
         //Profile Button
         FontIcon profileIcon = new FontIcon("fas-user");
         profileIcon.setIconSize(iconSize);
-        profileIcon.setIconColor(Color.web("#EE5702"));
+        profileIcon.setIconColor(themeColor);
         Button profileButton = new Button("", profileIcon);
 
         middleHBox.setMaxWidth(Region.USE_PREF_SIZE);
@@ -101,7 +116,7 @@ public class BasePage {
     public HBox createSearchBar(){
         int searchBarLength = 250;
         FontIcon searchIcon = new FontIcon("fas-search");
-        searchIcon.setIconColor(Color.web("EE5702"));
+        searchIcon.setIconColor(themeColor);
         searchIcon.setIconSize(iconSize);
 
         FontIcon rightIcon = new FontIcon("fas-arrow-right");
@@ -169,7 +184,7 @@ public class BasePage {
 
     public Button createBackButton(){
         FontIcon backIcon = new FontIcon("fas-arrow-left");
-        backIcon.setIconColor(Color.web("EE5702")); //Orange color
+        backIcon.setIconColor(themeColor); //Orange color
 
         Button backButton = new Button("", backIcon);
         backButton.setStyle("""
@@ -187,7 +202,7 @@ public class BasePage {
 
     public Button createForwardButton(){
         FontIcon forwardIcon = new FontIcon("fas-arrow-right");
-        forwardIcon.setIconColor(Color.web("EE5702")); //Orange color
+        forwardIcon.setIconColor(themeColor); //Orange color
 
         Button forwardButton = new Button("", forwardIcon);
         forwardButton.setStyle("""
@@ -201,6 +216,26 @@ public class BasePage {
         }
 
         return forwardButton;
+    }
+
+    public StackPane createLoadingPane(Label loadingLabel) {
+        StackPane pane = new StackPane();
+        pane.setStyle("-fx-background-color: rgba(0,0,0,0.6);");
+
+        VBox box = new VBox(10);
+        box.setAlignment(Pos.CENTER);
+
+        ProgressIndicator spinner = new ProgressIndicator();
+
+        loadingLabel = new Label("Loading...");
+        loadingLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+
+        box.getChildren().addAll(spinner, loadingLabel);
+        pane.getChildren().add(box);
+
+        pane.setVisible(false);
+
+        return pane;
     }
 
     public String showPrice(double amount) {
@@ -217,8 +252,8 @@ public class BasePage {
 
     public void setButtonStyle(Button button){
         button.setStyle("""
-                -fx-background-color: #EE5702;
-                -fx-border-color: #EE5702;
+                -fx-background-color: #FE6C01;
+                -fx-border-color: #FE6C01;
                 -fx-border-radius: 5;
                 -fx-border-width: 2;
                 -fx-text-fill: white;
