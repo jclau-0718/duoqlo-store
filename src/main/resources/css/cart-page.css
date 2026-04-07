@@ -61,3 +61,36 @@
     -fx-opacity: 1;
 }
 
+.item-box {
+    -fx-background-color: white;
+}
+
+.order-summary-box {
+    -fx-background-color: #D9D9D9;
+}
+
+.section-title {
+    -fx-font-weight: bold;
+}
+
+.total-box .label {
+    -fx-font-size: 15;
+    -fx-font-weight: bold;
+}
+
+.primary-button, .secondary-button {
+    -fx-font-family: Arial;
+    -fx-font-size: 14px;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 10 20;
+    /*-fx-font-weight: bold;*/
+}
+
+.primary-button {
+    -fx-background-color: #EE5702;          /* orange color */
+    -fx-border-color: #EE5702;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+

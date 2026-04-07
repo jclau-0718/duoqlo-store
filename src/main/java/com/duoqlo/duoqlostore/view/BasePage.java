@@ -203,6 +203,10 @@ public class BasePage {
         return forwardButton;
     }
 
+    public String showPrice(double amount) {
+        return String.format("RM %.2f", amount);
+    }
+
     public BorderPane createNavigationBar(){
         BorderPane navBar = new BorderPane();
         navBar.setLeft(backButton);

@@ -23,13 +23,13 @@ public class Main extends Application {
         LogInPage logInPage = new LogInPage();
         UserDashboard userDash = new UserDashboard();
         SignUpPage signUpPage = new SignUpPage();
-        CartPage cartPage = new CartPage();
+//        CartPage cartPage = new CartPage();
 
         //Create database
         TableCreator.createTable();
 
         stage.setTitle("DUOQLO");
-        Navigator.goTo(userDash.initialize());
+        Navigator.goTo(logInPage.initialize());
 //        stage.setScene(userDash.initialize());
         stage.show();
         stage.centerOnScreen();

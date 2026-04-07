@@ -47,6 +47,7 @@ public class SignUpPage extends AuthPage{
 
         HBox titleBox = new HBox();
         titleBox.setAlignment(Pos.CENTER);
+        titleBox.getChildren().addAll(leftLine,titleLabel,rightLine);
 
         HBox.setHgrow(leftLine, Priority.ALWAYS);
         HBox.setHgrow(rightLine, Priority.ALWAYS);
@@ -54,7 +55,6 @@ public class SignUpPage extends AuthPage{
         HBox.setMargin(titleLabel, new Insets(0,5,0,5));
         HBox.setMargin(rightLine, new Insets(0,0,0,5));
 
-        titleBox.getChildren().addAll(leftLine,titleLabel,rightLine);
 
         return titleBox;
     }

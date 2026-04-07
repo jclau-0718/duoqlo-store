@@ -20,7 +20,7 @@ import java.sql.*;
 import java.util.*;
 
 public class AdminProductUploader extends Application {
-    private ProductDAO productDao = new ProductDAO();
+    private ProductDAO productDAO = new ProductDAO();
 
     // Database connection details
     private static final String DB_URL = "jdbc:sqlite:database.db";
@@ -91,13 +91,13 @@ public class AdminProductUploader extends Application {
 
     private void initializeData() {
         // Load all genders and their IDs once
-        Map<String, String> genders = productDao.getAllGenderWithIds();
+        Map<String, String> genders = productDAO.getAllGenderWithIds();
         if (genders != null) {
             genderIdMap = genders;
         }
 
         // Load all categories and their IDs once
-        Map<String, String> categories = productDao.getAllCategoriesWithIds();
+        Map<String, String> categories = productDAO.getAllCategoriesWithIds();
         if (categories != null) {
             categoryIdMap = categories;
         }
@@ -260,7 +260,7 @@ public class AdminProductUploader extends Application {
                 currentGenderId = genderIdMap.get(currentGender);
 
                 // Filter categories by gender
-                List<String> categoriesForGender = productDao.getCategoryNameWithGender(currentGender);
+                List<String> categoriesForGender = productDAO.getCategoryNameWithGender(currentGender);
 
                 if (categoriesForGender != null && !categoriesForGender.isEmpty()) {
                     categoryCombo.setItems(FXCollections.observableArrayList(categoriesForGender));
@@ -518,7 +518,7 @@ public class AdminProductUploader extends Application {
             String imagePath = productPath.toString();
 
             // Save to database
-            int productId = saveProductToDatabase(productSKU, name, currentCategoryId, currentGenderId, imagePath, description);
+            int productId = productDAO.insertProduct(productSKU, name, currentCategoryId, currentGenderId, imagePath, description);
 
             if (productId > 0) {
                 // Save size variants
@@ -528,7 +528,7 @@ public class AdminProductUploader extends Application {
                     double price = Double.parseDouble(row.getPriceField().getText().trim());
 
                     String productsizeSKU = productSKU + "-" + size;
-                    saveSizeVariantToDatabase(productsizeSKU, productId, size, stock, price);
+                    productDAO.insertProductSize(productsizeSKU, productId, size, stock, price);
                 }
             }
 
@@ -575,51 +575,6 @@ public class AdminProductUploader extends Application {
         } catch (SQLException ex) {
             ex.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Database error: " + ex.getMessage());
-        }
-    }
-
-    private int saveProductToDatabase(String sku, String name, String categoryId, String genderId,
-                                      String imagePath, String description) throws SQLException {
-        String query = "INSERT INTO product (product_sku, product_name, category_id, gender_id, image_path, description) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
-
-        try (Connection conn = DriverManager.getConnection(DB_URL);
-             PreparedStatement pstmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-
-            pstmt.setString(1, sku);
-            pstmt.setString(2, name);
-            pstmt.setString(3, categoryId);
-            pstmt.setString(4, genderId);
-            pstmt.setString(5, imagePath);
-            pstmt.setString(6, description);
-
-            int affectedRows = pstmt.executeUpdate();
-
-            if (affectedRows > 0) {
-                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        return generatedKeys.getInt(1);
-                    }
-                }
-            }
-        }
-        return -1;
-    }
-
-    private void saveSizeVariantToDatabase(String sku, int productId, String size, int stock, double price) throws SQLException {
-        String query = "INSERT INTO productsize (productsize_sku, product_id, size, stock_quantity, price) " +
-                "VALUES (?, ?, ?, ?, ?)";
-
-        try (Connection conn = DriverManager.getConnection(DB_URL);
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setString(1, sku);
-            pstmt.setInt(2, productId);
-            pstmt.setString(3, size);
-            pstmt.setInt(4, stock);
-            pstmt.setDouble(5, price);
-
-            pstmt.executeUpdate();
         }
     }
 

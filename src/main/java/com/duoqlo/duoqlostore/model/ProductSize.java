@@ -1,6 +1,8 @@
 package com.duoqlo.duoqlostore.model;
 
 public class ProductSize {
+    private ProductDAO productDAO = new ProductDAO();
+
     private int sizeId;
     private String sizeSKU;
     private int productId;

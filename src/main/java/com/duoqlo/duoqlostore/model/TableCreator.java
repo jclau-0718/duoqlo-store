@@ -78,10 +78,18 @@ public class TableCreator {
                 CREATE TABLE IF NOT EXISTS cart (
                 cart_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
+                last_updated TIMESTAMP DEFAULT (datetime('now', 'localtime')),
+                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+                );
+                """;
+
+        final String cartItemSQL = """
+                CREATE TABLE IF NOT EXISTS cartitem (
+                cart_id INTEGER NOT NULL,
                 productsize_id INTEGER NOT NULL,
                 product_quantity INTEGER NOT NULL,
-                added_date TEXT NOT NULL,
-                FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+                added_date TIMESTAMP DEFAULT (datetime('now', 'localtime')),
+                FOREIGN KEY (cart_id) REFERENCES cart(cart_id),
                 FOREIGN KEY (productsize_id) REFERENCES productsize(productsize_id)
                 );
                 """;
@@ -119,6 +127,7 @@ public class TableCreator {
                 productSQL,
                 productSizeSQL,
                 cartSQL,
+                cartItemSQL,
                 ordersSQL,
                 orderitemSQL,
         };

@@ -17,6 +17,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 public class LogInPage extends AuthPage {
     private AuthController controller;
+    private AlertMsg alert = new AlertMsg();
 
     private final int usernameTopPad = 50;
     private final int passwordTopPad = 35;
@@ -117,10 +118,9 @@ public class LogInPage extends AuthPage {
                 controller.updateUsernameFieldStyle(usernameField, usernameErrorLabel);
                 controller.updatePassFieldStyle(passwordHBox, passwordField, passwordErrorLabel);
                 StackPane root = (StackPane) ((Node) e.getSource()).getScene().getRoot();
-                root.getChildren().remove(errorBox);
-                showErrorBox(root);
 
-                System.out.println("Styling(in condition): "+usernameField.getStyleClass());
+                alert.setAlertType(AlertMsg.AlertMsgType.ERROR);
+                alert.show(root, "Invalid username or password.", Pos.TOP_CENTER);
             }
         });
 
@@ -165,7 +165,9 @@ public class LogInPage extends AuthPage {
 
         if(controller.getRegistered()) {
             root.getChildren().remove(successBox);
-            showSuccessBox(root);
+
+            alert.setAlertType(AlertMsg.AlertMsgType.SUCCESS);
+            alert.show(root, "Account created!", Pos.TOP_CENTER);
         }
 
         Platform.runLater(() -> {root.requestFocus();}); //Remove initial focus on Username TextField

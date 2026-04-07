@@ -3,6 +3,7 @@ package com.duoqlo.duoqlostore.controller;
 import com.duoqlo.duoqlostore.model.User;
 import com.duoqlo.duoqlostore.model.UserDAO;
 import com.duoqlo.duoqlostore.view.LogInPage;
+import com.duoqlo.duoqlostore.view.UserDashboard;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -51,12 +52,13 @@ public class AuthController {
 
                     if (loggedInUser != null) {
                         DashboardController dashboardController = new DashboardController();
-
                         dashboardController.setUser(loggedInUser);
+
+                        UserDashboard userDash = new UserDashboard(dashboardController);
 
                         Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
 
-                        dashboardController.openDashboard(stage);
+                        stage.setScene(userDash.initialize());
                         return true;
                     }
                 }

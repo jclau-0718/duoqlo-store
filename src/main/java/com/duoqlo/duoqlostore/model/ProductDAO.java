@@ -4,6 +4,51 @@ import java.sql.*;
 import java.util.*;
 
 public class ProductDAO {
+    public int insertProduct(String sku, String name, String categoryId, String genderId,
+                             String imagePath, String description) throws SQLException {
+        String sql = "INSERT INTO product (product_sku, product_name, category_id, gender_id, image_path, description) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            pstmt.setString(1, sku);
+            pstmt.setString(2, name);
+            pstmt.setString(3, categoryId);
+            pstmt.setString(4, genderId);
+            pstmt.setString(5, imagePath);
+            pstmt.setString(6, description);
+
+            int affectedRows = pstmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        return generatedKeys.getInt(1);
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    public void insertProductSize(String sku, int productId, String size, int stock, double price) throws SQLException {
+        String sql = "INSERT INTO productsize (productsize_sku, product_id, size, stock_quantity, price) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, sku);
+            pstmt.setInt(2, productId);
+            pstmt.setString(3, size);
+            pstmt.setInt(4, stock);
+            pstmt.setDouble(5, price);
+
+            pstmt.executeUpdate();
+        }
+    }
+
     public List<String> getAllGender() {
         List<String> genderList = new ArrayList<>();
 
@@ -207,99 +252,6 @@ public class ProductDAO {
         return products;
     }
 
-//    public List<Product> getProductsByGender(String genderName) {
-//        List<Product> products = new ArrayList<>();
-//        String sql = """
-//        SELECT
-//            p.product_id,
-//            p.product_sku,
-//            p.product_name,
-//            g.gender,
-//            c.category_name,
-//            s.subcategory_name,
-//            p.description,
-//            p.image_path
-//        FROM product p
-//        LEFT JOIN gender g ON p.gender_id = g.gender_id
-//        LEFT JOIN subcategory s ON p.subcategory_id = s.subcategory_id
-//        LEFT JOIN category c ON s.category_id = c.category_id
-//        WHERE g.gender = ?
-//        ORDER BY p.product_id DESC
-//    """;
-//
-//        try (Connection conn = ConnectDB.connect();
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//
-//            pstmt.setString(1, genderName);
-//            ResultSet rs = pstmt.executeQuery();
-//
-//            while (rs.next()) {
-//                Product product = new Product(
-//                        rs.getInt("product_id"),
-//                        rs.getString("product_sku"),
-//                        rs.getString("product_name"),
-//                        rs.getString("gender") != null ? rs.getString("gender") : "",
-//                        rs.getString("category_name") != null ? rs.getString("category_name") : "",
-//                        rs.getString("description"),
-//                        rs.getString("image_path")
-//                );
-//                products.add(product);
-//            }
-//
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//
-//        return products;
-//    }
-
-//    public List<Product> getProductsByCategory(String categoryName) {
-//        List<Product> products = new ArrayList<>();
-//        String sql = """
-//        SELECT
-//            p.product_id,
-//            p.product_sku,
-//            p.product_name,
-//            g.gender,
-//            c.category_name,
-//            s.subcategory_name,
-//            p.description,
-//            p.image_path
-//        FROM product p
-//        LEFT JOIN gender g ON p.gender_id = g.gender_id
-//        LEFT JOIN subcategory s ON p.subcategory_id = s.subcategory_id
-//        LEFT JOIN category c ON s.category_id = c.category_id
-//        WHERE c.category_name = ?
-//        ORDER BY p.product_id DESC
-//    """;
-//
-//        try (Connection conn = ConnectDB.connect();
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//
-//            pstmt.setString(1, categoryName);
-//            ResultSet rs = pstmt.executeQuery();
-//
-//            while (rs.next()) {
-//                Product product = new Product(
-//                        rs.getInt("product_id"),
-//                        rs.getString("product_sku"),
-//                        rs.getString("product_name"),
-//                        rs.getString("gender") != null ? rs.getString("gender") : "",
-//                        rs.getString("category_name") != null ? rs.getString("category_name") : "",
-//                        rs.getString("subcategory_name") != null ? rs.getString("subcategory_name") : "",
-//                        rs.getString("description"),
-//                        rs.getString("image_path")
-//                );
-//                products.add(product);
-//            }
-//
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//
-//        return products;
-//    }
-
     public List<ProductSize> getProductSizes(int productId) {
         List<ProductSize> productSizeList = new ArrayList<>();
 
@@ -373,6 +325,130 @@ public class ProductDAO {
             }
 
             return sizeList;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public int getSizeId(int productId, String size) {
+        String sql = """
+                SELECT productsize_id FROM productsize 
+                WHERE product_id = ? AND size = ?;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, productId);
+            pstmt.setString(2, size);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            return rs.getInt("productsize_id");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    public String getProductName(int prodSizeId) {
+        String sql = """
+                SELECT p.product_name
+                FROM productsize ps
+                JOIN product p ON p.product_id = ps.product_id
+                WHERE ps.productsize_id = ?;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, prodSizeId);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            return rs.getString("product_name");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    public String getCategory(int prodSizeId) {
+        String sql = """
+                SELECT
+                    c.category_id,
+                    c.category_name,
+                    g.gender_id,
+                    g.gender
+                FROM category c
+                JOIN gender g ON g.gender_id = c.gender_id
+                JOIN product p ON p.category_id = c.category_id
+                JOIN productsize ps ON ps.product_id = p.product_id
+                WHERE ps.productsize_id = ?;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, prodSizeId);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            return rs.getString("category");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public String getSize(int prodSizeId) {
+        String sql = """
+                SELECT size FROM productsize
+                WHERE productsize_id = ?;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, prodSizeId);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            return rs.getString("size");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public String getImagePath(int prodSizeId) {
+        String sql = """
+                SELECT p.image_path
+                FROM productsize ps
+                JOIN product p ON p.product_id = ps.product_id
+                WHERE ps.productsize_id = ?;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, prodSizeId);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            return rs.getString("image_path");
 
         } catch (SQLException e) {
             e.printStackTrace();

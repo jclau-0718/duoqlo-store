@@ -95,11 +95,11 @@
     -fx-shape: "M26.297 12.625l-11.594 11.578c-0.391 0.391-1.016 0.391-1.406 0l-11.594-11.578c-0.391-0.391-0.391-1.031 0-1.422l2.594-2.578c0.391-0.391 1.016-0.391 1.406 0l8.297 8.297 8.297-8.297c0.391-0.391 1.016-0.391 1.406 0l2.594 2.578c0.391 0.391 0.391 1.031 0 1.422z";
 }
 
-.filter-combo.selected { /* Style the field after selected */
+.filter-combo.selected { /* Style field after selected */
     -fx-border-color: #EE5702;
 }
 
-.filter-combo.selected .list-cell { /* Style the field text after selected */
+.filter-combo.selected .list-cell { /* Style field text after selected */
     -fx-text-fill: #EE5702;
 }
 
@@ -112,20 +112,20 @@
 }
 
 .combo-box .list-view .list-cell:selected,
-.combo-box.selected .list-view .list-cell:selected{
+.combo-box.selected .list-view .list-cell:selected{ /* Style field when selected */
     -fx-background-color: #EE5702;
     -fx-text-fill: white;
 }
 
 .combo-box .list-view .list-cell:hover,
-.combo-box.selected .list-view .list-cell:hover {
+.combo-box.selected .list-view .list-cell:hover { /* Style options when selected */
     -fx-background-color: #F0EDED;
     -fx-text-fill: #EE5702;
 }
 
 .sort-combo {
     -fx-background-color: transparent;
-    -fx-border-color: red;
+    -fx-border-color: transparent;
     -fx-cursor: hand;
 }
 
@@ -207,7 +207,6 @@
 }
 
 .product-card:hover {
-    -fx-border-color: #EE5702;
     -fx-border-radius: 8px;
     -fx-background-color: white;
     -fx-background-radius: 8px;
@@ -230,9 +229,9 @@
 }
 
 .label.stock {
-    -fx-text-fill: #808080;
-    -fx-font-size: 13px;
     -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 5 0;
 }
 
 .label.product-name {
@@ -245,6 +244,54 @@
     -fx-text-fill: #EE5702;
     -fx-font-weight: bold;
     -fx-font-size: 16px;
+}
+
+.label.expanded-product-name {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+}
+
+.label.description {
+    -fx-font-size: 13px;
+    -fx-text-fill: #555;
+}
+
+.label.expanded-price {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #EE5702;
+}
+
+.label.select-quantity, .label.select-size {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.quantity-field {
+    -fx-background-color: transparent;
+    -fx-border-color: red;
+    -fx-font-size: 12px;
+    -fx-padding: 0;
+}
+
+.quantity-box {
+    -fx-background-radius: 5;
+    -fx-border-color: #ddd;
+    -fx-border-radius: 5;
+}
+
+.quantity-box .button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-cursor: hand;
+}
+
+.label.quantity-error {
+    -fx-text-fill: red;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 5 0;
 }
 
 .scroll-pane {
@@ -318,7 +365,17 @@
 .expanded-product-card {
     -fx-background-color: white;
     -fx-background-radius: 15;
+    -fx-padding: 20;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 25, 0, 0, 0);
+}
+
+.close-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #666;
+    -fx-font-size: 20px;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+    -fx-padding: 0
 }
 
 .size-button {
