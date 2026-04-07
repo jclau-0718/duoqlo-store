@@ -15,7 +15,8 @@ public class User {
     private String city;
     private int postal_code;
     private String state;
-    private String country;
+    private String country = "MALAYSIA";
+    private String fullAddress;
     private String role;
     private int is_active;
 
@@ -25,12 +26,7 @@ public class User {
 
     }
     public User(String username){
-        this.username = username;
-    }
-
-    public User(int user_id,String username){
-        this.user_id = user_id;
-        this.username = username;
+        this.username = username; //Mainly used
     }
 
     public User(int user_id){
@@ -51,6 +47,10 @@ public class User {
 
     public void setIs_active(int is_active) {
         this.is_active = is_active;
+    }
+
+    public void setFullAddress(String fullAddress) {
+        this.fullAddress = fullAddress;
     }
 
     public int getId() {
@@ -97,12 +97,10 @@ public class User {
         return this.state;
     }
 
+    public String getFullAddress() { return this.fullAddress; }
+
     public String getRole(){
         return this.role;
-    }
-
-    public String getRole(int user_id){
-        return userDAO.getRole(user_id);
     }
 
     public void setInfo(ArrayList<String> info){

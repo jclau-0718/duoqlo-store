@@ -34,34 +34,27 @@ public class DashboardController {
 
     public void setUser(User user){
         this.user = user;
+
+        setCart(user);
     }
 
-    public void openDashboard(Stage stage){
-        UserDashboard userDash = new UserDashboard();
+    public User getUser() { return this.user; };
 
-        role = user.getRole(user.getId());
+    public void setCart(User user) {
+        int userId = user.getId();
 
-        if(role != null) {
-            System.out.println("Role: "+role);
-            if (role.equals("CUSTOMER")) {
-                stage.setScene(userDash.initialize());
-            } else if (role.equals("ADMIN")) {
-                stage.setScene(userDash.initialize());
-            } else {
-                System.out.println("User role invalid");
-            }
+        if (!cartDAO.userCartExists(userId)) {
+            this.cart = cartDAO.createCart(userId);
         } else {
-            System.out.println("Role: "+role);
-            System.out.println("Error! User not found");
+            this.cart = cartDAO.getUserCart(userId);
         }
-
-        System.out.println(user.getId());
     }
 
     public void openCartPage(){
-        cartController.setUser(this.user);
+        this.cartController.setUser(this.user);
+        this.cartController.setCart(this.cart);
 
-        CartPage cartPage = new CartPage(cartController);
+        CartPage cartPage = new CartPage(this.cartController);
         Navigator.goTo(cartPage.initialize());
     }
 
@@ -289,40 +282,22 @@ public class DashboardController {
                 .orElse(0);
     }
 
-    public String getSizeSelected() {
-        return sizeSelected;
-    }
 
     public void setSizeSelected(String sizeSelected) {
         this.sizeSelected = sizeSelected;
     }
 
-    public String getCategorySelected() {
-        return categorySelected;
-    }
 
     public void setCategorySelected(String categorySelected) {
         this.categorySelected = categorySelected;
-    }
-
-    public String getPriceSelected() {
-        return priceSelected;
     }
 
     public void setPriceSelected(String priceSelected) {
         this.priceSelected = priceSelected;
     }
 
-    public String getSortingSelected() {
-        return sortingSelected;
-    }
-
     public void setSortingSelected(String sortingSelected) {
         this.sortingSelected = sortingSelected;
-    }
-
-    public boolean isSorted() {
-        return isSorted;
     }
 
     public void setSorted(boolean sorted) {
@@ -407,21 +382,12 @@ public class DashboardController {
     }
 
     public boolean addToCart(int productSizeId, int quantity, double subTotal) {
-        int userId = this.user.getId();
-        Cart cart;
-
-        if (!cartDAO.userCartExists(userId)) {
-            cart = cartDAO.createCart(userId);
-        } else {
-            cart = cartDAO.getUserCart(userId);
-        }
-
         int cartId = cart.getCartId();
 
         CartItem cartItem = new CartItem(cartId, productSizeId, quantity, subTotal);
 
         if(cartDAO.insertCartItem(cartItem)) {
-            cartController.addCartItem(cartItem);
+            cart.addCartItem(cartItem);
 
             return true;
         }

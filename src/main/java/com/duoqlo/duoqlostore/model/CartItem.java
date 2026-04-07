@@ -5,12 +5,12 @@ public class CartItem {
     private int cartId;
     private int productSizeId;
     private int productQuantity;
+    private double subTotal;
     private String addedDate;
 
     // Usage: CartRow
     private String productName;
     private String category;
-    private double subTotal;
     private String size;
 
     public CartItem () {}

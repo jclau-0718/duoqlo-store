@@ -81,6 +81,18 @@ public class UserDAO extends DataAccessObject<User> {
         }
     }
 
+    private String packFullAddress(String addressLine1, String addressLine2,
+                                   String city, String postCode,
+                                   String state) {
+        String fullAddress = addressLine1 + ", " +
+                             addressLine2 + ", " +
+                             city + ", " +
+                             postCode + ", " +
+                             state + ", Malaysia";
+
+        return fullAddress;
+    }
+
     public String getRole(int userID){
         String sql = "SELECT role FROM users WHERE user_id = ?";
 
@@ -129,7 +141,6 @@ public class UserDAO extends DataAccessObject<User> {
             return null;
         }
 
-
         String sql = "SELECT * FROM users WHERE username = ?";
 
         try (Connection conn = ConnectDB.connect();
@@ -143,6 +154,13 @@ public class UserDAO extends DataAccessObject<User> {
 
             if(rs.next()){
                 user.setId(rs.getInt("user_id"));
+                user.setFullAddress(packFullAddress(
+                        rs.getString("address_line1"),
+                        rs.getString("address_line2"),
+                        rs.getString("city"),
+                        String.valueOf(rs.getInt("postal_code")),
+                        rs.getString("state")
+                ));
                 user.setRole(rs.getString("role"));
                 user.setIs_active(rs.getInt("is_active"));
             }

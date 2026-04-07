@@ -383,16 +383,11 @@ public class ProductDAO {
 
     public String getCategory(int prodSizeId) {
         String sql = """
-                SELECT
-                    c.category_id,
-                    c.category_name,
-                    g.gender_id,
-                    g.gender
-                FROM category c
-                JOIN gender g ON g.gender_id = c.gender_id
-                JOIN product p ON p.category_id = c.category_id
-                JOIN productsize ps ON ps.product_id = p.product_id
-                WHERE ps.productsize_id = ?;
+                SELECT c.category_name
+                FROM productsize ps
+                JOIN product p ON ps.product_id = p.product_id
+                JOIN category c ON p.category_id = c.category_id
+                WHERE ps.productsize_id = ?
                 """;
 
         try (Connection conn = ConnectDB.connect();
@@ -402,7 +397,7 @@ public class ProductDAO {
 
             ResultSet rs = pstmt.executeQuery();
 
-            return rs.getString("category");
+            return rs.getString("category_name");
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -455,5 +450,29 @@ public class ProductDAO {
         }
 
         return null;
+    }
+
+    public boolean deductStock(int productSizeId, int quantity) {
+        String sql = """
+                UPDATE productsize 
+                SET stock_quantity = stock_quantity - ? 
+                WHERE productsize_id = ?;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, quantity);
+            pstmt.setInt(2, productSizeId);
+
+            int affectedRows = pstmt.executeUpdate();
+
+            return affectedRows > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 }

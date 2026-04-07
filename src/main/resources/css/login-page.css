@@ -23,7 +23,7 @@
 }
 
 .text-field:focused, .text-field.valid:focused, .password-box.focused, .password-box.valid.focused{
-    -fx-border-color: #D4D4D4 #D4D4D4 #EE5702 #D4D4D4;  /* grey grey orange grey */
+    -fx-border-color: #D4D4D4 #D4D4D4 #FE6C01 #D4D4D4;  /* grey grey orange grey */
 }
 
 .text-field.error, .password-box.error {
@@ -35,7 +35,7 @@
 }
 
 .text-field.valid, .password-box.valid{
-    -fx-border-color: #EBEBEB #EBEBEB #EE5702 #EBEBEB;
+    -fx-border-color: #EBEBEB #EBEBEB #FE6C01 #EBEBEB;
 }
 
 .password-field, .password-field:focused {
@@ -86,8 +86,8 @@
 }
 
 #primary-button {
-    -fx-background-color: #EE5702;          /* orange color */
-    -fx-border-color: #EE5702;
+    -fx-background-color: #FE6C01;          /* orange color */
+    -fx-border-color: #FE6C01;
     -fx-text-fill: white;
     -fx-cursor: hand;
 }

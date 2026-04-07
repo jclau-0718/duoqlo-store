@@ -88,6 +88,7 @@ public class TableCreator {
                 cart_id INTEGER NOT NULL,
                 productsize_id INTEGER NOT NULL,
                 product_quantity INTEGER NOT NULL,
+                sub_total REAL NOT NULL,
                 added_date TIMESTAMP DEFAULT (datetime('now', 'localtime')),
                 FOREIGN KEY (cart_id) REFERENCES cart(cart_id),
                 FOREIGN KEY (productsize_id) REFERENCES productsize(productsize_id)
@@ -99,8 +100,8 @@ public class TableCreator {
                 CREATE TABLE IF NOT EXISTS orders (
                 order_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
-                order_date TEXT NOT NULL,
-                total_price INTEGER NOT NULL,
+                order_date TIMESTAMP DEFAULT (datetime('now', 'localtime')),
+                total_price REAL NOT NULL,
                 status TEXT DEFAULT 'PENDING' CHECK(status IN('PENDING','DONE')),
                 shipping_add TEXT NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(user_id)
@@ -114,7 +115,7 @@ public class TableCreator {
                 order_id INTEGER NOT NULL,
                 productsize_id INTEGER NOT NULL,
                 quantity INTEGER NOT NULL,
-                price INTEGER NOT NULL,
+                sub_total REAL NOT NULL,
                 FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
                 FOREIGN KEY (productsize_id) REFERENCES productsize(productsize_id)
                 );

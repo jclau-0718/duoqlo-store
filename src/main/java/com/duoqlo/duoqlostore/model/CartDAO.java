@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CartDAO {
     public Cart createCart(int userId) {
@@ -82,6 +84,35 @@ public class CartDAO {
         return null;
     }
 
+    public List<CartItem> getCartItems(int cartId) {
+        List<CartItem> cartItemList = new ArrayList<>();
+
+        String sql = "SELECT * FROM cartitem WHERE cart_id = ?";
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, cartId);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            while(rs.next()) {
+                CartItem cartItem = new CartItem(
+                        rs.getInt("cart_id"),
+                        rs.getInt("productsize_id"),
+                        rs.getInt("product_quantity"),
+                        rs.getDouble("sub_total"));
+
+                cartItemList.add(cartItem);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return cartItemList;
+    }
+
     public boolean userCartExists(int userId) {
         String sql = "SELECT * FROM cart WHERE USER_ID = ?;";
 
@@ -106,10 +137,11 @@ public class CartDAO {
         int cartId = cartItem.getCartId();
         int productSizeId = cartItem.getProductSizeId();
         int quantity = cartItem.getProductQuantity();
+        double subTotal = cartItem.getSubTotal();
 
         String sql = """
-                INSERT INTO cartitem(cart_id, productsize_id, product_quantity)
-                VALUES (?, ?, ?);
+                INSERT INTO cartitem(cart_id, productsize_id, product_quantity, sub_total)
+                VALUES (?, ?, ?, ?);
                 """;
 
         try (Connection conn = ConnectDB.connect();
@@ -118,21 +150,51 @@ public class CartDAO {
             pstmt.setInt(1, cartId);
             pstmt.setInt(2, productSizeId);
             pstmt.setInt(3, quantity);
+            pstmt.setDouble(4, subTotal);
 
             int affectedRows = pstmt.executeUpdate();
 
-            if (affectedRows > 0) {
-                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        return true;
-                    }
-                }
-            }
+            return affectedRows > 0;
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
         return false;
+    }
+
+    public boolean removeCartItem(int prodSizeId) {
+        String sql = " DELETE FROM cartitem WHERE productsize_id = ?";
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, prodSizeId);
+            int affectedRows = pstmt.executeUpdate();
+
+            return affectedRows > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public void clearCart(int cartId) {
+        String sql = """
+                DELETE FROM cartitem
+                WHERE cart_id = ?;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, cartId);
+
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
