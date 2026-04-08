@@ -475,4 +475,37 @@ public class ProductDAO {
 
         return false;
     }
+
+    public Product getProduct(int prodSizeId) {
+        String sql = """
+        SELECT 
+            p.product_name,
+            c.category_name,
+            ps.size
+        FROM productsize ps
+        JOIN product p ON ps.product_id = p.product_id
+        JOIN category c ON p.category_id = c.category_id
+        WHERE ps.productsize_id = ?
+    """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, prodSizeId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    String productName = rs.getString("product_name");
+                    String categoryName = rs.getString("category_name");
+                    String size = rs.getString("size");
+
+                    return new Product(productName, categoryName, size);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

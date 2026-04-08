@@ -5,6 +5,7 @@ import com.duoqlo.duoqlostore.model.*;
 
 import javafx.animation.*;
 import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
@@ -45,7 +46,7 @@ public class UserDashboard extends BasePage {
     private ComboBox<String> categoryCombo;
     private ComboBox<String> priceCombo;
     private ComboBox<String> sortCombo;
-    private javafx.beans.value.ChangeListener<String> sortComboListener;
+    private ChangeListener<String> sortComboListener;
 
     private Button minusQtyBtn;
     private Button plusQtyBtn;
@@ -87,9 +88,16 @@ public class UserDashboard extends BasePage {
 
     public StackPane buildHeader() {
         //Category Buttons
-        Button allButton = new Button("ALL");
-        Button womenButton = new Button("WOMEN");
-        Button menButton = new Button("MEN");
+        ToggleButton allButton = new ToggleButton("ALL");
+        ToggleButton womenButton = new ToggleButton("WOMEN");
+        ToggleButton menButton = new ToggleButton("MEN");
+
+        ToggleGroup categoryGroup = new ToggleGroup();
+        allButton.setToggleGroup(categoryGroup);
+        womenButton.setToggleGroup(categoryGroup);
+        menButton.setToggleGroup(categoryGroup);
+
+        allButton.setSelected(true);
 
         //Category Menu
         HBox catMenu = new HBox(80);
@@ -102,6 +110,7 @@ public class UserDashboard extends BasePage {
         allButton.setOnAction(e -> {
             currentFilter = "ALL";
             loadAllProducts();
+
         });
 
         menButton.setOnAction(e -> {
@@ -136,12 +145,19 @@ public class UserDashboard extends BasePage {
         Button cartButton = new Button("", cartIcon);
         cartButton.setOnAction(e -> controller.openCartPage());
 
+        //Orders Button
+        FontIcon receiptIcon = new FontIcon("fas-receipt");
+        receiptIcon.setIconSize(iconSize);
+        receiptIcon.setIconColor(themeColor);
+        Button ordersButton = new Button("", receiptIcon);
+        ordersButton.setOnAction(e -> controller.openOrderPage());
+
         //Button Box
         HBox actionBox = new HBox(10);
         actionBox.setMinWidth(300);
         actionBox.setPrefWidth(300);
         actionBox.setMaxWidth(300);
-        actionBox.getChildren().addAll(searchBar, cartButton);
+        actionBox.getChildren().addAll(searchBar, cartButton, ordersButton);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
 
         header = createHeaderBox(catMenu, actionBox);
@@ -171,37 +187,9 @@ public class UserDashboard extends BasePage {
         FontIcon sortIcon = new FontIcon("fas-sort");
         sortIcon.setIconSize(16);
         sortIcon.setIconColor(themeColor);
-        sortCombo = new ComboBox<>();
-        sortCombo.setPromptText("Sort by");
-        sortCombo.setPrefWidth(60);
-        sortCombo.setMaxWidth(175);
-        sortCombo.getStyleClass().add("sort-combo");
-        sortCombo.setButtonCell(new ListCell<String>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText("Sort by");
-                } else {
-                    setText("Sort by: " + item);
-                }
-                setAlignment(Pos.CENTER_LEFT);
-            }
-        });
+        sortCombo = createSortCombo();
 
-        sortCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && !newVal.isEmpty()) {
-                String fullText = "Sort by: " + newVal;
-                javafx.scene.text.Text textHelper = new javafx.scene.text.Text(fullText);
-                textHelper.setFont(sortCombo.getButtonCell().getFont());
-                double textWidth = textHelper.getLayoutBounds().getWidth();
-                double neededWidth = Math.min(textWidth + 40, 250);
-                sortCombo.setPrefWidth(neededWidth);
-            }
-        });
-
-        sortBox = new HBox(sortIcon, sortCombo);
-        sortBox.setAlignment(Pos.CENTER_LEFT);
+        sortBox = createSortBox(sortCombo);
 
         HBox filterBox = new HBox(10, sizeCombo, categoryCombo, priceCombo);
         filterBox.getStyleClass().add("filter-box");
@@ -337,14 +325,14 @@ public class UserDashboard extends BasePage {
     }
 
     private void applyFilters() {
-        controller.applyFilters();
+        controller.applyProdFilters();
         displayProducts(controller.getFilteredProducts());
     }
 
     private Button createResetButton() {
-        FontIcon Xicon = new FontIcon("fas-times");
-        Xicon.setIconSize(16);
-        Button resetButton = new Button("", Xicon);
+        FontIcon xIcon = new FontIcon("fas-times");
+        xIcon.setIconSize(16);
+        Button resetButton = new Button("", xIcon);
         resetButton.getStyleClass().add("reset-button");
         resetButton.setOnAction(e -> {
             sortCombo.valueProperty().removeListener(sortComboListener);
@@ -815,7 +803,6 @@ public class UserDashboard extends BasePage {
                 }
             }
 
-            showToast("Added to cart!");
             closeExpandedCard();
         });
 
@@ -971,31 +958,6 @@ public class UserDashboard extends BasePage {
         }
     }
 
-    private void showToast(String message) {
-        Label toast = new Label(message);
-        toast.setStyle("-fx-background-color: #333; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 5; -fx-font-size: 14px;");
-        toast.setOpacity(0);
-
-        StackPane toastPane = new StackPane(toast);
-        toastPane.setMouseTransparent(true);
-        body.getChildren().add(toastPane);
-
-        toastPane.setLayoutX((body.getWidth() - 200) / 2);
-        toastPane.setLayoutY(body.getHeight() - 100);
-
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), toast);
-        fadeIn.setToValue(1);
-
-        PauseTransition pause = new PauseTransition(Duration.seconds(2));
-        FadeTransition fadeOut = new FadeTransition(Duration.millis(300), toast);
-        fadeOut.setToValue(0);
-        fadeOut.setOnFinished(e -> body.getChildren().remove(toastPane));
-
-        fadeIn.play();
-        pause.play();
-        fadeOut.play();
-    }
-
     private void showProductDetails(Product product) {
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Product Details");
@@ -1045,30 +1007,6 @@ public class UserDashboard extends BasePage {
         dialog.showAndWait();
     }
 
-//    private StackPane createLoadingPane() {
-//        StackPane pane = new StackPane();
-//        pane.setStyle("-fx-background-color: rgba(0,0,0,0.6);");
-//
-//        VBox box = new VBox(10);
-//        box.setAlignment(Pos.CENTER);
-//
-//        ProgressIndicator spinner = new ProgressIndicator();
-//
-//        loadingLabel = new Label("Loading...");
-//        loadingLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
-//
-//        box.getChildren().addAll(spinner, loadingLabel);
-//        pane.getChildren().add(box);
-//
-//        pane.setVisible(false);
-//
-//        return pane;
-//    }
-
-    public void cleanup() {
-        controller.cleanup();
-    }
-
     public Scene initialize() {
         body = new StackPane();
 
@@ -1107,17 +1045,9 @@ class ImageCarousel {
     private int currentIndex = 0;
     private List<Image> images = new ArrayList<>();
 
-    public int getCurrentIndex() {
-        return currentIndex;
-    }
-
     public void setImages(List<Image> images) {
         this.images = images;
         this.currentIndex = 0;
-    }
-
-    public List<Image> getImages() {
-        return images;
     }
 
     public Image getCurrentImage() {

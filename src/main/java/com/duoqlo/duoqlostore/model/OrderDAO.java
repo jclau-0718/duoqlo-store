@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrderDAO {
     public Order insertOrder(Order order) {
@@ -75,7 +77,7 @@ public class OrderDAO {
                 Order order = new Order();
                 order.setOrderId(rs.getInt("order_id"));
                 order.setUserId(rs.getInt("user_id"));
-                order.setOrderDate(rs.getString("order_date"));
+                order.setOrderDate(rs.getTimestamp("order_date").toLocalDateTime());
                 order.setTotalPrice(rs.getDouble("total_price"));
                 order.setStatus(rs.getString("status"));
                 order.setShippingAddress(rs.getString("shipping_add"));
@@ -85,5 +87,78 @@ public class OrderDAO {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public List<OrderItem> getOrderItems(int orderId) {
+        List<OrderItem> orderItemList = new ArrayList<>();
+
+        String sql = "SELECT * FROM orderitem WHERE order_id = ?";
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, orderId);
+            ResultSet rs = pstmt.executeQuery();
+
+            while(rs.next()) {
+                OrderItem orderItem = new OrderItem();
+                orderItem.setOrderItemId(rs.getInt("orderitem_id"));
+                orderItem.setOrderId(rs.getInt("order_id"));
+                orderItem.setProductSizeId(rs.getInt("productsize_id"));
+                orderItem.setQuantity(rs.getInt("quantity"));
+                orderItem.setSubTotal(rs.getDouble("sub_total"));
+
+                orderItemList.add(orderItem);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return orderItemList;
+    }
+
+    public Order getFullOrder(int orderId) {
+        Order order = getOrderById(orderId);
+
+        order.setOrderItemList(getOrderItems(orderId));
+
+        return order;
+
+    }
+
+    public List<Order> getOrders(int userId) {
+        List<Order> orders = new ArrayList<>();
+
+        String sql = """
+                SELECT * FROM orders
+                WHERE user_id = ?
+                ORDER BY order_date ASC;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+
+            while(rs.next()) {
+                Order order = new Order(
+                        rs.getInt("order_id"),
+                        rs.getInt("user_id"),
+                        rs.getTimestamp("order_date").toLocalDateTime(),
+                        rs.getDouble("total_price"),
+                        rs.getString("status"),
+                        rs.getString("shipping_add")
+                );
+
+                orders.add(order);
+            }
+
+            return orders;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return new ArrayList<>();
     }
 }

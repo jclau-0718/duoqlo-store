@@ -2,6 +2,7 @@ package com.duoqlo.duoqlostore.controller;
 
 import com.duoqlo.duoqlostore.model.*;
 import com.duoqlo.duoqlostore.view.AlertMsg;
+import com.duoqlo.duoqlostore.view.OrderPage;
 import com.duoqlo.duoqlostore.view.UserDashboard;
 import javafx.animation.PauseTransition;
 import javafx.geometry.Pos;
@@ -128,5 +129,15 @@ public class CartController {
     private void cleanup() {
         cartDAO.clearCart(cart.getCartId());
         cartItemList.clear();
+    }
+
+    public void openOrderPage() {
+        DashboardController dashController = new DashboardController();
+        dashController.setUser(this.user);
+
+        OrderPage orderPage = new OrderPage();
+        orderPage.setController(dashController);
+
+        Navigator.goTo(orderPage.initialize());
     }
 }

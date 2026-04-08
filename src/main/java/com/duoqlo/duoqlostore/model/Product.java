@@ -10,6 +10,7 @@ public class Product {
     private String category;
     private String description;
     private String imagePath;
+    private String size;
     private List<ProductSize> sizes;
 
     // Constructors
@@ -33,6 +34,12 @@ public class Product {
         this.imagePath = imagePath;
     }
 
+    public Product(String productName, String category, String size) {
+        this.productName = productName;
+        this.category = category;
+        this.size = size;
+    }
+
     // Getters and Setters
     public int getProductId() { return productId; }
 
@@ -47,6 +54,8 @@ public class Product {
     public String getDescription() { return description; }
 
     public String getImagePath() { return imagePath; }
+
+    public String getSize() { return size; }
 
     public List<ProductSize> getSizes() { return sizes; }
 

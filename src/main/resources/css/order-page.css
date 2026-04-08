@@ -1,0 +1,210 @@
+.root {
+    -fx-background-color: #F0EDED;
+}
+
+#logo-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0 0 0 0;
+}
+
+#header-menu {
+    -fx-background-color: #F0EDED;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); /* Floating effect */
+}
+
+#header-menu .button{
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-padding: 5 10 5 10;
+}
+
+.order-label {
+    -fx-text-fill: #FE6C01;
+    -fx-font-family: Arial;
+    -fx-font-size: 25;
+    -fx-font-weight: bold;
+}
+
+.search-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-prompt-text-fill: #ADADAD;
+}
+
+.search-bar {
+    -fx-background-color: #E0E0E0;
+    -fx-background-radius: 30;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 30;
+    -fx-border-width: 1;
+}
+
+.search-bar.focused {
+    -fx-background-color: white;
+    -fx-border-color: white;
+}
+
+#search-bar .button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-opacity: 0.5;
+}
+
+#search-bar .button:hover {
+    -fx-opacity: 1;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: black;
+}
+
+.combo-box.selected .list-view .list-cell {
+    -fx-text-fill: black;
+}
+
+.combo-box .list-view .list-cell:selected,
+.combo-box.selected .list-view .list-cell:selected{ /* Style field when selected */
+    -fx-background-color: #FE6C01;
+    -fx-text-fill: white;
+}
+
+.combo-box .list-view .list-cell:hover,
+.combo-box.selected .list-view .list-cell:hover { /* Style options when selected */
+    -fx-background-color: #F0EDED;
+    -fx-text-fill: #FE6C01;
+}
+
+.sort-combo {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-cursor: hand;
+}
+
+
+.sort-combo .arrow-button {
+    -fx-opacity: 0;
+    -fx-padding: 0;
+}
+
+.sort-combo .arrow {
+    -fx-shape: "";
+}
+
+.sort-combo .list-cell {
+    -fx-font-size: 14;
+    -fx-padding: 0 0 0 3;
+}
+
+.context-menu {
+    -fx-padding: 0;
+}
+
+.menu-item {
+    -fx-padding: 10;
+}
+
+.menu-item:focused {
+    -fx-background-color: #F5F5F5;  /* hover color */
+}
+
+.menu-item:focused .label {
+    -fx-text-fill: #FE6C01;  /* text color on hover */
+}
+
+.sorting-menu {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-cursor: hand;
+    -fx-font-family: Arial;
+    -fx-font-size: 14;
+    -fx-font-weight: normal;
+    -fx-pref-width: 82px;
+    -fx-padding: 0;
+}
+
+.sorting-menu:hover {
+    -fx-font-weight: bold;
+}
+
+.sorting-menu .arrow-button {
+    -fx-padding: 0;
+    -fx-opacity: 0;
+    -fx-max-width: 0;
+    -fx-pref-width: 0;
+}
+
+.reset-button {
+    -fx-background-color: transaprent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #575757;
+    -fx-padding: 0;
+}
+
+.reset-button .ikonli-font-icon {
+    -fx-stroke-width: 0.5;
+}
+
+.reset-button:hover {
+    -fx-cursor: hand;
+}
+
+.order-card {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: transparent;
+}
+
+/* Hide the scroll bar */
+.order-card .scroll-pane .scroll-bar:vertical {
+    -fx-pref-width: 0;
+    -fx-max-width: 0;
+    -fx-opacity: 0;
+}
+
+.order-card .scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.label.orderdate,
+.label.orderdate-value,
+.label.total,
+.label.total-value,
+.label.tax {
+    -fx-text-fill: black;
+    -fx-font-size: 17;
+}
+
+.label.orderdate-value,
+.label.total-value {
+    -fx-font-weight: bold;
+}
+
+.label.name,
+.label.quantity,
+.label.subtotal-value {
+    -fx-text-fill: black;
+    -fx-font-size: 15;
+}
+
+.label.category,
+.label.size,
+.label.size-value {
+    -fx-text-fill: black;
+    -fx-font-size: 14;
+}
+
+.label.size-value {
+    -fx-font-weight: bold;
+}
+
+.label.subtotal-value {
+    -fx-font-weight: bold;
+}
+
+.scroll-pane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}

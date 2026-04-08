@@ -250,16 +250,48 @@ public abstract class BasePage {
         return navBar;
     }
 
-    public void setButtonStyle(Button button){
-        button.setStyle("""
-                -fx-background-color: #FE6C01;
-                -fx-border-color: #FE6C01;
-                -fx-border-radius: 5;
-                -fx-border-width: 2;
-                -fx-text-fill: white;
-                -fx-cursor: hand;
-                -fx-font-family: Arial;
-                -fx-font-size: 18;
-                """);
+    public ComboBox<String> createSortCombo() {
+        ComboBox<String> sortCombo = new ComboBox<>();
+        sortCombo.setPromptText("Sort by");
+        sortCombo.setPrefWidth(60);
+        sortCombo.setMaxWidth(175);
+        sortCombo.getStyleClass().add("sort-combo");
+        sortCombo.setButtonCell(new ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Sort by");
+                } else {
+                    setText("Sort by: " + item);
+                }
+                setAlignment(Pos.CENTER_LEFT);
+            }
+        });
+
+        // Changes the width accordingly
+        sortCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.isEmpty()) {
+                String fullText = "Sort by: " + newVal;
+                javafx.scene.text.Text textHelper = new javafx.scene.text.Text(fullText);
+                textHelper.setFont(sortCombo.getButtonCell().getFont());
+                double textWidth = textHelper.getLayoutBounds().getWidth();
+                double neededWidth = Math.min(textWidth + 40, 250);
+                sortCombo.setPrefWidth(neededWidth);
+            }
+        });
+
+        return sortCombo;
     }
+
+   public HBox createSortBox(ComboBox<String> sortCombo) {
+       FontIcon sortIcon = new FontIcon("fas-sort");
+       sortIcon.setIconSize(16);
+       sortIcon.setIconColor(themeColor);
+
+       HBox sortBox = new HBox(sortIcon, sortCombo);
+       sortBox.setAlignment(Pos.CENTER_LEFT);
+
+       return sortBox;
+   }
 }

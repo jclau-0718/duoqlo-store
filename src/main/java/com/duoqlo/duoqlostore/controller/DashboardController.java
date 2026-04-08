@@ -2,10 +2,10 @@ package com.duoqlo.duoqlostore.controller;
 
 import com.duoqlo.duoqlostore.model.*;
 import com.duoqlo.duoqlostore.view.CartPage;
+import com.duoqlo.duoqlostore.view.OrderPage;
 import com.duoqlo.duoqlostore.view.UserDashboard;
 import javafx.concurrent.Task;
 import javafx.scene.image.Image;
-import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.*;
@@ -16,9 +16,10 @@ public class DashboardController {
     private User user;
     private String role;
     private ProductDAO productDAO = new ProductDAO();
-    private CartDAO cartDAO = new CartDAO();
     private CartController cartController = new CartController();
     private Cart cart;
+    private CartDAO cartDAO = new CartDAO();
+    private OrderDAO orderDAO = new OrderDAO();
 
     private Map<Integer, List<ProductSize>> sizesCache = new HashMap<>();
     private Map<String, List<Image>> imageCache = new ConcurrentHashMap<>();
@@ -199,7 +200,7 @@ public class DashboardController {
         return filteredProducts;
     }
 
-    public void applyFilters() {
+    public void applyProdFilters() {
         List<Product> filtered = new ArrayList<>(displayedProducts);
 
         // Filter sizes
@@ -393,5 +394,17 @@ public class DashboardController {
         }
 
         return false;
+    }
+
+    public List<Order> getOrders() {
+        System.out.println(user.getId());
+        return orderDAO.getOrders(user.getId());
+    }
+
+    public void openOrderPage() {
+        OrderPage orderPage = new OrderPage();
+        orderPage.setController(this);
+
+        Navigator.goTo(orderPage.initialize());
     }
 }

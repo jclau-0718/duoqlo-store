@@ -1,18 +1,39 @@
 package com.duoqlo.duoqlostore.model;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 public class Order {
     private int orderId;
     private int userId;
-    private String orderDate;
+    private LocalDateTime orderDateTime;
+    private String orderDateStr;
     private double totalPrice;
     private String status;
     private String shippingAddress;
+    private List<OrderItem> orderItemList = new ArrayList<>();
+
+    public Order(){}
+
+    public Order(int orderId, int userId, LocalDateTime orderDateTime,
+                 double totalPrice, String status, String shippingAddress) {
+        this.orderId = orderId;
+        this.userId = userId;
+        this.orderDateTime = orderDateTime;
+        this.orderDateStr = orderDateTime.toLocalDate().toString();
+        this.totalPrice = totalPrice;
+        this.status = status;
+        this.shippingAddress = shippingAddress;
+
+    }
 
     public int getOrderId() { return this.orderId; }
 
     public int getUserId() { return this.userId; }
 
-    public String getOrderDate() { return this.orderDate; }
+    public String getOrderDateString() { return this.orderDateStr; }
 
     public double getTotalPrice() { return this.totalPrice; }
 
@@ -20,15 +41,25 @@ public class Order {
 
     public String getShippingAddress() { return this.shippingAddress; }
 
+    public List<OrderItem> getOrderItemList() { return this.orderItemList; }
+
     public void setOrderId(int orderId) { this.orderId = orderId; }
 
     public void setUserId(int userId) { this.userId = userId; }
 
-    public void setOrderDate(String orderDate) { this.orderDate = orderDate; }
+    public void setOrderDateTime(LocalDateTime orderDateTime) { this.orderDateTime = orderDateTime; }
+
+    public void setOrderDate(LocalDateTime orderDateTime) {
+        this.orderDateTime = orderDateTime;
+
+        this.orderDateStr = orderDateTime.toLocalDate().toString();
+    }
 
     public void setTotalPrice(double totalPrice) { this.totalPrice = totalPrice; }
 
     public void setStatus(String status) { this.status = status; }
 
     public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
+
+    public void setOrderItemList(List<OrderItem> orderItemList) { this.orderItemList = orderItemList; }
 }

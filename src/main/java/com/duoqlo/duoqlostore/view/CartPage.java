@@ -72,7 +72,7 @@ class CartRow extends BorderPane {
         }
     }
 
-    public Image getFirstImage(String directoryPath) {
+    private Image getFirstImage(String directoryPath) {
         File directory = new File(directoryPath);
 
         if (!directory.exists() || !directory.isDirectory()) {
@@ -145,7 +145,7 @@ class CartRow extends BorderPane {
         Label subTotalLabel = new Label("SUB-TOTAL");
         subTotalLabel.getStyleClass().add("subtotal");
 
-        Label subTotalValueLabel = new Label(String.format("RM%.2f", subTotal));
+        Label subTotalValueLabel = new Label(String.format("RM %.2f", subTotal));
         subTotalValueLabel.getStyleClass().add("subtotal-value");
 
         Button removeButton = new Button("REMOVE");
@@ -198,16 +198,18 @@ public class CartPage extends BasePage{
         HBox labelBox = new HBox(label);
         labelBox.setAlignment(Pos.CENTER);
 
-//        FontIcon profileIcon = new FontIcon("far-user");
-//        profileIcon.setIconSize(iconSize);
-//        profileIcon.setIconColor(Color.web("#EE5702"));
-//        Button profileButton = new Button("", profileIcon);
+        // Orders Button
+        FontIcon receiptIcon = new FontIcon("fas-receipt");
+        receiptIcon.setIconSize(iconSize);
+        receiptIcon.setIconColor(themeColor);
+        Button ordersButton = new Button("", receiptIcon);
+        ordersButton.setOnAction(e -> controller.openOrderPage());
 
         HBox actionBox = new HBox(10);
         actionBox.setMinWidth(300);
         actionBox.setPrefWidth(300);
         actionBox.setMaxWidth(300);
-        actionBox.getChildren().addAll(searchBar);
+        actionBox.getChildren().add(ordersButton);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
 
         StackPane header = createHeaderBox(labelBox, actionBox);

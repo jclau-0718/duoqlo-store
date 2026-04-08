@@ -35,10 +35,6 @@ public class AuthController {
         this.passFieldError[0] = hasError;
     }
 
-    public boolean checkCredentials(String username, String password){
-        return userDAO.checkCredentials(username, password);
-    }
-
     public boolean handleLogIn(ActionEvent e, String username, String enteredPassword) {
         try {
             if (userDAO.usernameExists(username)) {
