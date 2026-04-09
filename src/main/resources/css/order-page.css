@@ -189,6 +189,10 @@
     -fx-font-size: 15;
 }
 
+.label.name {
+    -fx-font-weight: bold;
+}
+
 .label.category,
 .label.size,
 .label.size-value {

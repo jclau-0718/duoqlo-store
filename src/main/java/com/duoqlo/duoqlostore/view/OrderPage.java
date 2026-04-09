@@ -27,7 +27,7 @@ class OrderCard extends VBox {
     private int orderId;
 
     private int cardWidth = 350;
-    private int cardHeight = 800;
+    private int cardHeight = 750;
 
     public OrderCard(int orderId) {
         this.orderId = orderId;
@@ -231,11 +231,6 @@ public class OrderPage extends BasePage {
     private ComboBox<String> sortCombo;
     private HBox sortBox;
     private ChangeListener<String> sortComboListener;
-
-    @Override
-    protected User getCurrentUser() {
-        return controller.getUser();
-    }
 
     public void setController(DashboardController controller) {
         this.controller = controller;

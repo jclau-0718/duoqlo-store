@@ -39,8 +39,6 @@ public class DashboardController {
         setCart(user);
     }
 
-    public User getUser() { return this.user; };
-
     public void setCart(User user) {
         int userId = user.getId();
 
@@ -59,36 +57,6 @@ public class DashboardController {
         Navigator.goTo(cartPage.initialize());
     }
 
-    public void loadAllDataOnce(Runnable onSuccess) {
-        Task<Void> preloadTask = new Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                updateMessage("Fetching products...");
-                allProducts = productDAO.getAllProducts();
-
-                updateMessage("Loading product sizes...");
-                for (Product product : allProducts) {
-                    getCachedProductSizes(product.getProductId());
-                }
-
-                updateMessage("Loading product images...");
-                preloadAllImages();
-
-                updateMessage("Preparing UI...");
-                return null;
-            }
-        };
-
-        preloadTask.setOnSucceeded(e -> {
-            if (onSuccess != null) {
-                onSuccess.run();
-            }
-        });
-
-        new Thread(preloadTask).start();
-    }
-
-    // Also add this method to get the Task for message binding:
     public Task<Void> createPreloadTask(Runnable onSuccess) {
         Task<Void> preloadTask = new Task<>() {
             @Override

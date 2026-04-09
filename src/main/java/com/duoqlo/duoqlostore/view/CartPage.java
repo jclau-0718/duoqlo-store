@@ -187,11 +187,6 @@ public class CartPage extends BasePage{
         numItems = controller.getCartItemList().size();
     }
 
-    @Override
-    protected User getCurrentUser() {
-        return controller.getUser();
-    }
-
     private StackPane buildHeader(){
         Label label = new Label("CART PAGE");
         label.setId("cart-label");

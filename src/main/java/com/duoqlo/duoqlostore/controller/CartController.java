@@ -26,8 +26,6 @@ public class CartController {
         this.user = user;
     }
 
-    public User getUser() { return this.user; }
-
     public void setCart(Cart cart) {
         this.cart = cart;
 

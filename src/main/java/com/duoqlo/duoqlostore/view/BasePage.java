@@ -19,8 +19,6 @@ import java.util.Objects;
 import java.util.Stack;
 
 public abstract class BasePage {
-    protected abstract User getCurrentUser();
-
     private User user;
 
     protected int windowWidth = 1000;
@@ -70,11 +68,7 @@ public abstract class BasePage {
         logoButton.setGraphic(logoView);
         logoButton.setId("logo-button");
         logoButton.setOnAction(e -> {
-            DashboardController dashboardController = new DashboardController();
-            dashboardController.setUser(getCurrentUser());
-
-            UserDashboard userDash = new UserDashboard(dashboardController);
-            Navigator.goTo(userDash.initialize());
+            Navigator.openUserDashboard();
         });
 
         //Profile Button

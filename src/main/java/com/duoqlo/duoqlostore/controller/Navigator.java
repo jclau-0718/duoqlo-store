@@ -1,5 +1,7 @@
 package com.duoqlo.duoqlostore.controller;
 
+import com.duoqlo.duoqlostore.model.User;
+import com.duoqlo.duoqlostore.view.UserDashboard;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -7,6 +9,10 @@ import java.util.Stack;
 
 public class Navigator {
     private static Stage stage;
+    private static User loggedInUser;
+    private static DashboardController dashboardController;
+    private static UserDashboard userDash;
+
     private static Stack<Scene> backStack = new Stack<>();
     private static Stack<Scene> forwardStack = new Stack<>();
 
@@ -36,17 +42,25 @@ public class Navigator {
         }
     }
 
-    public static void goBack() {
-        if (stage != null && !backStack.isEmpty()) {
-            forwardStack.push(stage.getScene());
-            stage.setScene(backStack.pop());
+    public static void setUser(User user) {
+        loggedInUser = user;
+    }
+
+    public static void setDashboardController(DashboardController dashController) {
+        dashboardController = dashController;
+        if (loggedInUser != null) {
+            dashboardController.setUser(loggedInUser);
+        } else {
+            System.err.println("User is null (Source: Navigator)");
         }
     }
 
-    public static void goForward(){
-        if(stage != null && !forwardStack.isEmpty()){
-            backStack.push(stage.getScene());
-            stage.setScene(forwardStack.pop());
+    public static void openUserDashboard() {
+        if (dashboardController != null) {
+            userDash = new UserDashboard(dashboardController);
+            goTo(userDash.initialize());
+        } else {
+            System.err.println("dashController is null (Source: Navigator)");
         }
     }
 

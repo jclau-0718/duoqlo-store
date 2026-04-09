@@ -79,11 +79,6 @@ public class UserDashboard extends BasePage {
         this.controller = controller;
     }
 
-    @Override
-    protected User getCurrentUser() {
-        return controller.getUser();
-    }
-
     public StackPane getBody() { return this.body; };
 
     public StackPane buildHeader() {

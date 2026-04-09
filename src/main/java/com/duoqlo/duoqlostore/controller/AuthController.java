@@ -47,13 +47,19 @@ public class AuthController {
 
                     if (loggedInUser != null) {
                         DashboardController dashboardController = new DashboardController();
-                        dashboardController.setUser(loggedInUser);
 
-                        UserDashboard userDash = new UserDashboard(dashboardController);
+                        Navigator.setUser(loggedInUser);
+                        Navigator.setDashboardController(dashboardController);
 
-                        Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
-
-                        stage.setScene(userDash.initialize());
+                        Navigator.openUserDashboard();
+//                        DashboardController dashboardController = new DashboardController();
+//                        dashboardController.setUser(loggedInUser);
+//
+//                        UserDashboard userDash = new UserDashboard(dashboardController);
+//
+//                        Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
+//
+//                        stage.setScene(userDash.initialize());
                         return true;
                     }
                 }
