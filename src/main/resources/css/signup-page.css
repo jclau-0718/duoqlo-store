@@ -46,7 +46,8 @@
     -fx-border-color: #B6281B #B6281B #B6281B #B6281B; /* red red red red */
 }
 
-.password-field, .password-field:focused {
+.password-field, .password-field:focused,
+.text-field.visible-pass, .text-field.visible-pass:focused {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-border-width: 0;

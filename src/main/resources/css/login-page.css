@@ -3,7 +3,7 @@
     -fx-background-radius: 5;
 }
 
-.text-field, .password-box {
+.user-field, .password-box {
     -fx-background-color: transparent;
     -fx-font-family: Arial;
     -fx-font-size: 18;
@@ -14,7 +14,7 @@
     -fx-text-fill: black;
 }
 
-.text-field {
+.user-field {
     -fx-padding: 18 17 16 17;
 }
 
@@ -22,23 +22,24 @@
     -fx-padding: 0;
 }
 
-.text-field:focused, .text-field.valid:focused, .password-box.focused, .password-box.valid.focused{
+.user-field:focused, .user-field.valid:focused, .password-box.focused, .password-box.valid.focused{
     -fx-border-color: #D4D4D4 #D4D4D4 #FE6C01 #D4D4D4;  /* grey grey orange grey */
 }
 
-.text-field.error, .password-box.error {
+.user-field.error, .password-box.error {
     -fx-border-color: #D22F20 #D22F20 #D22F20 #D22F20;
 }
 
-.text-field.error:focused, .password-box.error.focused {
+.user-field.error:focused, .password-box.error.focused {
     -fx-border-color: #B6281B #B6281B #B6281B #B6281B; /* red red red red */
 }
 
-.text-field.valid, .password-box.valid{
+.user-field.valid, .password-box.valid{
     -fx-border-color: #EBEBEB #EBEBEB #FE6C01 #EBEBEB;
 }
 
-.password-field, .password-field:focused {
+.password-field, .password-field:focused,
+.text-field.visible-pass, .text-field.visible-pass:focused {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-border-width: 1;

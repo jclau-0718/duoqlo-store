@@ -292,15 +292,7 @@ public class OrderPage extends BasePage {
         root.setCenter(body);
         root.setOnMouseClicked(e -> root.requestFocus()); //Allow unfocus on TextField
 
-        Scene scene = new Scene(root,
-                Screen.getPrimary().getVisualBounds().getWidth(),
-                Screen.getPrimary().getVisualBounds().getHeight());
-
-        scene.getStylesheets().add(
-                Objects.requireNonNull(
-                        getClass().getResource("/css/order-page.css")
-                ).toExternalForm()
-        );
+        Scene scene = setScene(root, "order-page");
 
         return scene;
     }

@@ -6,14 +6,14 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.geometry.*;
 
 import java.util.Objects;
 
-import javafx.scene.paint.Color;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 public class LogInPage extends AuthPage {
     private AuthController controller;
@@ -45,40 +45,6 @@ public class LogInPage extends AuthPage {
         return logoView;
     }
 
-    public void showErrorBox(StackPane root) {
-        FontIcon errorIcon = new FontIcon("far-times-circle");
-        errorIcon.setIconColor(Color.RED);
-
-        Label errorLabel = new Label("Invalid username or password.");
-        errorLabel.setId("popup-error");
-
-        errorBox = popUpBox(errorIcon, errorLabel);
-        errorBox.setId("popup-box");
-
-        root.getChildren().add(errorBox);
-        StackPane.setAlignment(errorBox, Pos.TOP_CENTER);
-        StackPane.setMargin(errorBox, new Insets(20, 0, 0, 0));
-
-        playPopUpAnimation(errorBox);
-    }
-
-    public void showSuccessBox(StackPane root) {
-        FontIcon checkIcon = new FontIcon("far-check-circle");
-        checkIcon.setIconColor(Color.LIMEGREEN);
-
-        Label successLabel = new Label("Account created!");
-        successLabel.setId("popup-success");
-
-        successBox = popUpBox(checkIcon, successLabel);
-        successBox.setId("popup-box");
-
-        root.getChildren().add(successBox);
-        StackPane.setAlignment(successBox, Pos.TOP_CENTER);
-        StackPane.setMargin(successBox, new Insets(20, 0, 0, 0));
-
-        playPopUpAnimation(successBox);
-    }
-
     public VBox createLogInForm(){
         int height = 100;
         int width = 300;
@@ -95,6 +61,7 @@ public class LogInPage extends AuthPage {
 
         //Username Section
         TextField usernameField = createTextField("Username");
+        usernameField.getStyleClass().add("user-field");
         Label usernameErrorLabel = createErrorLabel();
         VBox usernameBox = createTextFieldBox(usernameField, usernameErrorLabel);
         usernameBox.setMinWidth(360);
@@ -103,17 +70,35 @@ public class LogInPage extends AuthPage {
 
         //Password Section
         PasswordField passwordField = createPasswordField("Password");
-        HBox passwordHBox = createPasswordHBox(passwordField);
+
+        TextField visiblePassField = new TextField();
+        visiblePassField.setPromptText(passwordField.getPromptText());
+
+        HBox passwordHBox = createPasswordHBox(passwordField, visiblePassField);
         Label passwordErrorLabel = createErrorLabel();
         VBox passwordBox = createPasswordVBox(passwordHBox, passwordErrorLabel);
 
+        usernameField.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER) {
+                passwordField.requestFocus();
+            }
+        });
+
         controller.setupPasswordValidation(passwordHBox, passwordField, passwordErrorLabel);
 
+        passwordField.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER) {
+                logInButton.fire();;
+            }
+        });
+
         logInButton.setOnAction(e -> {
+            System.out.println(passwordField.getText());
+
             if (controller.handleLogIn(e, usernameField.getText(), passwordField.getText())) {
                 return;
             } else {
-                controller.setTextFieldError(true);
+                controller.setUserFieldError(true);
                 controller.setPassFieldError(true);
                 controller.updateUsernameFieldStyle(usernameField, usernameErrorLabel);
                 controller.updatePassFieldStyle(passwordHBox, passwordField, passwordErrorLabel);
@@ -170,15 +155,7 @@ public class LogInPage extends AuthPage {
             alert.show(root, "Account created!", Pos.TOP_CENTER);
         }
 
-        Platform.runLater(() -> {root.requestFocus();}); //Remove initial focus on Username TextField
-        root.setOnMouseClicked(e -> root.requestFocus()); //Allow unfocus on TextField
-
-        Scene logInScene = new Scene(root, windowWidth, windowHeight);
-        logInScene.getStylesheets().add(
-                Objects.requireNonNull(
-                        getClass().getResource("/css/login-page.css")
-                ).toExternalForm()
-        );
+        Scene logInScene = setScene(root, "login-page");
 
         return logInScene;
     }

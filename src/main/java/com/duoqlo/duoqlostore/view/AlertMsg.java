@@ -126,7 +126,6 @@ public class AlertMsg {
                 """.formatted(rgb));
 
         HBox contentBox = new HBox(icon, label);
-//        contentBox.setMinHeight(Double.POSITIVE_INFINITY);
         contentBox.setAlignment(Pos.CENTER);
         HBox.setMargin(icon, new Insets(0, 20, 0, 0));
 
@@ -180,7 +179,8 @@ public class AlertMsg {
         }
 
         popupBox.setMaxHeight(60);
-        popupBox.setMaxWidth(250);
+        popupBox.setPrefWidth(250);
+        popupBox.setMaxWidth(300);
         VBox.setVgrow(contentBox, Priority.ALWAYS);
         VBox.setMargin(contentBox, new Insets(10, 0, 0, 0));
 

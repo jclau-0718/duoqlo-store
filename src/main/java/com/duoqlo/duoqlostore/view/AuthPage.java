@@ -1,6 +1,5 @@
 package com.duoqlo.duoqlostore.view;
 
-import com.duoqlo.duoqlostore.model.UserDAO;
 import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -14,10 +13,7 @@ import javafx.scene.paint.Color;
 import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-public abstract class AuthPage {
-
-    int windowWidth = 1000;
-    int windowHeight = 750;
+public abstract class AuthPage extends ApplicationPage {
 
     public abstract Scene initialize();
 
@@ -25,7 +21,7 @@ public abstract class AuthPage {
         TextField textField = new TextField();
         textField.setPromptText(promptText);
         textField.setMaxWidth(Double.MAX_VALUE);
-        textField.setId("text-field");
+//        textField.setId("text-field");
         textField.setPadding(new Insets(6,8,8,8));
 
         textField.focusedProperty().addListener((obs, oldVal, newVal) -> {
@@ -67,33 +63,107 @@ public abstract class AuthPage {
         return passwordField;
     }
 
-    public HBox createPasswordHBox(PasswordField passwordField) {
+    public HBox createPasswordHBox(PasswordField passwordField, TextField visiblePassField) {
+        FontIcon eyeSlashIcon = new FontIcon("far-eye-slash");
+        eyeSlashIcon.setIconColor(Color.LIGHTGRAY);
+        eyeSlashIcon.setIconSize(16);
+
         FontIcon eyeIcon = new FontIcon("far-eye");
-        eyeIcon.setIconColor(Color.GREY);
+        eyeIcon.setIconColor(Color.LIGHTGRAY);
         eyeIcon.setIconSize(16);
 
-        Button showPassButton = new Button("",eyeIcon);
-        showPassButton.setId("showpass-button");
-        showPassButton.setFocusTraversable(false); // Prevent stealing focus
-        showPassButton.setVisible(false);
+        visiblePassField.getStyleClass().add("visible-pass");
+        visiblePassField.setVisible(false);
+        visiblePassField.setManaged(false);
+
+        Button toggleButton = new Button("",eyeSlashIcon);
+        toggleButton.setId("showpass-button");
+        toggleButton.setFocusTraversable(false); // Prevent stealing focus
+        toggleButton.setVisible(false);
+
+        final boolean[] passwordVisible = {false};
+
+        toggleButton.setOnAction(e -> {
+            if (!passwordVisible[0]) {
+                //Make password visible
+                //Update toggleButton icon
+                toggleButton.setGraphic(eyeIcon);
+
+                visiblePassField.setText(passwordField.getText());
+                visiblePassField.setVisible(true);
+                visiblePassField.setManaged(true);
+                visiblePassField.requestFocus();
+                visiblePassField.positionCaret(visiblePassField.getText().length());
+
+                passwordField.setVisible(false);
+                passwordField.setManaged(false);
+
+                passwordVisible[0] = true;
+            } else {
+                //Hide password
+                //Update toggleButton icon
+                toggleButton.setGraphic(eyeSlashIcon);
+
+                passwordField.setText(visiblePassField.getText());
+                passwordField.setVisible(true);
+                passwordField.setManaged(true);
+                passwordField.requestFocus();
+                passwordField.positionCaret(passwordField.getText().length());
+
+                visiblePassField.setVisible(false);
+                visiblePassField.setManaged(false);
+
+                passwordVisible[0] = false;
+            }
+        });
 
         HBox passwordHBox = new HBox();
-        passwordHBox.getChildren().addAll(passwordField, showPassButton);
+        passwordHBox.getChildren().addAll(passwordField, visiblePassField, toggleButton);
         passwordHBox.setFillHeight(true); //Allow node to expand height until HBox height
         passwordHBox.getStyleClass().add("password-box");
         passwordHBox.setAlignment(Pos.CENTER_LEFT);
         HBox.setHgrow(passwordField, Priority.ALWAYS);
-        HBox.setHgrow(showPassButton, Priority.ALWAYS);
+        HBox.setHgrow(visiblePassField, Priority.ALWAYS);
+        HBox.setHgrow(toggleButton, Priority.ALWAYS);
 
         passwordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal) { //If text field is focused
+            if (newVal) { //If password field is focused
                 passwordField.setStyle("-fx-prompt-text-fill: transparent");
                 passwordHBox.getStyleClass().add("focused");
+                toggleButton.setVisible(true);
             } else {
-                passwordField.setStyle("-fx-prompt-text-fill: gray");
-                passwordHBox.getStyleClass().remove("focused");
+                if (!passwordField.getText().isEmpty()) {
+                    passwordField.setStyle("-fx-prompt-text-fill: transparent");
+                    passwordHBox.getStyleClass().add("focused");
+                    toggleButton.setVisible(true);
+                } else {
+                    passwordField.setStyle("-fx-prompt-text-fill: gray");
+                    passwordHBox.getStyleClass().remove("focused");
+                    toggleButton.setVisible(false);
+                }
             }
-            showPassButton.setVisible(newVal);
+        });
+
+        visiblePassField.textProperty().addListener((obs, oldVal, newVal) -> {
+            passwordField.setText(visiblePassField.getText());
+        });
+
+        visiblePassField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) { //If text field is focused
+                visiblePassField.setStyle("-fx-prompt-text-fill: transparent");
+                passwordHBox.getStyleClass().add("focused");
+                toggleButton.setVisible(true);
+            } else {
+                if (!visiblePassField.getText().isEmpty()) {
+                    visiblePassField.setStyle("-fx-prompt-text-fill: transparent");
+                    passwordHBox.getStyleClass().add("focused");
+                    toggleButton.setVisible(true);
+                } else {
+                    visiblePassField.setStyle("-fx-prompt-text-fill: gray");
+                    passwordHBox.getStyleClass().remove("focused");
+                    toggleButton.setVisible(false);
+                }
+            }
         });
 
         return passwordHBox;

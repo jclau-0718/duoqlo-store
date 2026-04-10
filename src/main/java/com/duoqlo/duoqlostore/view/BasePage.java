@@ -18,11 +18,8 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.util.Objects;
 import java.util.Stack;
 
-public abstract class BasePage {
+public abstract class BasePage extends ApplicationPage {
     private User user;
-
-    protected int windowWidth = 1000;
-    protected int windowHeight = 750;
 
     protected StackPane header;
     protected HBox actionBox;

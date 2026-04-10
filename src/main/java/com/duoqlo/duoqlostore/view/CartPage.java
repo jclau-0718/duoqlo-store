@@ -374,36 +374,6 @@ public class CartPage extends BasePage{
         return contentBox;
     }
 
-    public Scene initialize(){
-        HBox contentBox;
-
-        if (controller.listIsEmpty()) {
-            contentBox = buildCartEmptyBox();
-        } else {
-            contentBox = buildContentBox();
-        }
-
-        body = new StackPane();
-        body.getChildren().add(contentBox);
-
-        root = new BorderPane();
-        root.setTop(buildHeader());
-        root.setCenter(body);
-        root.setOnMouseClicked(e -> root.requestFocus()); //Allow unfocus on TextField
-
-        Scene scene = new Scene(root,
-                Screen.getPrimary().getVisualBounds().getWidth(),
-                Screen.getPrimary().getVisualBounds().getHeight());
-
-        scene.getStylesheets().add(
-                Objects.requireNonNull(
-                        getClass().getResource("/css/cart-page.css")
-                ).toExternalForm()
-        );
-
-        return scene;
-    }
-
     private void refreshPage() {
         System.out.println("Refreshing cart page...");
 
@@ -424,5 +394,27 @@ public class CartPage extends BasePage{
         body.getChildren().add(contentBox);
 
         System.out.println("Cart page refreshed. Items left: " + numItems);
+    }
+
+    public Scene initialize(){
+        HBox contentBox;
+
+        if (controller.listIsEmpty()) {
+            contentBox = buildCartEmptyBox();
+        } else {
+            contentBox = buildContentBox();
+        }
+
+        body = new StackPane();
+        body.getChildren().add(contentBox);
+
+        root = new BorderPane();
+        root.setTop(buildHeader());
+        root.setCenter(body);
+        root.setOnMouseClicked(e -> root.requestFocus()); //Allow unfocus on TextField
+
+        Scene scene = setScene(root, "cart-page");
+
+        return scene;
     }
 }

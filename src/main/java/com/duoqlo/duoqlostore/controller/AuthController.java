@@ -3,7 +3,6 @@ package com.duoqlo.duoqlostore.controller;
 import com.duoqlo.duoqlostore.model.User;
 import com.duoqlo.duoqlostore.model.UserDAO;
 import com.duoqlo.duoqlostore.view.LogInPage;
-import com.duoqlo.duoqlostore.view.UserDashboard;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -20,15 +19,17 @@ public class AuthController {
     public PostcodeService postcodeService = new PostcodeService();
 
     private boolean registered = false;
-    private final boolean[] textFieldError = {false};
+    private final boolean[] userFieldError = {false};
+    private final boolean[] userFieldTyped = {false};
     private final boolean[] passFieldError = {false};
+    private final boolean[] passFieldTyped = {false};
 
     public boolean getRegistered() {
         return registered;
     }
 
-    public void setTextFieldError(boolean hasError) {
-        this.textFieldError[0] = hasError;
+    public void setUserFieldError(boolean hasError) {
+        this.userFieldError[0] = hasError;
     }
 
     public void setPassFieldError(boolean hasError) {
@@ -77,34 +78,54 @@ public class AuthController {
         return BCrypt.checkpw(enteredPassword, storedPassword);
     }
 
-    public void updateUsernameFieldStyle(TextField textField, Label errorLabel) {
-        boolean focused = textField.isFocused();
+    public void updateUsernameFieldStyle(TextField usernameField, Label errorLabel) {
+        boolean focused = usernameField.isFocused();
+        boolean isEmpty = usernameField.getText().isEmpty();
 
-        textField.getStyleClass().removeAll("error","valid");
+        usernameField.getStyleClass().removeAll("error","valid");
+        System.out.println("Focused: "+focused);
+        System.out.println(("User typed: "+userFieldTyped[0]));
 
-        if(textFieldError[0]) {
-            textField.getStyleClass().add("error");
-            errorLabel.setText("Please enter a valid username.");
-            errorLabel.setVisible(true);
-        } else if (textField.getText().isEmpty()) {
-            textField.getStyleClass().add("error");
-            errorLabel.setText("Please enter a username.");
-            errorLabel.setVisible(true);
+        if(!userFieldTyped[0]) {
+            return;
         } else {
-            textField.getStyleClass().add("valid");
-            errorLabel.setText("");
-            errorLabel.setVisible(false);
-
-            if (!focused && textField.getText().isEmpty()) {
-                textField.getStyleClass().remove("valid");
+            if (isEmpty) {
+                usernameField.getStyleClass().removeAll("valid", "error");
+                errorLabel.setText("");
+                errorLabel.setVisible(false);
             }
         }
 
+        if(userFieldError[0]) {
+            usernameField.getStyleClass().add("error");
+            errorLabel.setText("Please enter a valid username.");
+            errorLabel.setVisible(true);
+        } else if (isEmpty) {
+            usernameField.getStyleClass().add("error");
+            errorLabel.setText("Please enter a username.");
+            errorLabel.setVisible(true);
+        } else {
+            usernameField.getStyleClass().remove("error");
+            errorLabel.setText("");
+            errorLabel.setVisible(false);
+        }
     }
+
     public void updatePassFieldStyle(HBox passwordBox, TextField passwordField, Label errorLabel){
         boolean focused = passwordField.isFocused();
+        boolean isEmpty = passwordField.getText().isEmpty();
 
         passwordBox.getStyleClass().removeAll("error","valid");
+
+        if (!passFieldTyped[0]) {
+            return;
+        } else {
+            if (isEmpty) {
+                passwordBox.getStyleClass().add("error");
+                errorLabel.setText("Please enter a password.");
+                errorLabel.setVisible(true);
+            }
+        }
 
         if (focused) {
             if (!passwordBox.getStyleClass().contains("focused")) {
@@ -118,26 +139,22 @@ public class AuthController {
             passwordBox.getStyleClass().add("error");
             errorLabel.setText("Please enter a valid password.");
             errorLabel.setVisible(true);
-        } else if (passwordField.getText().isEmpty()) {
+        } else if (isEmpty) {
             passwordBox.getStyleClass().add("error");
             errorLabel.setText("Please enter a password.");
             errorLabel.setVisible(true);
         } else {
-            passwordBox.getStyleClass().add("valid");
+            passwordBox.getStyleClass().remove("error");
             errorLabel.setText("");
             errorLabel.setVisible(false);
-
-            if (!focused && passwordField.getText().isEmpty()) {
-                passwordBox.getStyleClass().remove("valid");
-            }
         }
     }
 
     public void setupUsernameValidation (TextField usernameField, Label usernameErrorLabel){
 
         usernameField.textProperty().addListener((obs, oldVal, newVal) -> {
-            textFieldError[0] = false;
-
+            userFieldError[0] = false;
+            userFieldTyped[0] = true;
             updateUsernameFieldStyle(usernameField, usernameErrorLabel);
         });
 
@@ -150,7 +167,7 @@ public class AuthController {
     public void setupPasswordValidation (HBox passwordBox, PasswordField passwordField, Label passErrorLabel) {
         passwordField.textProperty().addListener((obs, oldVal, newVal) -> {
             passFieldError[0] = false;
-
+            passFieldTyped[0] = true;
             updatePassFieldStyle(passwordBox, passwordField, passErrorLabel);
         });
 

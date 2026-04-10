@@ -25,6 +25,43 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.io.File;
 import java.util.*;
 
+class ImageCarousel {
+    private int currentIndex = 0;
+    private List<Image> images = new ArrayList<>();
+
+    public void setImages(List<Image> images) {
+        this.images = images;
+        this.currentIndex = 0;
+    }
+
+    public Image getCurrentImage() {
+        if (images == null || images.isEmpty()) return null;
+        return images.get(currentIndex);
+    }
+
+    public boolean hasNext() {
+        return images != null && currentIndex < images.size() - 1;
+    }
+
+    public boolean hasPrevious() {
+        return images != null && currentIndex > 0;
+    }
+
+    public Image next() {
+        if (hasNext()) {
+            currentIndex++;
+        }
+        return getCurrentImage();
+    }
+
+    public Image previous() {
+        if (hasPrevious()) {
+            currentIndex--;
+        }
+        return getCurrentImage();
+    }
+}
+
 public class UserDashboard extends BasePage {
     private DashboardController controller;
     private AlertMsg alert = new AlertMsg();
@@ -1020,15 +1057,7 @@ public class UserDashboard extends BasePage {
         root.setTop(buildHeader());
         root.setCenter(body);
 
-        Scene scene = new Scene(root,
-                Screen.getPrimary().getVisualBounds().getWidth(),
-                Screen.getPrimary().getVisualBounds().getHeight());
-
-        scene.getStylesheets().add(
-                Objects.requireNonNull(
-                        getClass().getResource("/css/home-page.css")
-                ).toExternalForm()
-        );
+        Scene scene = setScene(root, "home-page");
 
         loadAllDataOnce();
 
@@ -1036,39 +1065,3 @@ public class UserDashboard extends BasePage {
     }
 }
 
-class ImageCarousel {
-    private int currentIndex = 0;
-    private List<Image> images = new ArrayList<>();
-
-    public void setImages(List<Image> images) {
-        this.images = images;
-        this.currentIndex = 0;
-    }
-
-    public Image getCurrentImage() {
-        if (images == null || images.isEmpty()) return null;
-        return images.get(currentIndex);
-    }
-
-    public boolean hasNext() {
-        return images != null && currentIndex < images.size() - 1;
-    }
-
-    public boolean hasPrevious() {
-        return images != null && currentIndex > 0;
-    }
-
-    public Image next() {
-        if (hasNext()) {
-            currentIndex++;
-        }
-        return getCurrentImage();
-    }
-
-    public Image previous() {
-        if (hasPrevious()) {
-            currentIndex--;
-        }
-        return getCurrentImage();
-    }
-}

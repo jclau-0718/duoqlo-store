@@ -9,6 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.util.*;
@@ -18,7 +19,7 @@ public class SignUpPage extends AuthPage{
     private SignUpValidation validator = new SignUpValidation(controller, controller.userDAO);
 
     private TextField firstNameField, lastNameField, emailField, address1Field, address2Field,
-            cityField, postcodeField, stateField, usernameField;
+            cityField, postcodeField, stateField, usernameField, visiblePassField, visibleConfirmPassField;
     private PasswordField passwordField, confirmPassField;
     private HBox passwordHBox, confirmPassHBox;
 
@@ -115,13 +116,21 @@ public class SignUpPage extends AuthPage{
 
         // Password
         passwordField = createPasswordField("Password");
-        passwordHBox = createPasswordHBox(passwordField);
+
+        visiblePassField = new TextField();
+        visiblePassField.setPromptText(passwordField.getPromptText());
+
+        passwordHBox = createPasswordHBox(passwordField, visiblePassField);
         passwordError = createErrorLabel();
         passwordBox = createPasswordVBox(passwordHBox, passwordError);
 
         // Confirm Password
         confirmPassField = createPasswordField("Confirm Password");
-        confirmPassHBox = createPasswordHBox(confirmPassField);
+
+        visibleConfirmPassField = new TextField();
+        visibleConfirmPassField.setPromptText(confirmPassField.getPromptText());
+
+        confirmPassHBox = createPasswordHBox(confirmPassField, visibleConfirmPassField);
         confirmPassError = createErrorLabel();
         confirmPassBox = createPasswordVBox(confirmPassHBox, confirmPassError);
 
@@ -138,8 +147,7 @@ public class SignUpPage extends AuthPage{
         validator.setupTextFieldValidation(postcodeField, postcodeError);
         validator.setupTextFieldValidation(stateField, stateError);
         validator.setupTextFieldValidation(usernameField, usernameError);
-        validator.setupPasswordsValidation(passwordHBox, passwordField, passwordError,
-                                           confirmPassHBox, confirmPassField, confirmPassError, usernameField);
+        validator.setupPasswordsValidation(passwordBox, confirmPassBox, usernameField);
     }
 
     public ArrayList<String> getFieldsValue() {
@@ -274,6 +282,7 @@ public class SignUpPage extends AuthPage{
 
             root.setCenter(personalInfoForm());
         });
+
         signUpButton.setOnAction(e -> {
             try {
                 ArrayList<String> fieldValues = getFieldsValue();
@@ -345,20 +354,12 @@ public class SignUpPage extends AuthPage{
 
     public Scene initialize(){
         initFieldBoxes();
-//        packPersonalInfoTf();
         packFieldError();
 
         BorderPane root = new BorderPane();
         root.setCenter(personalInfoForm());
-        Platform.runLater(() -> {root.requestFocus();}); //Remove initial focus on Username TextField
-        root.setOnMouseClicked(e -> root.requestFocus()); //Allow unfocus on TextField
 
-        Scene signUpScene = new Scene(root, windowWidth, windowHeight);
-        signUpScene.getStylesheets().add(
-                Objects.requireNonNull(
-                        getClass().getResource("/css/signup-page.css")
-                ).toExternalForm()
-        );
+        Scene signUpScene = setScene(root, "signup-page");
 
         return signUpScene;
     }

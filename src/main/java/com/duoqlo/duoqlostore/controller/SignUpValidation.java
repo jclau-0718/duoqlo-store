@@ -1,10 +1,12 @@
 package com.duoqlo.duoqlostore.controller;
 
 import com.duoqlo.duoqlostore.model.UserDAO;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 import java.util.Map;
 
@@ -15,7 +17,6 @@ public class SignUpValidation {
     private final boolean[] hasError = {false};
     private final boolean[] passError = {false};
     private final boolean[] confirmPassError = {false};
-    private String textfieldErrorString;
     private String passfieldErrorString;
     private String confirmPassErrorString;
     private String password = "";
@@ -53,6 +54,7 @@ public class SignUpValidation {
     private String setTextFieldErrorLabel(TextField textField, String value) {
 
         String fieldName = textField.getPromptText().toLowerCase();
+
 
         if(value == null){
             value = "";
@@ -264,13 +266,13 @@ public class SignUpValidation {
         return null;
     }
 
-    private void updateFieldStyle(TextField textField, Label errorLabel) {
+    private void updateFieldStyle(TextField textField, Label errorLabel, String errorString) {
         boolean focused = textField.isFocused();
 
         textField.getStyleClass().removeAll("error", "valid");
 
         if (hasError[0]) {
-            errorLabel.setText(textfieldErrorString);
+            errorLabel.setText(errorString);
             errorLabel.setVisible(true);
             textField.getStyleClass().add("error");
         } else {
@@ -294,7 +296,9 @@ public class SignUpValidation {
             errorLabel.setVisible(true);
             passwordHBox.getStyleClass().add("error");
             if(focused) {
-                passwordHBox.getStyleClass().add("focused");
+                if (!passwordHBox.getStyleClass().contains("focused")) {
+                    passwordHBox.getStyleClass().add("focused");
+                }
             } else {
                 passwordHBox.getStyleClass().remove("focused");
             }
@@ -304,7 +308,9 @@ public class SignUpValidation {
             passwordHBox.getStyleClass().add("valid");
 
             if(focused) {
-                passwordHBox.getStyleClass().add("focused");
+                if (!passwordHBox.getStyleClass().contains("focused")) {
+                    passwordHBox.getStyleClass().add("focused");
+                }
             } else {
                 passwordHBox.getStyleClass().remove("focused");
             }
@@ -312,8 +318,6 @@ public class SignUpValidation {
             if (!focused && passwordField.getText().isEmpty()) {
                 passwordHBox.getStyleClass().remove("valid");
             }
-
-            System.out.println("Password styling: "+passwordHBox.getStyleClass());
         }
     }
 
@@ -327,7 +331,9 @@ public class SignUpValidation {
             errorLabel.setVisible(true);
             passwordHBox.getStyleClass().add("error");
             if (focused) {
-                passwordHBox.getStyleClass().add("focused");
+                if (!passwordHBox.getStyleClass().contains("focused")) {
+                    passwordHBox.getStyleClass().add("focused");
+                }
             } else {
                 passwordHBox.getStyleClass().remove("focused");
             }
@@ -337,7 +343,9 @@ public class SignUpValidation {
             passwordHBox.getStyleClass().add("valid");
 
             if (focused) {
-                passwordHBox.getStyleClass().add("focused");
+                if (!passwordHBox.getStyleClass().contains("focused")) {
+                    passwordHBox.getStyleClass().add("focused");
+                }
             } else {
                 passwordHBox.getStyleClass().remove("focused");
             }
@@ -349,90 +357,184 @@ public class SignUpValidation {
     }
 
     public void setupTextFieldValidation(TextField textField, Label errorLabel) {
+        final String[] errorString = {""};
+
         //Text Listener (main validation)
         textField.textProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null) newVal = "";
             newVal = newVal.trim();
 
-            textfieldErrorString = setTextFieldErrorLabel(textField,newVal);
-            hasError[0] = textfieldErrorString != null;
+            errorString[0] = setTextFieldErrorLabel(textField,newVal);
+            hasError[0] = errorString[0] != null;
 
-            updateFieldStyle(textField, errorLabel);
+            updateFieldStyle(textField, errorLabel, errorString[0]);
         });
 
         // Focus Listener (updates style only)
         textField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            updateFieldStyle(textField, errorLabel);
+            updateFieldStyle(textField, errorLabel, errorString[0]);
         });
     }
 
-    public void setupPasswordsValidation(HBox passwordHBox, PasswordField passwordField, Label passErrorLabel,
-                                         HBox confirmPassHBox, PasswordField confirmPassField, Label confirmPassErrorLabel,
-                                         TextField usernameField) {
+    public void setupPasswordsValidation(VBox passwordBox, VBox confirmPassBox, TextField usernameField) {
+        HBox passwordHBox = new HBox();
+        PasswordField passwordField = new PasswordField();
+        TextField visiblePassField = new TextField();
+        Label passwordErrorLabel = new Label();
 
-        addPassListeners(passwordHBox, confirmPassHBox, passwordField, confirmPassField, passErrorLabel, confirmPassErrorLabel, usernameField);
-        addConfirmPassListeners(confirmPassHBox, confirmPassField, confirmPassErrorLabel);
+        HBox confirmPassHBox = new HBox();
+        PasswordField confirmPassField = new PasswordField();
+        TextField visibleConfirmPassField = new TextField();
+        Label confirmPassErrorLabel = new Label();
+
+        //Unpack passwordBox
+        for (Node node : passwordBox.getChildren()) {
+            if (node instanceof HBox) {
+                passwordHBox = (HBox) node;
+
+                for (Node hboxNode : passwordHBox.getChildren()) {
+                    if (hboxNode instanceof PasswordField) {
+                        passwordField = (PasswordField) hboxNode;
+                    } else if (hboxNode instanceof TextField) {
+                        visiblePassField = (TextField) hboxNode;
+                    }
+                }
+            }
+
+            if (node instanceof Label) {
+                passwordErrorLabel = (Label) node;
+            }
+        }
+
+        //Unpack confirmPassBox
+        for (Node node : confirmPassBox.getChildren()) {
+            if (node instanceof  HBox) {
+                confirmPassHBox = (HBox) node;
+
+                for (Node hboxNode : confirmPassHBox.getChildren()) {
+                    if (hboxNode instanceof PasswordField) {
+                        confirmPassField = (PasswordField) hboxNode;
+                    } else if (hboxNode instanceof TextField) {
+                        visibleConfirmPassField = (TextField) hboxNode;
+                    }
+                }
+            }
+
+            if (node instanceof Label) {
+                confirmPassErrorLabel = (Label) node;
+            }
+        }
+
+        System.out.println("Password field found: " + (passwordField != null));
+        System.out.println("Visible password field found: " + (visiblePassField != null));
+        System.out.println("Confirm password field found: " + (confirmPassField != null));
+        System.out.println("Visible confirm password field found: " + (visibleConfirmPassField != null));
+
+
+        addPasswordListeners(
+                passwordHBox, confirmPassHBox,
+                passwordField, confirmPassField,
+                visiblePassField, visibleConfirmPassField,
+                passwordErrorLabel, confirmPassErrorLabel,
+                usernameField);
+
+        addConfirmPassListeners(
+                confirmPassHBox, confirmPassField,
+                visibleConfirmPassField, confirmPassErrorLabel);
     }
 
-    public void addPassListeners(HBox passwordHBox, HBox confirmPassHBox, PasswordField passwordField, PasswordField confirmPassField, Label passErrorLabel, Label confirmPassErrorLabel, TextField usernameField) {
-        passwordField.textProperty().addListener((obs, oldVal, newVal) -> {
+    public void addPasswordListeners(HBox passwordHBox, HBox confirmPassHBox,
+                                     PasswordField passwordField, PasswordField confirmPassField,
+                                     TextField visiblePassField, TextField visibleConfirmPassField,
+                                     Label passErrorLabel, Label confirmPassErrorLabel,
+                                     TextField usernameField) {
+        Runnable validatePassword = () -> {
+            String currentPassword = passwordField.isVisible() ?
+                    passwordField.getText() : visiblePassField.getText();
 
-            if (newVal == null) newVal = "";
-            newVal = newVal.trim();
+            if (currentPassword == null) currentPassword = "";
+            currentPassword = currentPassword.trim();
 
-            password = newVal;
-            System.out.println("Password: "+password);
-            System.out.println("Confirm Pass: "+confirmPassword);
+            password = currentPassword;
 
             if (!password.equals(confirmPassword)) {
                 confirmPassError[0] = true;
                 confirmPassErrorString = "Passwords do not match.";
-                if (confirmPassField.getText().isEmpty()) {
+                if (confirmPassField.getText().isEmpty() && confirmPassField.isVisible()) {
                     confirmPassError[0] = false;
                 }
             } else {
                 confirmPassError[0] = false;
             }
 
-            System.out.println(usernameField.getText());
-            passfieldErrorString = setPassFieldErrorLabel(newVal, usernameField.getText());
+            passfieldErrorString = setPassFieldErrorLabel(currentPassword, usernameField.getText());
             passError[0] = passfieldErrorString != null;
 
             updatePassStyle(passwordField, passErrorLabel, passwordHBox);
             updateConfirmPassStyle(confirmPassField, confirmPassErrorLabel, confirmPassHBox);
+        };
+
+        passwordField.textProperty().addListener((obs, oldVal, newVal) -> {
+            validatePassword.run();
         });
 
         passwordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             updatePassStyle(passwordField, passErrorLabel, passwordHBox);
             updateConfirmPassStyle(confirmPassField, confirmPassErrorLabel, confirmPassHBox);
         });
+
+        visiblePassField.textProperty().addListener((obs, oldVal, newVal) -> {
+            // Sync to password field
+            if (!passwordField.isVisible()) {
+                passwordField.setText(newVal);
+            }
+            validatePassword.run();
+        });
+
+        visiblePassField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            updatePassStyle(passwordField, passErrorLabel, passwordHBox);
+            updateConfirmPassStyle(confirmPassField, confirmPassErrorLabel, confirmPassHBox);
+        });
     }
 
-    public void addConfirmPassListeners(HBox confirmPassHBox, PasswordField confirmPassField, Label errorLabel) {
-        confirmPassField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal == null) newVal = "";
-            newVal = newVal.trim();
+    public void addConfirmPassListeners(HBox confirmPassHBox, PasswordField confirmPassField,
+                                        TextField visibleConfirmPassField, Label errorLabel) {
+        Runnable validateConfirmPassword = () -> {
+            String currentConfirmPassword = confirmPassField.isVisible() ?
+                    confirmPassField.getText() : visibleConfirmPassField.getText();
 
-            confirmPassword = newVal;
-            System.out.println("Password: "+password);
-            System.out.println("Confirm Pass: "+confirmPassword);
+            if (currentConfirmPassword == null) currentConfirmPassword = "";
+            currentConfirmPassword = currentConfirmPassword.trim();
 
-            if(!confirmPassword.equals(password)) {
+            confirmPassword = currentConfirmPassword;
+
+            if (!confirmPassword.equals(password)) {
                 confirmPassError[0] = true;
-            } else {
-                confirmPassError[0] = false;
-            }
-
-            if (confirmPassError[0]) {
                 confirmPassErrorString = "Passwords do not match.";
             } else {
+                confirmPassError[0] = false;
                 confirmPassErrorString = "";
             }
 
             updateConfirmPassStyle(confirmPassField, errorLabel, confirmPassHBox);
+        };
+
+        confirmPassField.textProperty().addListener((obs, oldVal, newVal) -> {
+            validateConfirmPassword.run();
         });
 
         confirmPassField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            updateConfirmPassStyle(confirmPassField, errorLabel, confirmPassHBox);
+        });
+
+        visibleConfirmPassField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (!confirmPassField.isVisible()) {
+                confirmPassField.setText(newVal);
+            }
+            validateConfirmPassword.run();
+        });
+
+        visibleConfirmPassField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             updateConfirmPassStyle(confirmPassField, errorLabel, confirmPassHBox);
         });
     }
@@ -443,7 +545,6 @@ public class SignUpValidation {
 
         for (Map.Entry<TextField, Label> entry : fieldErrorMap.entrySet()) {
             TextField field = entry.getKey();
-            System.out.println("field: " + field.getPromptText());
             Label errorLabel = entry.getValue();
 
             String error = setTextFieldErrorLabel(field, field.getText());
@@ -473,7 +574,7 @@ public class SignUpValidation {
 
         if (firstInvalidField != null) {
             // Set the shared error state to the first invalid field's error
-            textfieldErrorString = firstInvalidError;
+            String errorString = firstInvalidError;
             hasError[0] = true;
 
             // Request focus
@@ -482,7 +583,7 @@ public class SignUpValidation {
 
             Label firstErrorLabel = fieldErrorMap.get(firstInvalidField);
             if (firstErrorLabel != null) {
-                updateFieldStyle(firstInvalidField, firstErrorLabel);
+                updateFieldStyle(firstInvalidField, firstErrorLabel, errorString);
             }
 
             return true;
@@ -494,8 +595,7 @@ public class SignUpValidation {
     public void revalidateField(TextField textField, Label errorLabel) {
         String error = setTextFieldErrorLabel(textField, textField.getText());
         hasError[0] = error != null;
-        textfieldErrorString = error;
-        updateFieldStyle(textField, errorLabel);
+        updateFieldStyle(textField, errorLabel, error);
     }
 
 }
