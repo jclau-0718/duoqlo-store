@@ -84,7 +84,7 @@ public class LogInPage extends AuthPage {
             }
         });
 
-        controller.setupPasswordValidation(passwordHBox, passwordField, passwordErrorLabel);
+        controller.setupPasswordValidation(passwordHBox, passwordField);
 
         passwordField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER) {

@@ -14,7 +14,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.ArrayList;
 
-public class AuthController {
+public class AuthController extends UserController {
     private UserDAO userDAO = new UserDAO();
     private PostcodeService postcodeService = new PostcodeService();
 
@@ -53,14 +53,6 @@ public class AuthController {
                         Navigator.setDashboardController(dashboardController);
 
                         Navigator.openUserDashboard();
-//                        DashboardController dashboardController = new DashboardController();
-//                        dashboardController.setUser(loggedInUser);
-//
-//                        UserDashboard userDash = new UserDashboard(dashboardController);
-//
-//                        Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
-//
-//                        stage.setScene(userDash.initialize());
                         return true;
                     }
                 }
@@ -78,101 +70,13 @@ public class AuthController {
         return BCrypt.checkpw(enteredPassword, storedPassword);
     }
 
+
     public void updateUsernameFieldStyle(TextField usernameField, Label errorLabel) {
-        boolean focused = usernameField.isFocused();
-        boolean isEmpty = usernameField.getText().isEmpty();
-
-        usernameField.getStyleClass().removeAll("error","valid");
-
-        if(!userFieldTyped[0]) {
-            return;
-        } else {
-            if (isEmpty) {
-                usernameField.getStyleClass().removeAll("valid", "error");
-                errorLabel.setText("");
-                errorLabel.setVisible(false);
-            }
-        }
-
-        if(userFieldError[0]) {
-            usernameField.getStyleClass().add("error");
-            errorLabel.setText("Please enter a valid username.");
-            errorLabel.setVisible(true);
-        } else if (isEmpty) {
-            usernameField.getStyleClass().add("error");
-            errorLabel.setText("Please enter a username.");
-            errorLabel.setVisible(true);
-        } else {
-            usernameField.getStyleClass().remove("error");
-            errorLabel.setText("");
-            errorLabel.setVisible(false);
-        }
+        super.updateUsernameFieldStyle(usernameField, errorLabel, userFieldTyped[0], userFieldError[0]);
     }
 
-    public void updatePassFieldStyle(HBox passwordBox, TextField passwordField, Label errorLabel){
-        boolean focused = passwordField.isFocused();
-        boolean isEmpty = passwordField.getText().isEmpty();
-
-        passwordBox.getStyleClass().removeAll("error","valid");
-
-        if (!passFieldTyped[0]) {
-            return;
-        } else {
-            if (isEmpty) {
-                passwordBox.getStyleClass().add("error");
-                errorLabel.setText("Please enter a password.");
-                errorLabel.setVisible(true);
-            }
-        }
-
-        if (focused) {
-            if (!passwordBox.getStyleClass().contains("focused")) {
-                passwordBox.getStyleClass().add("focused");
-            }
-        } else {
-            passwordBox.getStyleClass().remove("focused");
-        }
-
-        if(passFieldError[0]) {
-            passwordBox.getStyleClass().add("error");
-            errorLabel.setText("Please enter a valid password.");
-            errorLabel.setVisible(true);
-        } else if (isEmpty) {
-            passwordBox.getStyleClass().add("error");
-            errorLabel.setText("Please enter a password.");
-            errorLabel.setVisible(true);
-        } else {
-            passwordBox.getStyleClass().remove("error");
-            errorLabel.setText("");
-            errorLabel.setVisible(false);
-        }
-    }
-
-    public void setupUsernameValidation (TextField usernameField, Label usernameErrorLabel){
-
-        usernameField.textProperty().addListener((obs, oldVal, newVal) -> {
-            userFieldError[0] = false;
-            userFieldTyped[0] = true;
-            updateUsernameFieldStyle(usernameField, usernameErrorLabel);
-        });
-
-        //Focus Listener (update style only)
-        usernameField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            updateUsernameFieldStyle(usernameField, usernameErrorLabel);
-        });
-    }
-
-    public void setupPasswordValidation (HBox passwordBox, PasswordField passwordField, Label passErrorLabel) {
-        passwordField.textProperty().addListener((obs, oldVal, newVal) -> {
-            passFieldError[0] = false;
-            passFieldTyped[0] = true;
-            updatePassFieldStyle(passwordBox, passwordField, passErrorLabel);
-        });
-
-        //Focus Listener (update style only)
-        passwordField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            updatePassFieldStyle(passwordBox, passwordField, passErrorLabel);
-        });
+    public void updatePassFieldStyle(HBox passwordBox, TextField passwordField, Label errorLabel) {
+        super.updatePassFieldStyle(passwordBox, passwordField, errorLabel, passFieldTyped[0], passFieldError[0]);
     }
 
     public void backToLogIn(ActionEvent e) {
