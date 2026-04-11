@@ -1,7 +1,7 @@
 package com.duoqlo.duoqlostore.view;
 
 import com.duoqlo.duoqlostore.controller.AuthController;
-import com.duoqlo.duoqlostore.controller.SignUpValidation;
+import com.duoqlo.duoqlostore.controller.InfoValidation;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -9,14 +9,13 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.util.*;
 
 public class SignUpPage extends AuthPage{
     private AuthController controller = new AuthController();
-    private SignUpValidation validator = new SignUpValidation(controller, controller.userDAO);
+    private InfoValidation validator = new InfoValidation();
 
     private TextField firstNameField, lastNameField, emailField, address1Field, address2Field,
             cityField, postcodeField, stateField, usernameField, visiblePassField, visibleConfirmPassField;
@@ -44,7 +43,7 @@ public class SignUpPage extends AuthPage{
         Region rightLine = createLine();
 
         Label titleLabel = new Label(title);
-        titleLabel.setId("section-title");
+        titleLabel.getStyleClass().add("section-title");
 
         HBox titleBox = new HBox();
         titleBox.setAlignment(Pos.CENTER);
@@ -56,11 +55,10 @@ public class SignUpPage extends AuthPage{
         HBox.setMargin(titleLabel, new Insets(0,5,0,5));
         HBox.setMargin(rightLine, new Insets(0,0,0,5));
 
-
         return titleBox;
     }
 
-    public void initFieldBoxes() {
+    private void initFieldBoxes() {
         // First Name
         firstNameField = createTextField("First Name");
         firstNameError = createErrorLabel();
@@ -137,7 +135,7 @@ public class SignUpPage extends AuthPage{
         setupAllFieldValidation();
     }
 
-    public void setupAllFieldValidation() {
+    private void setupAllFieldValidation() {
         validator.setupTextFieldValidation(firstNameField, firstNameError);
         validator.setupTextFieldValidation(lastNameField, lastNameError);
         validator.setupTextFieldValidation(emailField, emailError);
@@ -150,7 +148,7 @@ public class SignUpPage extends AuthPage{
         validator.setupPasswordsValidation(passwordBox, confirmPassBox, usernameField);
     }
 
-    public ArrayList<String> getFieldsValue() {
+    private ArrayList<String> getFieldsValue() {
         ArrayList<String> values = new ArrayList<>();
 
         values.add(usernameField.getText());
@@ -167,7 +165,7 @@ public class SignUpPage extends AuthPage{
         return values;
     }
 
-    public void packFieldError() {
+    private void packFieldError() {
         fieldErrorMap.put(firstNameField, firstNameError);
         fieldErrorMap.put(lastNameField, lastNameError);
         fieldErrorMap.put(emailField, emailError);
@@ -178,7 +176,7 @@ public class SignUpPage extends AuthPage{
         fieldErrorMap.put(stateField, stateError);
     }
 
-    public GridPane personalInfoBox() {
+    private GridPane personalInfoBox() {
         HBox titleSection = createSectionTitle("Personal Info");
 
         GridPane grid = new GridPane();
@@ -223,7 +221,7 @@ public class SignUpPage extends AuthPage{
         HBox titleSection = createSectionTitle("Login Details");
 
         Label description = new Label("Use these details to log in to your account.");
-        description.setId("description");
+        description.getStyleClass().add("description");
 
         VBox loginDetailsBox = new VBox();
         loginDetailsBox.getChildren().addAll(titleSection, description, usernameBox, passwordBox, confirmPassBox);
@@ -317,11 +315,11 @@ public class SignUpPage extends AuthPage{
 
     public VBox createForm(Node bodyBox, Node buttonBox) {
         Label title = new Label("SIGN UP");
-        title.setId("signup-title");
+        title.getStyleClass().add("signup-title");
 
         VBox form = new VBox();
         form.getChildren().addAll(title, bodyBox, buttonBox);
-        form.setId("signup-form");
+        form.getStyleClass().add("signup-form");
         form.setMaxHeight(167);
         form.setMaxWidth(500);
         form.setAlignment(Pos.CENTER);

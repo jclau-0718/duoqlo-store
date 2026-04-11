@@ -2,18 +2,18 @@
     -fx-background-color: #F0EDED;
 }
 
-#logo-button {
+.logo-button {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-padding: 0 0 0 0;
 }
 
-#header-menu {
+.header {
     -fx-background-color: #F0EDED;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); /* Floating effect */
 }
 
-#header-menu .button{
+.header .button {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-font-size: 14px;
@@ -21,7 +21,7 @@
     -fx-padding: 5 10 5 10;
 }
 
-#cart-label {
+.cart-label {
     -fx-text-fill: #FE6C01;
     -fx-font-family: Arial;
     -fx-font-size: 25;
@@ -47,13 +47,13 @@
     -fx-border-color: white;
 }
 
-#search-bar .button {
+.search-bar .button {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-opacity: 0.5;
 }
 
-#search-bar .button:hover {
+.search-bar .button:hover {
     -fx-opacity: 1;
 }
 

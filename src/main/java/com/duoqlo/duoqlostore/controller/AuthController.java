@@ -15,8 +15,8 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.util.ArrayList;
 
 public class AuthController {
-    public UserDAO userDAO = new UserDAO();
-    public PostcodeService postcodeService = new PostcodeService();
+    private UserDAO userDAO = new UserDAO();
+    private PostcodeService postcodeService = new PostcodeService();
 
     private boolean registered = false;
     private final boolean[] userFieldError = {false};
@@ -83,8 +83,6 @@ public class AuthController {
         boolean isEmpty = usernameField.getText().isEmpty();
 
         usernameField.getStyleClass().removeAll("error","valid");
-        System.out.println("Focused: "+focused);
-        System.out.println(("User typed: "+userFieldTyped[0]));
 
         if(!userFieldTyped[0]) {
             return;

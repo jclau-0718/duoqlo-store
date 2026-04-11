@@ -9,13 +9,14 @@ public class User {
     private String password;
     private String firstName;
     private String lastName;
+    private String fullName;
     private String email;
     private String address_line1;
     private String address_line2;
     private String city;
     private int postal_code;
     private String state;
-    private String country = "MALAYSIA";
+    private String country = "Malaysia";
     private String fullAddress;
     private String role;
     private int is_active;
@@ -37,9 +38,19 @@ public class User {
         this.user_id = user_id;
     }
 
+    public void setUsername(String username) { this.username = username; }
+
     public void setPassword(String password){
         this.password = password;
     }
+
+    public void setFullName(String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.fullName = firstName + " " + lastName;
+    }
+
+    public void setEmail(String email) { this.email = email; }
 
     public void setRole(String role) {
         this.role = role;
@@ -49,8 +60,30 @@ public class User {
         this.is_active = is_active;
     }
 
-    public void setFullAddress(String fullAddress) {
-        this.fullAddress = fullAddress;
+    public void setFullAddress(String addressLine1, String addressLine2,
+                               String city, int postCode,
+                               String state) {
+
+        this.address_line1 = addressLine1;
+        this.address_line2 = addressLine2;
+        this.city = city;
+        this.postal_code = postCode;
+        this.state = state;
+
+        //Pack full address
+        StringBuilder fullAddress = new StringBuilder();
+        fullAddress.append(addressLine1);
+
+        if (addressLine2 != null && !addressLine2.trim().isEmpty()) {
+            fullAddress.append(", ").append(addressLine2);
+        }
+
+        fullAddress.append(", ").append(postCode)
+                .append(" ").append(city)
+                .append(", ").append(state)
+                .append(", ").append(this.country);
+
+        this.fullAddress = fullAddress.toString();
     }
 
     public int getId() {
@@ -92,6 +125,8 @@ public class User {
     public int getPostalCode() {
         return this.postal_code;
     }
+
+    public String getPostalCodeStr() { return String.valueOf(this.postal_code); }
 
     public String getState() {
         return this.state;

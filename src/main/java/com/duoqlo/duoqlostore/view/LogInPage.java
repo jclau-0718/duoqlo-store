@@ -132,7 +132,7 @@ public class LogInPage extends AuthPage {
         logInBox.setMaxWidth(width);
         logInBox.setAlignment(Pos.CENTER);
         logInBox.setPadding(new Insets(20,20,20,20));
-        logInBox.setId("login-box");
+        logInBox.getStyleClass().add("login-box");
 
         VBox.setMargin(usernameBox, new Insets(usernameTopPad,0,0,0));
         VBox.setMargin(passwordBox, new Insets(passwordTopPad,0,0,0));

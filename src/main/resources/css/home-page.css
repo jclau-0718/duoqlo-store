@@ -2,21 +2,21 @@
     -fx-background-color: #F0EDED;
 }
 
-#logo-button {
+.logo-button {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-padding: 0 0 0 0;
 }
 
-#header-menu {
+.header {
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); /* Floating effect */
 }
 
-#header-menu, #category-menu{
+.header, .category-menu{
     -fx-background-color: #F0EDED;
 }
 
-#header-menu .button{
+.header .button{
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-font-size: 14px;
@@ -25,12 +25,12 @@
     -fx-stroke-width: 3;
 }
 
-.search-button.ikonli-font-icon {
-    -fx-stroke-width: 0.1;
+.header .button:hover {
+    -fx-text-fill: black;
 }
 
-#header-menu .button:hover {
-    -fx-text-fill: black;
+.search-button.ikonli-font-icon {
+    -fx-stroke-width: 0.1;
 }
 
 .search-field {
@@ -52,17 +52,17 @@
     -fx-border-color: white;
 }
 
-#search-bar .button {
+.search-bar .button {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-opacity: 0.5;
 }
 
-#search-bar .button:hover {
+.search-bar .button:hover {
     -fx-opacity: 1;
 }
 
-#category-menu .toggle-button {
+.category-menu .toggle-button {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-font-family: 'Arial';
@@ -73,20 +73,20 @@
     -fx-padding: 0 0 5 0;
 }
 
-#category-menu .toggle-button:hover {
+.category-menu .toggle-button:hover {
     -fx-text-fill: #FE6C01;
     -fx-border-color: transparent transparent #FE6C01 transparent;
     -fx-border-width: 0 0 2 0;
 }
 
 /* Remove border from selected button when ANY button in category-menu is hovered */
-#category-menu:hover .toggle-button:selected {
+.category-menu:hover .toggle-button:selected {
     -fx-border-color: transparent;
     -fx-border-width: 0;
 }
 
-#category-menu .toggle-button:selected,
-#category-menu .toggle-button:hover:selected {
+.category-menu .toggle-button:selected,
+.category-menu .toggle-button:hover:selected {
     -fx-text-fill: #FE6C01;
     -fx-border-color: transparent transparent #FE6C01 transparent;
     -fx-border-width: 0 0 2 0;

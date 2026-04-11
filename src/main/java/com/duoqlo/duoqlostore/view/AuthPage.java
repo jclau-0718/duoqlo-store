@@ -21,15 +21,12 @@ public abstract class AuthPage extends ApplicationPage {
         TextField textField = new TextField();
         textField.setPromptText(promptText);
         textField.setMaxWidth(Double.MAX_VALUE);
-//        textField.setId("text-field");
         textField.setPadding(new Insets(6,8,8,8));
 
         textField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if(!newVal) {
-                textField.setId("text-field");
                 textField.setStyle("-fx-prompt-text-fill: gray");
             } else {
-                textField.setId("text-field-focus");
                 textField.setStyle("-fx-prompt-text-fill: transparent");
             }
         });
@@ -41,7 +38,7 @@ public abstract class AuthPage extends ApplicationPage {
         Label label = new Label();
         label.setVisible(false);
         label.setManaged(true);
-        label.setId("error-msg");
+        label.getStyleClass().add("error-msg");
 
         return label;
     }
@@ -49,7 +46,6 @@ public abstract class AuthPage extends ApplicationPage {
     public VBox createTextFieldBox(TextField textField, Label errorLabel) {
         VBox box = new VBox(textField, errorLabel);
         box.setFillWidth(true);
-        box.setId("text-field-box");
 
         VBox.setMargin(errorLabel, new Insets(3, 0, 0, 0));
 
@@ -77,7 +73,7 @@ public abstract class AuthPage extends ApplicationPage {
         visiblePassField.setManaged(false);
 
         Button toggleButton = new Button("",eyeSlashIcon);
-        toggleButton.setId("showpass-button");
+        toggleButton.getStyleClass().add("showpass-button");
         toggleButton.setFocusTraversable(false); // Prevent stealing focus
         toggleButton.setVisible(false);
 
@@ -181,7 +177,7 @@ public abstract class AuthPage extends ApplicationPage {
 
     public Button primaryButton(String text) {
         Button button = new Button(text);
-        button.setId("primary-button");
+        button.getStyleClass().add("primary-button");
         button.setMaxWidth(Double.MAX_VALUE);
 
         return button;
@@ -189,61 +185,9 @@ public abstract class AuthPage extends ApplicationPage {
 
     public Button secondaryButton(String text) {
         Button button = new Button(text);
-        button.setId("secondary-button");
+        button.getStyleClass().add("secondary-button");
         button.setMaxWidth(Double.MAX_VALUE);
 
         return button;
-    }
-
-    public HBox popUpBox(FontIcon icon, Label label) {
-        HBox hbox = new HBox(icon, label);
-        hbox.setAlignment(Pos.CENTER);
-        hbox.setPadding(new Insets(20, 10, 20 , 20));
-        hbox.setMaxHeight(50);
-        hbox.setMaxWidth(250);
-        HBox.setMargin(icon, new Insets(0, 7, 0, 0));
-
-        return hbox;
-    }
-
-    public void playPopUpAnimation(Node node) {
-        node.setOpacity(0);     //Start invisible
-        node.setTranslateY(-5); //5px above
-
-        //Fade in
-        FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), node);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-
-        //Move down
-        TranslateTransition moveDown = new TranslateTransition(Duration.seconds(0.5), node);
-        moveDown.setFromY(-50);
-        moveDown.setToY(0);
-
-        ParallelTransition enterAnimation = new ParallelTransition(fadeIn, moveDown);
-
-        //Wait for 5 seconds
-        PauseTransition pause = new PauseTransition(Duration.seconds(5));
-
-        // Fade out animation
-        FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), node);
-        fadeOut.setFromValue(1);
-        fadeOut.setToValue(0);
-
-        //Remove node after fade out
-        fadeOut.setOnFinished(event -> {
-            if (node.getParent() != null) {
-                ((javafx.scene.layout.Pane) node.getParent()).getChildren().remove(node);
-            }
-        });
-
-        // Chain all animations
-        SequentialTransition fullAnimation = new SequentialTransition(
-                enterAnimation,
-                pause,
-                fadeOut
-        );
-
-        fullAnimation.play();
     }
 }

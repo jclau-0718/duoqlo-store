@@ -1,9 +1,7 @@
 package com.duoqlo.duoqlostore.controller;
 
 import com.duoqlo.duoqlostore.model.*;
-import com.duoqlo.duoqlostore.view.CartPage;
-import com.duoqlo.duoqlostore.view.OrderPage;
-import com.duoqlo.duoqlostore.view.UserDashboard;
+import com.duoqlo.duoqlostore.view.*;
 import javafx.concurrent.Task;
 import javafx.scene.image.Image;
 
@@ -15,11 +13,10 @@ import java.util.stream.Collectors;
 public class DashboardController {
     private User user;
     private String role;
+    private CartController cartController;
+    private OrderController orderController;
+    private ProfileController profileController;
     private ProductDAO productDAO = new ProductDAO();
-    private CartController cartController = new CartController();
-    private Cart cart;
-    private CartDAO cartDAO = new CartDAO();
-    private OrderDAO orderDAO = new OrderDAO();
 
     private Map<Integer, List<ProductSize>> sizesCache = new HashMap<>();
     private Map<String, List<Image>> imageCache = new ConcurrentHashMap<>();
@@ -35,26 +32,27 @@ public class DashboardController {
 
     public void setUser(User user){
         this.user = user;
-
-        setCart(user);
-    }
-
-    public void setCart(User user) {
-        int userId = user.getId();
-
-        if (!cartDAO.userCartExists(userId)) {
-            this.cart = cartDAO.createCart(userId);
-        } else {
-            this.cart = cartDAO.getUserCart(userId);
-        }
+        cartController = new CartController(this.user);
+        orderController = new OrderController(this.user);
+        profileController = new ProfileController(this.user);
     }
 
     public void openCartPage(){
-        this.cartController.setUser(this.user);
-        this.cartController.setCart(this.cart);
-
         CartPage cartPage = new CartPage(this.cartController);
+
         Navigator.goTo(cartPage.initialize());
+    }
+
+    public void openOrdersPage() {
+        OrderPage orderPage = new OrderPage(this.orderController);
+
+        Navigator.goTo(orderPage.initialize());
+    }
+
+    public void openProfilePage() {
+        ProfilePage profilePage = new ProfilePage(this.profileController);
+
+        Navigator.goTo(profilePage.initialize());
     }
 
     public Task<Void> createPreloadTask(Runnable onSuccess) {
@@ -351,28 +349,6 @@ public class DashboardController {
     }
 
     public boolean addToCart(int productSizeId, int quantity, double subTotal) {
-        int cartId = cart.getCartId();
-
-        CartItem cartItem = new CartItem(cartId, productSizeId, quantity, subTotal);
-
-        if(cartDAO.insertCartItem(cartItem)) {
-            cart.addCartItem(cartItem);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    public List<Order> getOrders() {
-        System.out.println(user.getId());
-        return orderDAO.getOrders(user.getId());
-    }
-
-    public void openOrderPage() {
-        OrderPage orderPage = new OrderPage();
-        orderPage.setController(this);
-
-        Navigator.goTo(orderPage.initialize());
+        return this.cartController.addCartItem(productSizeId, quantity, subTotal);
     }
 }

@@ -1,4 +1,4 @@
-#login-box {
+.login-box {
     -fx-background-color: white;
     -fx-background-radius: 5;
 }
@@ -50,50 +50,32 @@
     -fx-padding: 18 17 16 17;
 }
 
-#showpass-button {
+.showpass-button {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-cursor: hand;
 }
 
-#error-msg {
+.error-msg {
     -fx-text-fill: red;
     -fx-font-size: 14;
 }
 
-#popup-error, #popup-success {
-    -fx-font-size: 15;
-}
-
-#popup-error {
-    -fx-text-fill: red;
-}
-
-#popup-success {
-    -fx-text-fill: limegreen;
-}
-
-#popup-box {
-    -fx-background-color: white;
-    -fx-background-radius: 5;
-    -fx-padding: 20 10 20 10;
-}
-
-#primary-button, #secondary-button {
+.primary-button, .secondary-button {
     -fx-font-family: Arial;
     -fx-font-size: 18;
     -fx-border-radius: 5;
     -fx-border-width: 2;
 }
 
-#primary-button {
+.primary-button {
     -fx-background-color: #FE6C01;          /* orange color */
     -fx-border-color: #FE6C01;
     -fx-text-fill: white;
     -fx-cursor: hand;
 }
 
-#secondary-button {
+.secondary-button {
     -fx-background-color: transparent;
     -fx-border-color: #EBEBEB;
     -fx-cursor: hand;

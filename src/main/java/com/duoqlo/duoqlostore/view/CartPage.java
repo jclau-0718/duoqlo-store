@@ -187,27 +187,28 @@ public class CartPage extends BasePage{
         numItems = controller.getCartItemList().size();
     }
 
+    @Override
+    public void openCartPage() {
+        Navigator.goTo(this.initialize());
+    }
+
+    @Override
+    public void openOrdersPage() {
+        controller.openOrdersPage();
+    }
+
+    @Override
+    public void openProfilePage() {
+        controller.openProfilePage();
+    }
+
     private StackPane buildHeader(){
         Label label = new Label("CART PAGE");
-        label.setId("cart-label");
+        label.getStyleClass().add("cart-label");
         HBox labelBox = new HBox(label);
         labelBox.setAlignment(Pos.CENTER);
 
-        // Orders Button
-        FontIcon receiptIcon = new FontIcon("fas-receipt");
-        receiptIcon.setIconSize(iconSize);
-        receiptIcon.setIconColor(themeColor);
-        Button ordersButton = new Button("", receiptIcon);
-        ordersButton.setOnAction(e -> controller.openOrderPage());
-
-        HBox actionBox = new HBox(10);
-        actionBox.setMinWidth(300);
-        actionBox.setPrefWidth(300);
-        actionBox.setMaxWidth(300);
-        actionBox.getChildren().add(ordersButton);
-        actionBox.setAlignment(Pos.CENTER_RIGHT);
-
-        StackPane header = createHeaderBox(labelBox, actionBox);
+        StackPane header = createHeaderBox(labelBox);
 
         return header;
     }
@@ -224,6 +225,7 @@ public class CartPage extends BasePage{
                 if (removed) {
                     refreshPage();
                 } else {
+                    System.out.println("Error");
                 }
             });
             cartRow.getStyleClass().add("cart-row");

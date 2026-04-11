@@ -2,6 +2,7 @@ package com.duoqlo.duoqlostore.model;
 
 import javax.xml.crypto.Data;
 import java.sql.*;
+import java.util.List;
 
 public class UserDAO extends DataAccessObject<User> {
     @Override
@@ -81,58 +82,134 @@ public class UserDAO extends DataAccessObject<User> {
         }
     }
 
-    private String packFullAddress(String addressLine1, String addressLine2,
-                                   String city, String postCode,
-                                   String state) {
-        String fullAddress = addressLine1 + ", " +
-                             addressLine2 + ", " +
-                             city + ", " +
-                             postCode + ", " +
-                             state + ", Malaysia";
+    public boolean updateInfo(int userId, List<String> infoList) {
+        String firstName = infoList.get(0);
+        String lastName = infoList.get(1);
+        String email = infoList.get(2);
 
-        return fullAddress;
-    }
+        String sql = """
+                UPDATE users
+                SET first_name = ?,
+                last_name = ?,
+                email = ?
+                WHERE user_id = ?;
+                """;
 
-    public String getRole(int userID){
-        String sql = "SELECT role FROM users WHERE user_id = ?";
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-        try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, firstName);
+            pstmt.setString(2, lastName);
+            pstmt.setString(3, email);
+            pstmt.setInt(4, userId);
 
-            pstmt.setInt(1, userID);
-            ResultSet rs = pstmt.executeQuery();
-
-            if(rs.next()){
-                String role = rs.getString("role");
-                return role;
-            }
-
-            return null;
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return null;
         }
+
+        return false;
     }
 
-    public int getIDByUsername(String username) {
+    public boolean updateAddress(int userId, List<String> addresList) {
+        String addressLine1 = addresList.get(0);
+        String addressLine2 = addresList.get(1);
+        String city = addresList.get(2);
+        int postalCode = Integer.parseInt(addresList.get(3));
+        String state = addresList.get(4);
 
-        String sql = "SELECT user_id FROM users WHERE username = ?";
+        String sql = """
+                UPDATE users
+                SET address_line1 = ?,
+                    address_line2 = ?,
+                    city = ?,
+                    postal_code = ?,
+                    state = ?
+                WHERE user_id = ?;
+                """;
 
-        try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, addressLine1);
+            pstmt.setString(2, addressLine2);
+            pstmt.setString(3, city);
+            pstmt.setInt(4, postalCode);
+            pstmt.setString(5, state);
+            pstmt.setInt(6, userId);
+
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean updateCredentials(int userId, List<String> credentialList) {
+        String username = credentialList.get(0);
+        String password = credentialList.get(1);
+
+        String sql = """
+                UPDATE users
+                SET username = ?,
+                    password = ?
+                WHERE user_id = ?;
+                """;
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, username);
-            ResultSet rs = pstmt.executeQuery();
+            pstmt.setString(2, password);
+            pstmt.setInt(3, userId);
 
-            if(rs.next()){
-                int userID = rs.getInt("user_id");
-                return userID;
-            }
-
-            return -1; //user_id not found
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return -1; //user_id not found
+        }
+
+        return false;
+    }
+
+    public User getUserById(int userId) {
+        String sql = "SELECT * FROM users WHERE user_id = ?";
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            User user = new User();
+
+            pstmt.setInt(1, userId);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            if(rs.next()){
+                user.setId(rs.getInt("user_id"));
+                user.setUsername(rs.getString("username"));
+                user.setFullName(rs.getString("first_name"), rs.getString("last_name"));
+                user.setEmail(rs.getString("email"));
+                user.setFullAddress(
+                        rs.getString("address_line1"),
+                        rs.getString("address_line2"),
+                        rs.getString("city"),
+                        rs.getInt("postal_code"),
+                        rs.getString("state")
+                );
+                user.setRole(rs.getString("role"));
+                user.setIs_active(rs.getInt("is_active"));
+            }
+
+            return user;
+
+        } catch (SQLException e){
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -154,13 +231,15 @@ public class UserDAO extends DataAccessObject<User> {
 
             if(rs.next()){
                 user.setId(rs.getInt("user_id"));
-                user.setFullAddress(packFullAddress(
+                user.setFullName(rs.getString("first_name"), rs.getString("last_name"));
+                user.setEmail(rs.getString("email"));
+                user.setFullAddress(
                         rs.getString("address_line1"),
                         rs.getString("address_line2"),
                         rs.getString("city"),
-                        String.valueOf(rs.getInt("postal_code")),
+                        rs.getInt("postal_code"),
                         rs.getString("state")
-                ));
+                );
                 user.setRole(rs.getString("role"));
                 user.setIs_active(rs.getInt("is_active"));
             }

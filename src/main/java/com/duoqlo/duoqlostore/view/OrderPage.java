@@ -1,6 +1,7 @@
 package com.duoqlo.duoqlostore.view;
 
-import com.duoqlo.duoqlostore.controller.DashboardController;
+import com.duoqlo.duoqlostore.controller.Navigator;
+import com.duoqlo.duoqlostore.controller.OrderController;
 import com.duoqlo.duoqlostore.model.*;
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Insets;
@@ -10,13 +11,8 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.stage.Screen;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 class OrderCard extends VBox {
     private OrderDAO orderDAO = new OrderDAO();
@@ -226,14 +222,29 @@ class OrderCard extends VBox {
 }
 
 public class OrderPage extends BasePage {
-    private DashboardController controller;
+    private OrderController controller;
 
     private ComboBox<String> sortCombo;
     private HBox sortBox;
     private ChangeListener<String> sortComboListener;
 
-    public void setController(DashboardController controller) {
+    public OrderPage(OrderController controller) {
         this.controller = controller;
+    }
+
+    @Override
+    public void openCartPage() {
+        controller.openCartPage();
+    }
+
+    @Override
+    public void openOrdersPage() {
+        Navigator.goTo(this.initialize());
+    }
+
+    @Override
+    public void openProfilePage() {
+        controller.openProfilePage();
     }
 
     private StackPane buildHeader() {
@@ -242,20 +253,13 @@ public class OrderPage extends BasePage {
         HBox labelBox = new HBox(label);
         labelBox.setAlignment(Pos.CENTER);
 
-        FontIcon cartIcon = new FontIcon("fas-shopping-cart");
-        cartIcon.setIconSize(iconSize);
-        cartIcon.setIconColor(themeColor);
-        Button cartButton = new Button("", cartIcon);
-        cartButton.setOnAction(e -> controller.openCartPage());
-
         HBox actionBox = new HBox(10);
         actionBox.setMinWidth(300);
         actionBox.setPrefWidth(300);
         actionBox.setMaxWidth(300);
-        actionBox.getChildren().add(cartButton);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
 
-        StackPane header = createHeaderBox(labelBox, actionBox);
+        StackPane header = createHeaderBox(labelBox);
 
         return header;
     }

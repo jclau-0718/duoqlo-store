@@ -10,9 +10,9 @@ import javafx.scene.layout.VBox;
 
 import java.util.Map;
 
-public class SignUpValidation {
-    private AuthController authController;
-    private UserDAO userDAO;
+public class InfoValidation {
+    private UserDAO userDAO = new UserDAO();
+    private PostcodeService postcodeService = new PostcodeService();
 
     private final boolean[] hasError = {false};
     private final boolean[] passError = {false};
@@ -22,17 +22,12 @@ public class SignUpValidation {
     private String password = "";
     private String confirmPassword = "";
 
-    public SignUpValidation(AuthController authController, UserDAO userDAO){
-        this.authController = authController;
-        this.userDAO = userDAO;
-    }
-
     private String capsFirst(String word) {
         return word.substring(0, 1).toUpperCase() + word.substring(1);
     }
 
     private boolean hasAddr(String postcode){
-        if(authController.postcodeService.lookup(postcode) != null) {
+        if(postcodeService.lookup(postcode) != null) {
             return true;
         } else {
             return false;
@@ -424,12 +419,6 @@ public class SignUpValidation {
                 confirmPassErrorLabel = (Label) node;
             }
         }
-
-        System.out.println("Password field found: " + (passwordField != null));
-        System.out.println("Visible password field found: " + (visiblePassField != null));
-        System.out.println("Confirm password field found: " + (confirmPassField != null));
-        System.out.println("Visible confirm password field found: " + (visibleConfirmPassField != null));
-
 
         addPasswordListeners(
                 passwordHBox, confirmPassHBox,

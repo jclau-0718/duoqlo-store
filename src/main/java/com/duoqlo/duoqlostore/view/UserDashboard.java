@@ -118,6 +118,21 @@ public class UserDashboard extends BasePage {
 
     public StackPane getBody() { return this.body; };
 
+    @Override
+    public void openCartPage() {
+        controller.openCartPage();
+    }
+
+    @Override
+    public void openOrdersPage() {
+        controller.openOrdersPage();
+    }
+
+    @Override
+    public void openProfilePage() {
+        controller.openProfilePage();
+    }
+
     public StackPane buildHeader() {
         //Category Buttons
         ToggleButton allButton = new ToggleButton("ALL");
@@ -133,7 +148,7 @@ public class UserDashboard extends BasePage {
 
         //Category Menu
         HBox catMenu = new HBox(80);
-        catMenu.setId("category-menu");
+        catMenu.getStyleClass().add("category-menu");
         catMenu.setAlignment(Pos.BOTTOM_CENTER);
         catMenu.setPadding(new Insets(5));
 
@@ -170,29 +185,7 @@ public class UserDashboard extends BasePage {
             loadProductsByName(text);
         });
 
-        //Cart Button
-        FontIcon cartIcon = new FontIcon("fas-shopping-cart");
-        cartIcon.setIconSize(iconSize);
-        cartIcon.setIconColor(themeColor);
-        Button cartButton = new Button("", cartIcon);
-        cartButton.setOnAction(e -> controller.openCartPage());
-
-        //Orders Button
-        FontIcon receiptIcon = new FontIcon("fas-receipt");
-        receiptIcon.setIconSize(iconSize);
-        receiptIcon.setIconColor(themeColor);
-        Button ordersButton = new Button("", receiptIcon);
-        ordersButton.setOnAction(e -> controller.openOrderPage());
-
-        //Button Box
-        HBox actionBox = new HBox(10);
-        actionBox.setMinWidth(300);
-        actionBox.setPrefWidth(300);
-        actionBox.setMaxWidth(300);
-        actionBox.getChildren().addAll(searchBar, cartButton, ordersButton);
-        actionBox.setAlignment(Pos.CENTER_RIGHT);
-
-        header = createHeaderBox(catMenu, actionBox);
+        header = createHeaderBox(catMenu);
 
         return header;
     }
