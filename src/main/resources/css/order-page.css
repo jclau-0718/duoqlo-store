@@ -212,6 +212,11 @@
     -fx-font-weight: bold;
 }
 
+.label.no-orders {
+    -fx-text-fill: #808080;
+    -fx-font-size: 16px;
+}
+
 .scroll-pane {
     -fx-background: transparent;
     -fx-background-color: transparent;

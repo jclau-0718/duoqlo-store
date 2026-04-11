@@ -151,16 +151,16 @@ public class SignUpPage extends AuthPage{
     private ArrayList<String> getFieldsValue() {
         ArrayList<String> values = new ArrayList<>();
 
-        values.add(usernameField.getText());
-        values.add(controller.hashPassword(passwordField.getText()));
-        values.add(firstNameField.getText());
-        values.add(lastNameField.getText());
-        values.add(emailField.getText());
-        values.add(address1Field.getText());
-        values.add(address2Field.getText());
-        values.add(cityField.getText());
-        values.add(postcodeField.getText());
-        values.add(stateField.getText());
+        values.add(usernameField.getText().trim());
+        values.add(controller.hashPassword(passwordField.getText().trim()));
+        values.add(firstNameField.getText().trim());
+        values.add(lastNameField.getText().trim());
+        values.add(emailField.getText().trim());
+        values.add(address1Field.getText().trim());
+        values.add(address2Field.getText().trim());
+        values.add(cityField.getText().trim());
+        values.add(postcodeField.getText().trim());
+        values.add(stateField.getText().trim());
 
         return values;
     }

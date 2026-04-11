@@ -86,6 +86,11 @@
     -fx-font-weight: bold;
 }
 
+.label.empty-cart {
+    -fx-text-fill: #808080;
+    -fx-font-size: 16px;
+}
+
 .cart-row {
     -fx-padding: 10;
 }

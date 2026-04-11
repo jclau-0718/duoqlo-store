@@ -4,6 +4,7 @@ import com.duoqlo.duoqlostore.controller.InfoValidation;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.controller.ProfileController;
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -49,21 +50,17 @@ public class ProfilePage extends BasePage {
 
     private Map<TextField, Label> fieldErrorMap = new LinkedHashMap<>();
 
-    private int profileBoxWidth = 100;
+    private int profileBoxWidth = 150;
 
     public ProfilePage(ProfileController controller) {
         this.controller = controller;
     }
 
     @Override
-    public void openCartPage() {
-
-    }
+    public void openCartPage() { controller.openCartPage(); }
 
     @Override
-    public void openOrdersPage() {
-
-    }
+    public void openOrdersPage() { controller.openOrdersPage(); }
 
     @Override
     public void openProfilePage() {
@@ -77,7 +74,7 @@ public class ProfilePage extends BasePage {
         HBox labelBox = new HBox(label);
         labelBox.setAlignment(Pos.CENTER);
 
-        StackPane header = createHeaderBox(labelBox);
+        StackPane header = createHeaderBox(labelBox, false);
 
         return header;
     }
@@ -238,6 +235,7 @@ public class ProfilePage extends BasePage {
 
         Label addressValue = new Label(controller.getFullAddress());
         addressValue.getStyleClass().add("address-value");
+        addressValue.setWrapText(true);
 
         HBox addressBox = new HBox(addressLabel, addressValue);
 
@@ -319,10 +317,21 @@ public class ProfilePage extends BasePage {
     private void handleUpdate() {
         if (controller.updateData()) {
             controller.setNewUser();
+            successAlert.show(body, "Successfully updated.", Pos.TOP_CENTER);
 
             updateProfileBox();
+            if (controller.getMenuOpened().equals("credentials")) {
+                resetPasswordFields();
+            }
 
-            successAlert.show(body, "Successfully updated.", Pos.TOP_CENTER);
+            // Request focus on body to remove focus from any field
+            Platform.runLater(() -> {
+                body.requestFocus();
+                // Also clear focus from any text field
+                if (editBox != null) {
+                    editBox.getParent().requestFocus();
+                }
+            });
 
         } else {
             errorAlert.show(body, "Error. Please try again.", Pos.TOP_CENTER);
@@ -345,6 +354,18 @@ public class ProfilePage extends BasePage {
             //Update reference
             profileBox = newProfileBox;
         }
+    }
+
+    private void resetPasswordFields() {
+        passwordField.setText("");
+        passwordField.getStyleClass().add("valid");
+        visiblePassField.setText("");
+        visiblePassField.getStyleClass().add("valid");
+
+        confirmPassField.setText("");
+        confirmPassField.getStyleClass().add("valid");
+        visibleConfirmPassField.setText("");
+        visibleConfirmPassField.getStyleClass().add("valid");
     }
 
     private VBox buildInfoBox() {
@@ -371,6 +392,8 @@ public class ProfilePage extends BasePage {
 
     private VBox buildAddressBox() {
         VBox textfieldBox = new VBox(7, address1Box, address2Box, cityBox, postcodeBox, stateBox);
+
+        controller.setupAddressTracker(postcodeField, cityField, stateField);
 
         Button updateAddressButton = new Button("UPDATE");
         updateAddressButton.getStyleClass().add("primary-button");
@@ -410,7 +433,7 @@ public class ProfilePage extends BasePage {
     }
 
     private StackPane buildBody() {
-        int rowHeight = 395;
+        int rowHeight = 370;
 
         profileBox = buildProfileBox();
         profileBox.setPrefWidth(profileBoxWidth);
@@ -448,7 +471,7 @@ public class ProfilePage extends BasePage {
         boxGrid.getColumnConstraints().addAll(col1, col2);
 
         VBox vbox = new VBox(boxGrid);
-        vbox.setMaxWidth(700);
+        vbox.setMaxWidth(750);
         vbox.setAlignment(Pos.CENTER);
 
         StackPane body = new StackPane(vbox);

@@ -3,8 +3,11 @@ package com.duoqlo.duoqlostore.view;
 import com.duoqlo.duoqlostore.controller.DashboardController;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.model.User;
+import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -13,6 +16,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Polygon;
+import javafx.stage.Popup;
+import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Objects;
@@ -22,15 +28,16 @@ public abstract class BasePage extends ApplicationPage {
     public abstract void openCartPage();
     public abstract void openOrdersPage();
     public abstract void openProfilePage();
-
-    private User user;
+//    public abstract void deleteAccount();
 
     protected StackPane header;
     protected TextField searchField;
     protected HBox searchBar;
     protected Button enterButton;
-    protected Button backButton;
-    protected Button forwardButton;
+
+    protected Button profileButton;
+    protected VBox popupContainer;
+    protected Popup popup;
 
     protected int iconSize = 19;
 
@@ -39,8 +46,6 @@ public abstract class BasePage extends ApplicationPage {
     public BasePage(){
         this.searchField = createSearchField();
         this.searchBar = createSearchBar();
-        this.backButton = createBackButton();
-        this.forwardButton = createForwardButton();
     }
 
     public void addToolTip(Node node, String text) {
@@ -54,7 +59,7 @@ public abstract class BasePage extends ApplicationPage {
         Tooltip.install(node, tooltip);
     }
 
-    public StackPane createHeaderBox(HBox middleHBox) {
+    public StackPane createHeaderBox(HBox middleHBox, boolean withSearch) {
         int sidePad = 35;
         int logoHeight = 35;
 
@@ -91,15 +96,36 @@ public abstract class BasePage extends ApplicationPage {
         FontIcon profileIcon = new FontIcon("fas-user");
         profileIcon.setIconSize(iconSize);
         profileIcon.setIconColor(themeColor);
-        Button profileButton = new Button("", profileIcon);
-        profileButton.setOnAction(e -> openProfilePage());
+        profileButton = new Button("", profileIcon);
+
+        createPopUpContainer();
+
+        popup = new Popup();
+        popup.getContent().add(popupContainer);
+
+        // Show on hover
+        profileButton.setOnMouseEntered(e -> {
+            showPopUp();
+        });
+
+        // Hide when mouse exits
+        profileButton.setOnMouseExited(e -> {
+            closePopUp();
+        });
+
+        profileButton.setOnAction(e -> showPopUp());
 
         HBox actionBox = new HBox(10);
         actionBox.setMinWidth(300);
         actionBox.setPrefWidth(300);
         actionBox.setMaxWidth(300);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
-        actionBox.getChildren().addAll(this.searchBar, cartButton, ordersButton, profileButton);
+
+        if(withSearch) {
+            actionBox.getChildren().add(this.searchBar);
+        }
+
+        actionBox.getChildren().addAll(cartButton, ordersButton, profileButton);
 
         header = new StackPane(); //Button-to-Button space
         header.getStyleClass().add("header");
@@ -117,6 +143,139 @@ public abstract class BasePage extends ApplicationPage {
         StackPane.setMargin(actionBox, new Insets(0, sidePad, 0, 0));
 
         return header;
+    }
+
+    private void setupOptionStyle(Label label, Color hoverColor) {
+        // Convert Color to hex string for CSS
+        String hexColor = String.format("#%02X%02X%02X",
+                (int) (hoverColor.getRed() * 255),
+                (int) (hoverColor.getGreen() * 255),
+                (int) (hoverColor.getBlue() * 255));
+
+        label.setStyle("""
+            -fx-text-fill: black;
+            -fx-font-size: 12px;
+            -fx-underline: false;
+            """);
+
+        label.setOnMouseEntered(e -> {
+            label.setStyle(String.format("""
+                -fx-text-fill: %s;
+                -fx-underline: true;
+                -fx-cursor: hand;
+                """, hexColor));
+        });
+
+        label.setOnMouseExited(e -> {
+            label.setStyle("""
+                -fx-text-fill: black;
+                -fx-underline: false;
+                """);
+        });
+    }
+
+    private Label createViewProfileLabel() {
+        Label viewProfile = new Label("View Profile");
+        setupOptionStyle(viewProfile, Color.web("#FE6C01"));
+
+        viewProfile.setOnMouseClicked(e -> openProfilePage());
+
+        return viewProfile;
+    }
+
+    private Label createDeleteAccountLabel() {
+        Label deleteAcc = new Label("Delete Account");
+        setupOptionStyle(deleteAcc, Color.RED);
+
+        return deleteAcc;
+    }
+
+    private VBox createPopUpContainer() {
+        VBox popupBox = new VBox(15);
+        popupBox.setPrefWidth(150);
+        popupBox.setStyle("""
+                -fx-background-color: white;
+                -fx-padding: 10;
+                """);
+
+        // Edit Profile
+        Label viewProfile = createViewProfileLabel();
+
+        Label deleteAcc = createDeleteAccountLabel();
+
+        HBox viewProfileBox = new HBox(viewProfile);
+        viewProfileBox.setAlignment(Pos.CENTER_LEFT);
+
+        HBox deleteAccBox = new HBox(deleteAcc);
+        deleteAccBox.setAlignment(Pos.CENTER_LEFT);
+
+        // Logout button
+        Button logoutButton = new Button("Log Out");
+        logoutButton.setMaxWidth(90);
+        logoutButton.setMaxHeight(10);
+        logoutButton.setStyle("""
+                -fx-font-family: Arial;
+                -fx-font-size: 12;
+                -fx-border-radius: 5;
+                -fx-border-width: 2;
+                -fx-background-color: #FE6C01;          /* orange color */
+                -fx-border-color: #FE6C01;
+                -fx-text-fill: white;
+                -fx-cursor: hand;
+                -fx-padding: 5;
+                """);
+
+        logoutButton.setOnAction(e -> {
+            Navigator.goTo(new LogInPage().initialize());
+        });
+
+        popupBox.getChildren().addAll(viewProfileBox, deleteAccBox, logoutButton);
+        popupBox.setAlignment(Pos.CENTER);
+
+        Polygon arrow = new Polygon();
+        arrow.getPoints().addAll(
+                0.0, 0.0,
+                20.0, 0.0,
+                10.0, -10.0
+        );
+        arrow.setStyle("-fx-fill: white;");
+
+        popupContainer = new VBox();
+        popupContainer.setAlignment(Pos.TOP_RIGHT);
+        popupContainer.getChildren().addAll(arrow, popupBox);
+        popupContainer.setStyle("-fx-background-color: transparent");
+        VBox.setMargin(arrow, new Insets(0, 30, 0, 0)); // push left 20px
+
+        popupContainer.setOnMouseExited(e -> closePopUp());
+
+        return popupContainer;
+    }
+
+    private void showPopUp() {
+        Platform.runLater(() -> {
+            Bounds bounds = profileButton.localToScreen(profileButton.getBoundsInLocal());
+
+            // Ensure popup container has proper width
+            popupContainer.applyCss();
+            popupContainer.layout();
+
+            double popupWidth = popupContainer.prefWidth(-1);;
+            double arrowOffset = 22;
+
+            double x = bounds.getMinX() + bounds.getWidth() - (popupWidth - arrowOffset);
+
+            popup.show(profileButton, x, bounds.getMaxY() + 5);
+        });
+    }
+
+    private void closePopUp() {
+        PauseTransition delay = new PauseTransition(Duration.millis(200));
+        delay.setOnFinished(ev -> {
+            if (!popupContainer.isHover()) {
+                popup.hide();
+            }
+        });
+        delay.play();
     }
 
     public TextField createSearchField() {
@@ -174,42 +333,6 @@ public abstract class BasePage extends ApplicationPage {
         });
 
         return searchBar;
-    }
-
-    public Button createBackButton(){
-        FontIcon backIcon = new FontIcon("fas-arrow-left");
-        backIcon.setIconColor(themeColor); //Orange color
-
-        Button backButton = new Button("", backIcon);
-        backButton.setStyle("""
-                -fx-background-color: transparent;
-                -fx-border-color: transparent;
-                """);
-        if(Navigator.backIsEmpty()){
-            backButton.setDisable(true);
-        } else {
-            backButton.setDisable(false);
-        }
-
-        return backButton;
-    }
-
-    public Button createForwardButton(){
-        FontIcon forwardIcon = new FontIcon("fas-arrow-right");
-        forwardIcon.setIconColor(themeColor); //Orange color
-
-        Button forwardButton = new Button("", forwardIcon);
-        forwardButton.setStyle("""
-                -fx-background-color: transparent;
-                -fx-border-color: transparent;
-                """);
-        if(Navigator.forwardIsEmpty()){
-            forwardButton.setDisable(true);
-        } else {
-            forwardButton.setDisable(false);
-        }
-
-        return forwardButton;
     }
 
     public StackPane createLoadingPane(Label loadingLabel) {

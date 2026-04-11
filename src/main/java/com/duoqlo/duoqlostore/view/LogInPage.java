@@ -19,12 +19,11 @@ public class LogInPage extends AuthPage {
     private AuthController controller;
     private AlertMsg alert = new AlertMsg();
 
+    private TextField usernameField;
+
     private final int usernameTopPad = 50;
     private final int passwordTopPad = 35;
     private final int buttonTopPad = 60;
-
-    private HBox errorBox;
-    private HBox successBox;
 
     public LogInPage() {
         this.controller = new AuthController();
@@ -55,13 +54,14 @@ public class LogInPage extends AuthPage {
 
         //Log In Button
         Button logInButton = primaryButton("LOG IN");
+        logInButton.setDefaultButton(true);
 
         //Sign Up Button
         Button signUpButton = secondaryButton("SIGN UP");
 
         //Username Section
-        TextField usernameField = createTextField("Username");
-        usernameField.getStyleClass().add("user-field");
+        usernameField = createTextField("Username");
+        usernameField.getStyleClass().add("username-field");
         Label usernameErrorLabel = createErrorLabel();
         VBox usernameBox = createTextFieldBox(usernameField, usernameErrorLabel);
         usernameBox.setMinWidth(360);
@@ -93,9 +93,7 @@ public class LogInPage extends AuthPage {
         });
 
         logInButton.setOnAction(e -> {
-            System.out.println(passwordField.getText());
-
-            if (controller.handleLogIn(e, usernameField.getText(), passwordField.getText())) {
+            if (controller.handleLogIn(e, usernameField.getText().trim(), passwordField.getText().trim())) {
                 return;
             } else {
                 controller.setUserFieldError(true);

@@ -284,7 +284,13 @@ public class InfoValidation {
     private void updatePassStyle(PasswordField passwordField, Label errorLabel, HBox passwordHBox) {
         boolean focused = passwordField.isFocused();
 
-        passwordHBox.getStyleClass().removeAll("error", "valid");
+        passwordHBox.getStyleClass().removeAll("error", "valid", "focused");
+
+        if (focused) {
+            passwordHBox.getStyleClass().add("focused");
+        } else {
+            passwordHBox.getStyleClass().remove("focused");
+        }
 
         if (passError[0]) {
             errorLabel.setText(passfieldErrorString);
@@ -302,14 +308,6 @@ public class InfoValidation {
             errorLabel.setVisible(false);
             passwordHBox.getStyleClass().add("valid");
 
-            if(focused) {
-                if (!passwordHBox.getStyleClass().contains("focused")) {
-                    passwordHBox.getStyleClass().add("focused");
-                }
-            } else {
-                passwordHBox.getStyleClass().remove("focused");
-            }
-
             if (!focused && passwordField.getText().isEmpty()) {
                 passwordHBox.getStyleClass().remove("valid");
             }
@@ -319,31 +317,23 @@ public class InfoValidation {
     private void updateConfirmPassStyle(PasswordField passwordField, Label errorLabel, HBox passwordHBox) {
         boolean focused = passwordField.isFocused();
 
-        passwordHBox.getStyleClass().removeAll("error", "valid");
+        passwordHBox.getStyleClass().removeAll("error", "valid", "focused");
+
+        if (focused) {
+            passwordHBox.getStyleClass().add("focused");
+        } else {
+            passwordHBox.getStyleClass().remove("focused");
+        }
 
         if (confirmPassError[0]) {
             errorLabel.setText(confirmPassErrorString);
             errorLabel.setVisible(true);
             passwordHBox.getStyleClass().add("error");
-            if (focused) {
-                if (!passwordHBox.getStyleClass().contains("focused")) {
-                    passwordHBox.getStyleClass().add("focused");
-                }
-            } else {
-                passwordHBox.getStyleClass().remove("focused");
-            }
+
         } else {
             errorLabel.setText("");
             errorLabel.setVisible(false);
             passwordHBox.getStyleClass().add("valid");
-
-            if (focused) {
-                if (!passwordHBox.getStyleClass().contains("focused")) {
-                    passwordHBox.getStyleClass().add("focused");
-                }
-            } else {
-                passwordHBox.getStyleClass().remove("focused");
-            }
 
             if (!focused && passwordField.getText().isEmpty()) {
                 passwordHBox.getStyleClass().remove("valid");

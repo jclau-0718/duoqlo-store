@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 public class DashboardController {
     private User user;
-    private String role;
     private CartController cartController;
     private OrderController orderController;
     private ProfileController profileController;
@@ -53,6 +52,10 @@ public class DashboardController {
         ProfilePage profilePage = new ProfilePage(this.profileController);
 
         Navigator.goTo(profilePage.initialize());
+    }
+
+    public void deleteAccount() {
+        // Code to delete account
     }
 
     public Task<Void> createPreloadTask(Runnable onSuccess) {
@@ -147,15 +150,72 @@ public class DashboardController {
     }
 
     public void loadProductsByGender(String gender) {
-        displayedProducts = allProducts.stream()
-                .filter(product -> gender.equals(product.getGender()) || "UNISEX".equals(product.getGender()))
-                .collect(Collectors.toList());
+        displayedProducts = filterAndSortByGender(allProducts, gender);
     }
 
-    public void loadProductsByName(String name) {
-        displayedProducts = allProducts.stream()
+    public void loadProductsByName(String name, String currentFilter) {
+        // Filter by name
+        List<Product> nameFiltered = allProducts.stream()
                 .filter(product -> product.getProductName().toLowerCase().contains(name.toLowerCase()))
                 .collect(Collectors.toList());
+
+        // Then apply gender filter and sort
+        switch (currentFilter) {
+            case "ALL":
+                displayedProducts = nameFiltered;
+                break;
+            case "WOMEN":
+                displayedProducts = filterAndSortWomenFirst(nameFiltered);
+                break;
+            case "MEN":
+                displayedProducts = filterAndSortMenFirst(nameFiltered);
+                break;
+            default:
+                displayedProducts = nameFiltered;
+                break;
+        }
+    }
+
+
+
+    private List<Product> filterAndSortByGender(List<Product> productList, String gender) {
+        List<Product> sortedList = productList.stream()
+                .filter(product -> gender.equals(product.getGender()) || "UNISEX".equals(product.getGender()))
+                .sorted((p1, p2) -> {
+                    if (p1.getGender().equals(gender) && p2.getGender().equals("UNISEX")) return -1;
+                    if (p1.getGender().equals("UNISEX") && p2.getGender().equals(gender)) return 1;
+                    return 0;
+                })
+                .collect(Collectors.toList());
+
+        return sortedList;
+    }
+
+    private List<Product> filterAndSortWomenFirst(List<Product> productList) {
+        List<Product> sortedList = productList.stream()
+                .filter(product -> "WOMEN".equals(product.getGender()) || "UNISEX".equals(product.getGender()))
+                .sorted((p1, p2) -> {
+                    if (p1.getGender().equals("WOMEN") && p2.getGender().equals("UNISEX")) return -1;
+                    if (p1.getGender().equals("UNISEX") && p2.getGender().equals("WOMEN")) return 1;
+                    return 0;
+                })
+                .collect(Collectors.toList());
+
+        return sortedList;
+    }
+
+    private List<Product> filterAndSortMenFirst(List<Product> productList) {
+        List<Product> sortedList = productList.stream()
+                .filter(product -> "MEN".equals(product.getGender()) || "UNISEX".equals(product.getGender()))
+                .sorted((p1, p2) -> {
+                    if (p1.getGender().equals("MEN") && p2.getGender().equals("UNISEX")) return -1;
+                    if (p1.getGender().equals("UNISEX") && p2.getGender().equals("MEN")) return 1;
+                    return 0;
+                })
+                .collect(Collectors.toList());
+
+        return sortedList;
+
     }
 
     public List<Product> getDisplayedProducts() {

@@ -39,6 +39,7 @@ public class AuthController {
     public boolean handleLogIn(ActionEvent e, String username, String enteredPassword) {
         try {
             if (userDAO.usernameExists(username)) {
+
                 String storedPassword = userDAO.getPasswordByUsername(username);
 
                 boolean passwordValid = verifyPassword(enteredPassword, storedPassword);
@@ -53,14 +54,6 @@ public class AuthController {
                         Navigator.setDashboardController(dashboardController);
 
                         Navigator.openUserDashboard();
-//                        DashboardController dashboardController = new DashboardController();
-//                        dashboardController.setUser(loggedInUser);
-//
-//                        UserDashboard userDash = new UserDashboard(dashboardController);
-//
-//                        Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
-//
-//                        stage.setScene(userDash.initialize());
                         return true;
                     }
                 }
@@ -79,19 +72,12 @@ public class AuthController {
     }
 
     public void updateUsernameFieldStyle(TextField usernameField, Label errorLabel) {
-        boolean focused = usernameField.isFocused();
         boolean isEmpty = usernameField.getText().isEmpty();
 
         usernameField.getStyleClass().removeAll("error","valid");
 
         if(!userFieldTyped[0]) {
             return;
-        } else {
-            if (isEmpty) {
-                usernameField.getStyleClass().removeAll("valid", "error");
-                errorLabel.setText("");
-                errorLabel.setVisible(false);
-            }
         }
 
         if(userFieldError[0]) {
@@ -104,6 +90,7 @@ public class AuthController {
             errorLabel.setVisible(true);
         } else {
             usernameField.getStyleClass().remove("error");
+            usernameField.getStyleClass().add("valid");
             errorLabel.setText("");
             errorLabel.setVisible(false);
         }
@@ -113,22 +100,14 @@ public class AuthController {
         boolean focused = passwordField.isFocused();
         boolean isEmpty = passwordField.getText().isEmpty();
 
-        passwordBox.getStyleClass().removeAll("error","valid");
+        passwordBox.getStyleClass().removeAll("error","valid", "focused");
 
-        if (!passFieldTyped[0]) {
+        if (!passFieldTyped[0]) { // Remove initial focus on the password field
             return;
-        } else {
-            if (isEmpty) {
-                passwordBox.getStyleClass().add("error");
-                errorLabel.setText("Please enter a password.");
-                errorLabel.setVisible(true);
-            }
         }
 
         if (focused) {
-            if (!passwordBox.getStyleClass().contains("focused")) {
-                passwordBox.getStyleClass().add("focused");
-            }
+            passwordBox.getStyleClass().add("focused");
         } else {
             passwordBox.getStyleClass().remove("focused");
         }
@@ -143,6 +122,7 @@ public class AuthController {
             errorLabel.setVisible(true);
         } else {
             passwordBox.getStyleClass().remove("error");
+            passwordBox.getStyleClass().add("valid");
             errorLabel.setText("");
             errorLabel.setVisible(false);
         }

@@ -10,6 +10,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
@@ -18,6 +19,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import javafx.stage.Screen;
 import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -69,7 +71,7 @@ public class UserDashboard extends BasePage {
     private StackPane body;
     private Rectangle overlay;
 
-    private VBox expandedCardModal;
+    private BorderPane expandedCardModal;
     private ScaleTransition modalScaleIn;
     private ScaleTransition modalScaleOut;
 
@@ -93,7 +95,7 @@ public class UserDashboard extends BasePage {
     private int cardWidth = 200;
     private int cardHeight = cardWidth + 180;
     private int enlargedWidth = cardWidth + 350;
-    private int enlargedHeight = enlargedWidth + 180;
+    private int enlargedHeight = enlargedWidth + 200;
 
     private Label qtyErrorLabel = new Label("Maximum stock reached.");
     private Label priceLabel;
@@ -133,6 +135,9 @@ public class UserDashboard extends BasePage {
         controller.openProfilePage();
     }
 
+    @Override
+    public void deleteAccount() { controller.deleteAccount(); }
+
     public StackPane buildHeader() {
         //Category Buttons
         ToggleButton allButton = new ToggleButton("ALL");
@@ -157,22 +162,27 @@ public class UserDashboard extends BasePage {
         allButton.setOnAction(e -> {
             currentFilter = "ALL";
             loadAllProducts();
-
         });
 
         menButton.setOnAction(e -> {
             currentFilter = "MEN";
-            loadProductsByGender("MEN");
+            loadProductsByGender(currentFilter);
         });
 
         womenButton.setOnAction(e -> {
             currentFilter = "WOMEN";
-            loadProductsByGender("WOMEN");
+            loadProductsByGender(currentFilter);
         });
 
         searchField.textProperty().addListener((obs, oldVal, newVal) -> {
             if(newVal.isEmpty()) {
-                loadAllProducts();
+                System.out.println("Search bar is empty");
+                System.out.println(currentFilter);
+                if(currentFilter.equals("ALL")) {
+                    loadAllProducts();
+                } else {
+                    loadProductsByGender(currentFilter);
+                }
             }
         });
 
@@ -185,7 +195,7 @@ public class UserDashboard extends BasePage {
             loadProductsByName(text);
         });
 
-        header = createHeaderBox(catMenu);
+        header = createHeaderBox(catMenu, true);
 
         return header;
     }
@@ -383,12 +393,12 @@ public class UserDashboard extends BasePage {
     private void displayProducts(List<Product> products) {
         productGrid.getChildren().clear();
 
-        for (Product product : products) {
-            VBox productCard = createProductCard(product);
-            productGrid.getChildren().add(productCard);
-        }
-
-        if (products.isEmpty()) {
+        if (!products.isEmpty()) {
+            for (Product product : products) {
+                VBox productCard = createProductCard(product);
+                productGrid.getChildren().add(productCard);
+            }
+        } else {
             Label noProductsLabel = new Label("No products available");
             noProductsLabel.getStyleClass().add("no-products");
             productGrid.getChildren().add(noProductsLabel);
@@ -406,7 +416,7 @@ public class UserDashboard extends BasePage {
     }
 
     private void loadProductsByName(String name) {
-        controller.loadProductsByName(name);
+        controller.loadProductsByName(name, currentFilter);
         displayProducts(controller.getDisplayedProducts());
     }
 
@@ -451,7 +461,7 @@ public class UserDashboard extends BasePage {
 
         VBox.setMargin(genderLabel, new Insets(8, 0, 0, 8));
         VBox.setMargin(nameLabel, new Insets(5, 8, 0, 8));
-        VBox.setMargin(priceLabel, new Insets(5, 8, 5, 8));
+        VBox.setMargin(priceLabel, new Insets(0, 8, 5, 8));
 
         card.setOnMouseEntered(e -> {
             card.setStyle("-fx-background-color: white; -fx-cursor: hand;");
@@ -632,7 +642,7 @@ public class UserDashboard extends BasePage {
 
         List<ProductSize> productSizes = controller.getCachedProductSizes(product.getProductId());
 
-        VBox enlargedCard = createExpandedCardContent(product, productSizes);
+        BorderPane enlargedCard = createExpandedCardContent(product, productSizes);
         expandedCardModal = enlargedCard;
 
         body.getChildren().add(expandedCardModal);
@@ -655,14 +665,8 @@ public class UserDashboard extends BasePage {
         overlay.setOnMouseClicked(e -> closeExpandedCard());
     }
 
-    private VBox createExpandedCardContent(Product product, List<ProductSize> productSizes) {
+    private BorderPane createExpandedCardContent(Product product, List<ProductSize> productSizes) {
         ImageCarousel carousel = new ImageCarousel();
-
-        VBox card = new VBox();
-        card.setPrefSize(enlargedWidth, enlargedHeight);
-        card.setMaxSize(enlargedWidth, enlargedHeight);
-        card.setMinSize(enlargedWidth, enlargedHeight);
-        card.getStyleClass().add("expanded-product-card");
 
         Button closeButton = new Button("✕");
         closeButton.getStyleClass().add("close-button");
@@ -836,7 +840,7 @@ public class UserDashboard extends BasePage {
         continueButton.setOnAction(e -> closeExpandedCard());
 
         HBox buttonBox = new HBox(15, addToCartButton, continueButton);
-        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.setAlignment(Pos.BOTTOM_CENTER);
 
         if (sizeButtonBox != null) {
             for (javafx.scene.Node node : sizeButtonBox.getChildren()) {
@@ -885,24 +889,32 @@ public class UserDashboard extends BasePage {
 
         VBox contentBox = new VBox(5);
         contentBox.getChildren().addAll(
+                imageContainer,
                 genderLabel,
                 nameLabel,
                 descriptionLabel,
                 priceLabel,
                 sizeLabel,
                 sizeStockPane,
-                quantityPane,
-                buttonBox
+                quantityPane
         );
-        VBox.setMargin(genderLabel, new Insets(10, 0, 0, 0));
-        VBox.setMargin(buttonBox, new Insets(10, 0, 0, 0));
+        VBox.setMargin(genderLabel, new Insets(10, 0, 10, 0));
+        VBox.setMargin(quantityPane, new Insets(10, 0, 10, 0));
 
-        VBox mainLayout = new VBox();
-        mainLayout.getChildren().addAll(headerBox, imageContainer, contentBox);
-        mainLayout.setAlignment(Pos.TOP_CENTER);
-        VBox.setMargin(headerBox, new Insets(0, 10, 10, 0));
+//        VBox mainLayout = new VBox();
+//        mainLayout.getChildren().addAll(headerBox, imageContainer, contentBox);
+//        mainLayout.setAlignment(Pos.TOP_CENTER);
+//        VBox.setMargin(headerBox, new Insets(0, 10, 10, 0));
 
-        card.getChildren().add(mainLayout);
+        BorderPane card = new BorderPane();
+        card.setPrefSize(enlargedWidth, enlargedHeight);
+        card.setMaxSize(enlargedWidth, enlargedHeight);
+        card.setMinSize(enlargedWidth, enlargedHeight);
+        card.getStyleClass().add("expanded-product-card");
+
+        card.setTop(headerBox);
+        card.setCenter(contentBox);
+        card.setBottom(buttonBox);
 
         return card;
     }

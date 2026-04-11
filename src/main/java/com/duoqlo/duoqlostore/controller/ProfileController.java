@@ -3,6 +3,9 @@ package com.duoqlo.duoqlostore.controller;
 
 import com.duoqlo.duoqlostore.model.User;
 import com.duoqlo.duoqlostore.model.UserDAO;
+import com.duoqlo.duoqlostore.view.CartPage;
+import com.duoqlo.duoqlostore.view.OrderPage;
+import javafx.scene.control.TextField;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.ArrayList;
@@ -10,6 +13,7 @@ import java.util.List;
 
 public class ProfileController {
     private UserDAO userDAO = new UserDAO();
+    private PostcodeService postcodeService = new PostcodeService();
     private User user;
 
     private String menuOpened = "info";
@@ -20,6 +24,20 @@ public class ProfileController {
 
     public ProfileController(User user) {
         this.user = user;
+    }
+
+    public void openCartPage() {
+        CartController cartController = new CartController(this.user);
+        CartPage cartPage = new CartPage(cartController);
+
+        Navigator.goTo(cartPage.initialize());
+    }
+
+    public void openOrdersPage() {
+        OrderController orderController = new OrderController(this.user);
+        OrderPage orderPage = new OrderPage(orderController);
+
+        Navigator.goTo(orderPage.initialize());
     }
 
     public String getUsername() {
@@ -75,6 +93,8 @@ public class ProfileController {
         this.menuOpened = menu;
     }
 
+    public String getMenuOpened() { return this.menuOpened; }
+
     public void addNewInfo(String value) {
         infoList.add(value);
     }
@@ -107,6 +127,34 @@ public class ProfileController {
             default:
                 return false;
         }
+    }
+
+    public void setupAddressTracker(TextField postcodeField, TextField cityField, TextField stateField) {
+        final boolean[] hasAddr = {false};
+
+        postcodeField.textProperty().addListener((obs, oldVal, newVal) -> {
+            Address addr = postcodeService.lookup(newVal);
+
+            if (addr != null) { //Address found
+                if (newVal.length() == 5) {
+                    cityField.setText(addr.getCity());
+                    cityField.setEditable(false);
+
+                    stateField.setText(addr.getState());
+                    stateField.setEditable(false);
+
+                    hasAddr[0] = true;
+                }
+            } else {
+                cityField.setText("");
+                cityField.setEditable(true);
+
+                stateField.setText("");
+                stateField.setEditable(true);
+
+                hasAddr[0] = false;
+            }
+        });
     }
 
     public void setNewUser() {

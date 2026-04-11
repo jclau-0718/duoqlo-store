@@ -283,7 +283,6 @@
 
 .quantity-field {
     -fx-background-color: transparent;
-    -fx-border-color: red;
     -fx-font-size: 12px;
     -fx-padding: 0;
 }

@@ -7,14 +7,18 @@ import com.duoqlo.duoqlostore.view.CartPage;
 import com.duoqlo.duoqlostore.view.OrderPage;
 import com.duoqlo.duoqlostore.view.ProfilePage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class OrderController {
     private  User user;
     private OrderDAO orderDAO = new OrderDAO();
+    private List<Order> orderList = new ArrayList<>();
 
     public OrderController(User user) {
         this.user = user;
+
+        orderList = orderDAO.getOrders(user.getId());
     }
 
     public void openCartPage() {
@@ -32,6 +36,10 @@ public class OrderController {
     }
 
     public List<Order> getOrders() {
-        return orderDAO.getOrders(user.getId());
+        return this.orderList;
+    }
+
+    public boolean isOrdersEmpty() {
+        return this.orderList.isEmpty();
     }
 }

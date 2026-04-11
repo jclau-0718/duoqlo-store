@@ -153,6 +153,12 @@
     -fx-padding: 8 10 8 10;
 }
 
+.error-msg {
+    -fx-text-fill: red;
+    -fx-font-family: "Arial";
+    -fx-font-size: 10;
+}
+
 .showpass-button {
     -fx-background-color: transparent;
     -fx-border-color: transparent;

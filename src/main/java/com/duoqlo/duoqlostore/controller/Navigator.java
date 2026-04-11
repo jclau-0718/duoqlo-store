@@ -13,9 +13,6 @@ public class Navigator {
     private static DashboardController dashboardController;
     private static UserDashboard userDash;
 
-    private static Stack<Scene> backStack = new Stack<>();
-    private static Stack<Scene> forwardStack = new Stack<>();
-
     public static void setStage(Stage primaryStage){
         stage = primaryStage;
     }
@@ -24,14 +21,8 @@ public class Navigator {
         if(stage != null){
             Scene currentScene = stage.getScene();
 
-            if(currentScene != null){
-                backStack.push(stage.getScene());
-            }
             boolean wasMaximized = stage.isMaximized();
 
-            System.out.println("Stage maximized: "+stage.isMaximized());
-
-            forwardStack.clear();
             stage.setScene(newScene);
 
             if (wasMaximized) {
@@ -62,21 +53,5 @@ public class Navigator {
         } else {
             System.err.println("dashController is null (Source: Navigator)");
         }
-    }
-
-    public static boolean backIsEmpty(){
-        if(backStack.isEmpty()){
-            return true;
-        }
-
-        return false;
-    }
-
-    public static boolean forwardIsEmpty(){
-        if(forwardStack.isEmpty()){
-            return true;
-        }
-
-        return false;
     }
 }

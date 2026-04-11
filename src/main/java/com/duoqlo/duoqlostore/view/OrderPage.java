@@ -224,10 +224,6 @@ class OrderCard extends VBox {
 public class OrderPage extends BasePage {
     private OrderController controller;
 
-    private ComboBox<String> sortCombo;
-    private HBox sortBox;
-    private ChangeListener<String> sortComboListener;
-
     public OrderPage(OrderController controller) {
         this.controller = controller;
     }
@@ -259,19 +255,33 @@ public class OrderPage extends BasePage {
         actionBox.setMaxWidth(300);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
 
-        StackPane header = createHeaderBox(labelBox);
+        StackPane header = createHeaderBox(labelBox, false);
 
         return header;
+    }
+
+    private HBox buildOrderEmptyBox() {
+        Label emptyLabel = new Label("No orders found");
+        emptyLabel.getStyleClass().add("no-orders");
+
+        HBox emptyLabelBox = new HBox(emptyLabel);
+        emptyLabelBox.setAlignment(Pos.TOP_CENTER);
+        HBox.setMargin(emptyLabel, new Insets(50, 0, 0, 0));
+
+        return emptyLabelBox;
     }
 
     private HBox buildCardSection() {
         HBox cardBox = new HBox(30);
 
-        for (Order order: controller.getOrders()) {
-            cardBox.getChildren().add(new OrderCard(order.getOrderId()));
+        if (!controller.isOrdersEmpty()) {
+            for (Order order: controller.getOrders()) {
+                cardBox.getChildren().add(new OrderCard(order.getOrderId()));
+            }
+            cardBox.setPadding(new Insets(30));
+        } else {
+            cardBox = buildOrderEmptyBox();
         }
-
-        cardBox.setPadding(new Insets(30));
 
         return cardBox;
     }
@@ -280,6 +290,7 @@ public class OrderPage extends BasePage {
         HBox cardSection = buildCardSection();
 
         VBox bodyBox = new VBox();
+
         bodyBox.getChildren().add(cardSection);
         VBox.setMargin(cardSection, new Insets(10, 0, 10, 0));
 

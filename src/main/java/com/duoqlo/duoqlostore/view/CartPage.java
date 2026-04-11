@@ -208,7 +208,7 @@ public class CartPage extends BasePage{
         HBox labelBox = new HBox(label);
         labelBox.setAlignment(Pos.CENTER);
 
-        StackPane header = createHeaderBox(labelBox);
+        StackPane header = createHeaderBox(labelBox, false);
 
         return header;
     }
@@ -367,21 +367,17 @@ public class CartPage extends BasePage{
     }
 
     public HBox buildCartEmptyBox() {
-        Label emptyLabel = new Label("Cart is empty.");
+        Label emptyLabel = new Label("Cart is empty");
+        emptyLabel.getStyleClass().add("empty-cart");
 
-        HBox contentBox = new HBox(emptyLabel);
-        contentBox.setAlignment(Pos.CENTER);
-        contentBox.getStyleClass().add("content-box");
+        HBox emptyLabelBox = new HBox(emptyLabel);
+        emptyLabelBox.setAlignment(Pos.TOP_CENTER);
+        HBox.setMargin(emptyLabel, new Insets(50, 0, 0, 0));
 
-        return contentBox;
+        return emptyLabelBox;
     }
 
     private void refreshPage() {
-        System.out.println("Refreshing cart page...");
-
-        // Update numItems
-        numItems = controller.getCartItemList().size();
-
         // Rebuild the content box
         HBox contentBox;
         if (controller.listIsEmpty()) {
@@ -394,8 +390,6 @@ public class CartPage extends BasePage{
         StackPane body = (StackPane) root.getCenter();
         body.getChildren().clear();
         body.getChildren().add(contentBox);
-
-        System.out.println("Cart page refreshed. Items left: " + numItems);
     }
 
     public Scene initialize(){

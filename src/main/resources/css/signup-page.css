@@ -1,6 +1,7 @@
 .signup-form {
     -fx-background-color: white;
     -fx-background-radius: 5;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
 }
 
 .signup-title {
@@ -34,12 +35,16 @@
     -fx-padding: 0;
 }
 
-.text-field.error, .password-box.error {
-    -fx-border-color: #D22F20 #D22F20 #D22F20 #D22F20;
+.text-field:focused, .text-field.valid:focused, .password-box.focused, .password-box.valid.focused {
+    -fx-border-color: #D4D4D4 #D4D4D4 #FE6C01 #D4D4D4;  /* grey grey orange grey */
 }
 
-.text-field:focused, .text-field.valid, .text-field.valid:focused, .password-box.focused , .password-box.valid{
-    -fx-border-color: #D4D4D4 #D4D4D4 #FE6C01 #D4D4D4;  /* grey grey orange grey */
+.text-field.valid, .password-box.valid {
+    -fx-border-color: #EBEBEB #EBEBEB #FE6C01 #EBEBEB;
+}
+
+.text-field.error, .password-box.error {
+    -fx-border-color: #D22F20 #D22F20 #D22F20 #D22F20;
 }
 
 .text-field.error:focused, .password-box.error.focused {
