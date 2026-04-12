@@ -138,6 +138,8 @@ public class User {
         return this.role;
     }
 
+    public int getIsActive() { return this.is_active; }
+
     public void setInfo(ArrayList<String> info){
 
         this.username = info.get(0);

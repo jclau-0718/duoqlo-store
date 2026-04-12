@@ -1,6 +1,6 @@
 package com.duoqlo.duoqlostore.view;
 
-import com.duoqlo.duoqlostore.controller.DashboardController;
+import com.duoqlo.duoqlostore.controller.UserDashController;
 import com.duoqlo.duoqlostore.model.*;
 
 import javafx.animation.*;
@@ -10,7 +10,6 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
@@ -19,8 +18,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Text;
-import javafx.stage.Screen;
 import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -65,7 +62,7 @@ class ImageCarousel {
 }
 
 public class UserDashboard extends BasePage {
-    private DashboardController controller;
+    private UserDashController controller;
     private AlertMsg alert = new AlertMsg();
 
     private StackPane body;
@@ -113,12 +110,13 @@ public class UserDashboard extends BasePage {
         super();
     }
 
-    public UserDashboard(DashboardController controller) {
+    public UserDashboard(UserDashController controller) {
         super();
         this.controller = controller;
     }
 
-    public StackPane getBody() { return this.body; };
+    @Override
+    public User getUser() { return controller.getUser(); }
 
     @Override
     public void openCartPage() {
@@ -135,8 +133,7 @@ public class UserDashboard extends BasePage {
         controller.openProfilePage();
     }
 
-    @Override
-    public void deleteAccount() { controller.deleteAccount(); }
+    public StackPane getBody() { return this.body; };
 
     public StackPane buildHeader() {
         //Category Buttons

@@ -4,7 +4,6 @@ import com.duoqlo.duoqlostore.model.Order;
 import com.duoqlo.duoqlostore.model.OrderDAO;
 import com.duoqlo.duoqlostore.model.User;
 import com.duoqlo.duoqlostore.view.CartPage;
-import com.duoqlo.duoqlostore.view.OrderPage;
 import com.duoqlo.duoqlostore.view.ProfilePage;
 
 import java.util.ArrayList;
@@ -18,8 +17,10 @@ public class OrderController {
     public OrderController(User user) {
         this.user = user;
 
-        orderList = orderDAO.getOrders(user.getId());
+        orderList = orderDAO.getAllOrders(user.getId());
     }
+
+    public User getUser() { return this.user; }
 
     public void openCartPage() {
         CartController cartController = new CartController(this.user);

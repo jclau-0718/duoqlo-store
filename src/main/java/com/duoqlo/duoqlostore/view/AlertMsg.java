@@ -116,6 +116,8 @@ public class AlertMsg {
         closeHBox.setAlignment(Pos.CENTER_RIGHT);
 
         closeButton.setOnAction(e -> {
+            exitAnimation();
+
             root.getChildren().remove(popupBox);
         });
 
@@ -134,6 +136,7 @@ public class AlertMsg {
                 -fx-background-color: white;
                 -fx-background-radius: 10;
                 -fx-padding: 5 10 20 10;
+                -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 0);
                 """);
 
         if (type == AlertMsgType.CONFIRMATION) {
@@ -214,7 +217,7 @@ public class AlertMsg {
             return;
         } else {
             //Wait for 5 seconds
-            PauseTransition pause = new PauseTransition(Duration.seconds(5));
+            PauseTransition pause = new PauseTransition(Duration.seconds(3));
 
             // Chain all animations
             SequentialTransition fullAnimation = new SequentialTransition(

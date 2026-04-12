@@ -1,5 +1,8 @@
 package com.duoqlo.duoqlostore.model;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -126,7 +129,7 @@ public class OrderDAO {
 
     }
 
-    public List<Order> getOrders(int userId) {
+    public List<Order> getAllOrders(int userId) {
         List<Order> orders = new ArrayList<>();
 
         String sql = """
@@ -160,5 +163,38 @@ public class OrderDAO {
         }
 
         return new ArrayList<>();
+    }
+
+    public ObservableList<Order> getAllOrdersObservable() {
+        ObservableList<Order> orders = FXCollections.observableArrayList();
+
+        String sql = """
+                SELECT * FROM orders
+                ORDER BY order_date ASC;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            ResultSet rs = pstmt.executeQuery();
+
+            while(rs.next()) {
+                Order order = new Order(
+                        rs.getInt("order_id"),
+                        rs.getInt("user_id"),
+                        rs.getTimestamp("order_date").toLocalDateTime(),
+                        rs.getDouble("total_price"),
+                        rs.getString("status"),
+                        rs.getString("shipping_add")
+                );
+
+                orders.add(order);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return orders;
     }
 }

@@ -1,0 +1,215 @@
+.root {
+    -fx-background-color: #F0EDED;
+}
+
+.logo-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0 0 0 0;
+}
+
+.admindash-label {
+    -fx-text-fill: #FE6C01;
+    -fx-font-family: Arial;
+    -fx-font-size: 25;
+    -fx-font-weight: bold;
+}
+
+.header {
+    -fx-background-color: #F0EDED;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); /* Floating effect */
+}
+
+.header .button{
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-padding: 5 10 5 10;
+}
+
+.stat-card {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
+}
+
+.stat-card:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 5);
+}
+
+.insert-button {
+    -fx-background-color: #FE6C01;
+    -fx-background-radius: 5;
+    -fx-border-color: #FE6C01;
+    -fx-border-radius: 5;
+    -fx-font-size: 14;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.display-box {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: white;
+    -fx-border-radius: 10;
+    -fx-padding: 20;
+}
+
+.table-view {                           /* whole table style */
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-table-cell-border-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: linear-gradient(to bottom, #FE6C01, #FE6C01);
+    -fx-background-radius: 10 10 0 0;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header .label {     /* style header text */
+    -fx-text-fill: white;
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+    -fx-padding: 5;
+}
+
+.table-view .column-header {
+    -fx-border-color: transparent;
+}
+
+.table-cell {
+    -fx-font-size: 12;
+    -fx-padding: 10 15 10 15;
+}
+
+.table-row-cell {                       /* style row cell */
+    -fx-font-size: 12;
+    -fx-font-weight: bold;
+    -fx-background-color: rgba(254, 108, 1, 0.2);
+}
+
+.table-row-cell:odd {                   /* style odd row cell */
+    -fx-background-color: rgba(254, 108, 1, 0.05);
+}
+
+/*.table-row-cell:filled:hover {          !* style hovered row cell *!*/
+/*    -fx-background-color: #f0f0f0;*/
+/*}*/
+
+/*.table-row-cell:filled:selected {       !* style selected row cell *!*/
+/*    -fx-background-color: #FE6C01;*/
+/*    -fx-text-fill: white;*/
+/*}*/
+
+.scroll-pane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* The main scrollbar area */
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+/* The track (the background path of the scrollbar) */
+.scroll-bar .track {
+    -fx-background-color: #E6E3E3; /* Slightly darker than #F0EDED background */
+    -fx-background-radius: 10;     /* Rounded edges */
+    -fx-border-color: transparent;
+}
+
+/* The thumb (the part you click and drag) */
+.scroll-bar .thumb {
+    -fx-background-color: #8B8B8B; /* Darker grey than background */
+    -fx-background-radius: 10;     /* Rounded edges to match your product cards */
+}
+
+/* Thumb hover effect for better UI feedback */
+.scroll-bar .thumb:hover {
+    -fx-background-color: #636363; /* A darker shade of grey when hovered */
+}
+
+/* The buttons at the ends of the scrollbar */
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 2;
+    -fx-cursor: hand;
+}
+
+/* Hover effect for the buttons */
+.scroll-bar .increment-button:hover,
+.scroll-bar .decrement-button:hover {
+    -fx-background-color: #E6E3E3; /* Light grey circle on hover */
+    -fx-background-radius: 100;
+}
+
+/* The actual arrow shapes inside the buttons */
+.scroll-bar .vertical .increment-arrow {
+    -fx-shape: "M0 128C0 110.3 7.1 93.5 19.8 81l376.4 0c16.9 0 32.3 7.1 45 19.8s19.8 28.1 19.8 45-7.1 33.7-19.8 45l-144 128c-11.9 10.6-27.6 16.7-44.2 16.7s-32.3-6.1-44.2-16.7L19.8 218C7.1 206.7 0 189.9 0 173z"; /* A clean chevron SVG path */
+    -fx-background-color: #E6E3E3;
+    -fx-padding: 2; /* Controls the size of the arrow */
+}
+
+.scroll-bar .vertical .decrement-arrow {
+    -fx-shape: "M0 128C0 110.3 7.1 93.5 19.8 81L163.8 17C175.7 6.1 191.4 0 208 0s32.3 6.1 44.2 17l144 128c12.7 11.3 19.8 28.1 19.8 45s-7.1 33.7-19.8 45-28.1 19.8-45 19.8L64 256c-16.9 0-32.3-7.1-45-19.8s-19.8-28.1-19.8-45z"; /* A clean chevron SVG path */
+    -fx-background-color: #E6E3E3;
+    -fx-padding: 2;
+}
+
+/* Hide horizontal arrows */
+.scroll-bar:horizontal .increment-arrow,
+.scroll-bar:horizontal .decrement-arrow {
+    -fx-shape: "";
+    -fx-padding: 0;
+}
+
+
+.update-button, .deactivate-button, .reactivate-button {
+    -fx-border-radius: 5;
+    -fx-border-width: 2;
+    -fx-border-color: transparent;
+    -fx-font-family: Arial;
+    -fx-font-size: 12;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.update-button {
+    -fx-background-color: #FCE7BB;          /* orange color */
+    -fx-text-fill: #E8A000;
+}
+
+.update-button:hover {
+    -fx-background-color: #FFDA8A;
+}
+
+.deactivate-button {
+    -fx-background-color: #FFE5E5;          /* orange color */
+    -fx-text-fill: #D32F2F;
+}
+
+.deactivate-button:hover {
+    -fx-background-color: #FFCCCC;
+}
+
+.reactivate-button {
+    -fx-background-color: #CDF1C5;
+    -fx-text-fill: #10A115;
+}
+
+.reactivate-button:hover {
+    -fx-background-color: #ACE9A0;
+}

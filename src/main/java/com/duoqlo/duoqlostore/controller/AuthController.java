@@ -36,8 +36,13 @@ public class AuthController {
         this.passFieldError[0] = hasError;
     }
 
-    public boolean handleLogIn(ActionEvent e, String username, String enteredPassword) {
+    public boolean isUserActive(String username) {
+        return userDAO.isActive(username);
+    }
+
+    public boolean handleLogIn(String username, String enteredPassword) {
         try {
+
             if (userDAO.usernameExists(username)) {
 
                 String storedPassword = userDAO.getPasswordByUsername(username);
@@ -48,12 +53,7 @@ public class AuthController {
                     User loggedInUser = userDAO.getUserByUsername(username);
 
                     if (loggedInUser != null) {
-                        DashboardController dashboardController = new DashboardController();
-
-                        Navigator.setUser(loggedInUser);
-                        Navigator.setDashboardController(dashboardController);
-
-                        Navigator.openUserDashboard();
+                        Navigator.openDashboard(loggedInUser);
                         return true;
                     }
                 }

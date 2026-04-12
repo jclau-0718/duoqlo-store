@@ -93,18 +93,30 @@ public class LogInPage extends AuthPage {
         });
 
         logInButton.setOnAction(e -> {
-            if (controller.handleLogIn(e, usernameField.getText().trim(), passwordField.getText().trim())) {
-                return;
-            } else {
-                controller.setUserFieldError(true);
-                controller.setPassFieldError(true);
-                controller.updateUsernameFieldStyle(usernameField, usernameErrorLabel);
-                controller.updatePassFieldStyle(passwordHBox, passwordField, passwordErrorLabel);
-                StackPane root = (StackPane) ((Node) e.getSource()).getScene().getRoot();
+            StackPane root = (StackPane) ((Node) e.getSource()).getScene().getRoot();
 
+            String username = usernameField.getText().trim();
+            String password = passwordField.getText().trim();
+
+            if (controller.isUserActive(username)) {
                 alert.setAlertType(AlertMsg.AlertMsgType.ERROR);
-                alert.show(root, "Invalid username or password.", Pos.TOP_CENTER);
+                alert.show(root, "Account has been deactivated.", Pos.TOP_CENTER);
+            } else {
+                if (controller.handleLogIn(username, password)) {
+                    return;
+                } else {
+                    controller.setUserFieldError(true);
+                    controller.setPassFieldError(true);
+                    controller.updateUsernameFieldStyle(usernameField, usernameErrorLabel);
+                    controller.updatePassFieldStyle(passwordHBox, passwordField, passwordErrorLabel);
+
+
+                    alert.setAlertType(AlertMsg.AlertMsgType.ERROR);
+                    alert.show(root, "Invalid username or password.", Pos.TOP_CENTER);
+                }
             }
+
+
         });
 
         signUpButton.setOnAction(e -> {

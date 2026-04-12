@@ -1,5 +1,8 @@
 package com.duoqlo.duoqlostore.model;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import javax.xml.crypto.Data;
 import java.sql.*;
 import java.util.List;
@@ -280,61 +283,139 @@ public class UserDAO extends DataAccessObject<User> {
         }
     }
 
-    public User getUserByCredentials(String username, String password){
-        if(!usernameExists(username)) {
-            return null;
-        }
-
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+    public ObservableList<User> getAllUsersObservable() {
+        ObservableList<User> users = FXCollections.observableArrayList();
+        String query = """
+                SELECT * FROM users
+                WHERE role = "CUSTOMER";
+                """;
 
         try (Connection conn = ConnectDB.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
 
-            User user = new User(username);
-
-            pstmt.setString(1, username);
-            pstmt.setString(2, password);
-
-            ResultSet rs = pstmt.executeQuery();
-            ResultSetMetaData meta = rs.getMetaData();
-
-            if(rs.next()){
+            while (rs.next()) {
+                User user = new User();
                 user.setId(rs.getInt("user_id"));
+                user.setUsername(rs.getString("username"));
+                user.setPassword(rs.getString("password"));
+                user.setFullName(rs.getString("first_name"), rs.getString("last_name"));
+                user.setEmail(rs.getString("email"));
                 user.setRole(rs.getString("role"));
                 user.setIs_active(rs.getInt("is_active"));
 
-                return user;
-            } else {
-                return null;
+                // Set address fields
+                user.setFullAddress(
+                        rs.getString("address_line1"),
+                        rs.getString("address_line2"),
+                        rs.getString("city"),
+                        rs.getInt("postal_code"),
+                        rs.getString("state")
+                );
+
+                users.add(user);
             }
 
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
+        return users;
+    }
+
+    public ObservableList<User> getAllAdminsObservable() {
+        ObservableList<User> admins = FXCollections.observableArrayList();
+        String query = """
+                SELECT * FROM users
+                WHERE role = "ADMIN";
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                User user = new User();
+                user.setId(rs.getInt("user_id"));
+                user.setUsername(rs.getString("username"));
+                user.setPassword(rs.getString("password"));
+                user.setFullName(rs.getString("first_name"), rs.getString("last_name"));
+                user.setEmail(rs.getString("email"));
+                user.setRole(rs.getString("role"));
+                user.setIs_active(rs.getInt("is_active"));
+
+                // Set address fields
+                user.setFullAddress(
+                        rs.getString("address_line1"),
+                        rs.getString("address_line2"),
+                        rs.getString("city"),
+                        rs.getInt("postal_code"),
+                        rs.getString("state")
+                );
+
+                admins.add(user);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return admins;
+    }
+
+    public boolean isActive(String username) {
+        String sql = """
+                SELECT is_active FROM users
+                WHERE username = ?;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+
+            pstmt.setString(1, username);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                if(rs.getInt("is_active") == 1) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
 
         } catch (SQLException e){
             e.printStackTrace();
-            return null;
         }
+
+        return false;
     }
 
     public boolean usernameExists(String username){
         String sql = "SELECT user_id FROM users WHERE username = ?";
 
-        try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+
             pstmt.setString(1, username);
+
             ResultSet rs = pstmt.executeQuery();
 
             return rs.next();
 
         } catch (SQLException e){
             e.printStackTrace();
-            return false;
         }
+
+        return false;
     }
 
     public boolean emailExists(String email) {
         String sql = "SELECT user_id FROM users WHERE email = ?";
 
-        try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)){
+
             pstmt.setString(1, email);
             ResultSet rs = pstmt.executeQuery();
 
@@ -342,8 +423,9 @@ public class UserDAO extends DataAccessObject<User> {
 
         } catch (SQLException e){
             e.printStackTrace();
-            return false;
         }
+
+        return false;
     }
 
     public boolean duplicateExists(String username, String firstname, String lastname, String email) {
@@ -363,28 +445,50 @@ public class UserDAO extends DataAccessObject<User> {
 
         } catch (SQLException e){
             e.printStackTrace();
-            return false;
         }
+
+        return false;
     }
 
-    public boolean checkCredentials(String username, String password){
-        String sql = "SELECT user_id FROM users WHERE username = ? AND password = ?";
+    public boolean deactivateUser(int userid) {
+        String sql = """
+                UPDATE users
+                SET is_active = 0
+                WHERE user_id = ?;
+                """;
 
         try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
-            pstmt.setString(1, username);
-            pstmt.setString(2, password);
+            pstmt.setInt(1, userid);
 
-            ResultSet rs = pstmt.executeQuery();
+            int affectedRows = pstmt.executeUpdate();
 
-            return rs.next();
+            return affectedRows > 0;
 
         } catch (SQLException e){
             e.printStackTrace();
-            return false;
         }
+
+        return false;
     }
 
-//    public User getUserByUsername(String username){
-//        String sql = "SELECT user_id FROM users WHERE username = ? AND password = ?";
-//    }
+    public boolean reactivateUser(int userid) {
+        String sql = """
+                UPDATE users
+                SET is_active = 1
+                WHERE user_id = ?;
+                """;
+
+        try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+            pstmt.setInt(1, userid);
+
+            int affectedRows = pstmt.executeUpdate();
+
+            return affectedRows > 0;
+
+        } catch (SQLException e){
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }

@@ -1,9 +1,7 @@
 package com.duoqlo.duoqlostore.controller;
 
 import com.duoqlo.duoqlostore.model.TableCreator;
-import com.duoqlo.duoqlostore.view.CartPage;
-import com.duoqlo.duoqlostore.view.LogInPage;
-import com.duoqlo.duoqlostore.view.SignUpPage;
+import com.duoqlo.duoqlostore.view.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -11,8 +9,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.Objects;
-
-import com.duoqlo.duoqlostore.view.UserDashboard;
 
 public class Main extends Application {
     @Override
@@ -24,12 +20,13 @@ public class Main extends Application {
         UserDashboard userDash = new UserDashboard();
         SignUpPage signUpPage = new SignUpPage();
 //        CartPage cartPage = new CartPage();
+        AdminDashboard adminDash = new AdminDashboard();
 
         //Create database
         TableCreator.createTable();
 
         stage.setTitle("DUOQLO");
-        Navigator.goTo(logInPage.initialize());
+        Navigator.goTo(adminDash.initialize());
 //        stage.setScene(userDash.initialize());
         stage.show();
         stage.centerOnScreen();

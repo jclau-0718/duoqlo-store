@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class DashboardController {
+public class UserDashController {
     private User user;
     private CartController cartController;
     private OrderController orderController;
@@ -29,12 +29,14 @@ public class DashboardController {
     private String sortingSelected = null;
     private boolean isSorted = false;
 
-    public void setUser(User user){
+    public UserDashController(User user) {
         this.user = user;
         cartController = new CartController(this.user);
         orderController = new OrderController(this.user);
         profileController = new ProfileController(this.user);
     }
+
+    public User getUser() { return this.user; }
 
     public void openCartPage(){
         CartPage cartPage = new CartPage(this.cartController);

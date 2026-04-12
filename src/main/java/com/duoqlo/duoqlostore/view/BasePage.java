@@ -1,6 +1,5 @@
 package com.duoqlo.duoqlostore.view;
 
-import com.duoqlo.duoqlostore.controller.DashboardController;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.model.User;
 import javafx.animation.PauseTransition;
@@ -22,9 +21,9 @@ import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Objects;
-import java.util.Stack;
 
 public abstract class BasePage extends ApplicationPage {
+    public abstract User getUser();
     public abstract void openCartPage();
     public abstract void openOrdersPage();
     public abstract void openProfilePage();
@@ -73,7 +72,7 @@ public abstract class BasePage extends ApplicationPage {
         logoButton.setGraphic(logoView);
         logoButton.getStyleClass().add("logo-button");
         logoButton.setOnAction(e -> {
-            Navigator.openUserDashboard();
+            Navigator.openDashboard(getUser());
         });
 
         middleHBox.setMaxWidth(Region.USE_PREF_SIZE);

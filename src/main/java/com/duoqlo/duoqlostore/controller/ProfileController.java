@@ -26,6 +26,8 @@ public class ProfileController {
         this.user = user;
     }
 
+    public User getUser() { return this.user; }
+
     public void openCartPage() {
         CartController cartController = new CartController(this.user);
         CartPage cartPage = new CartPage(cartController);

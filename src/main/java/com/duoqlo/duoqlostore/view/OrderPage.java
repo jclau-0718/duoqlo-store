@@ -3,7 +3,6 @@ package com.duoqlo.duoqlostore.view;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.controller.OrderController;
 import com.duoqlo.duoqlostore.model.*;
-import javafx.beans.value.ChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -229,6 +228,9 @@ public class OrderPage extends BasePage {
     }
 
     @Override
+    public User getUser() { return controller.getUser(); }
+
+    @Override
     public void openCartPage() {
         controller.openCartPage();
     }
@@ -305,7 +307,6 @@ public class OrderPage extends BasePage {
         BorderPane root = new BorderPane();
         root.setTop(buildHeader());
         root.setCenter(body);
-        root.setOnMouseClicked(e -> root.requestFocus()); //Allow unfocus on TextField
 
         Scene scene = setScene(root, "order-page");
 

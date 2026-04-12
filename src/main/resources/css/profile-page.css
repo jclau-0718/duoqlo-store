@@ -82,6 +82,7 @@
 
 .label.username {
     -fx-text-fill: #D4D4D4;
+    -fx-font-style: italic;
 }
 
 .label.email, .label.address, .label.address-value {
@@ -166,15 +167,12 @@
 }
 
 .primary-button {
-    -fx-font-family: Arial;
-    -fx-font-size: 15;
     -fx-border-radius: 5;
     -fx-border-width: 2;
-}
-
-.primary-button {
     -fx-background-color: #FE6C01;          /* orange color */
     -fx-border-color: #FE6C01;
     -fx-text-fill: white;
+    -fx-font-family: Arial;
+    -fx-font-size: 15;
     -fx-cursor: hand;
 }

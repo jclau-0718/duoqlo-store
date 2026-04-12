@@ -17,18 +17,25 @@ public class SignUpPage extends AuthPage{
     private AuthController controller = new AuthController();
     private InfoValidation validator = new InfoValidation();
 
+
     private TextField firstNameField, lastNameField, emailField, address1Field, address2Field,
-            cityField, postcodeField, stateField, usernameField, visiblePassField, visibleConfirmPassField;
+    cityField, postcodeField, stateField, usernameField, visiblePassField, visibleConfirmPassField;
     private PasswordField passwordField, confirmPassField;
     private HBox passwordHBox, confirmPassHBox;
 
     private VBox firstNameBox, lastNameBox, emailBox, address1Box, address2Box,
-            cityBox, postcodeBox, stateBox, countryBox, usernameBox, passwordBox, confirmPassBox;
+    cityBox, postcodeBox, stateBox, countryBox, usernameBox, passwordBox, confirmPassBox;
 
     private Label firstNameError, lastNameError, emailError, address1Error, address2Error,
-            cityError, postcodeError, stateError, usernameError, passwordError, confirmPassError;
+    cityError, postcodeError, stateError, usernameError, passwordError, confirmPassError;
 
     private Map<TextField, Label> fieldErrorMap = new LinkedHashMap<>();
+
+    private Button backButton;
+    private Runnable backToAdminDash;
+    private Runnable showSuccess;
+
+    private boolean isAdminMode = false;
 
     public Region createLine(){
         Region line = new Region();
@@ -235,7 +242,7 @@ public class SignUpPage extends AuthPage{
     }
 
     public HBox personalInfoButtonBox() {
-        Button backButton = secondaryButton("BACK");
+        backButton = secondaryButton("BACK");
         Button nextButton = primaryButton("NEXT");
 
         HBox buttonBox = new HBox(backButton, nextButton);
@@ -299,10 +306,18 @@ public class SignUpPage extends AuthPage{
                     confirmPassField.positionCaret(confirmPassField.getText().length());
                 } else {
                     if(controller.handleSignUp(fieldValues)) { //Create account in database
-                        LogInPage logInPage = new LogInPage(controller);
 
-                        Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
-                        stage.setScene(logInPage.initialize());
+                        if (backToAdminDash == null) {
+                            //Open login page
+                            LogInPage logInPage = new LogInPage(controller);
+
+                            Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
+                            stage.setScene(logInPage.initialize());
+                        } else {
+                            //Open admin dashboard
+                            backToAdminDash.run();
+                        }
+
                     }
                 }
             } catch (Exception ex) {
@@ -336,6 +351,8 @@ public class SignUpPage extends AuthPage{
         GridPane personalInfoBox = personalInfoBox();
         HBox buttonBox = personalInfoButtonBox();
 
+        backButton.setDisable(true);
+
         VBox form = createForm(personalInfoBox, buttonBox);
 
         return form;
@@ -348,6 +365,19 @@ public class SignUpPage extends AuthPage{
         VBox form = createForm(loginDetailsBox, buttonBox);
 
         return form;
+    }
+
+    public VBox getContentForAdmin() {
+        this.isAdminMode = true;
+
+        initFieldBoxes();
+        packFieldError();
+
+        return personalInfoForm();
+    }
+
+    public void setBackToAdminDash(Runnable backToAdminDash) {
+        this.backToAdminDash = backToAdminDash;
     }
 
     public Scene initialize(){

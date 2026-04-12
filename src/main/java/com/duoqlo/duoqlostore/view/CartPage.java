@@ -1,7 +1,6 @@
 package com.duoqlo.duoqlostore.view;
 
 import com.duoqlo.duoqlostore.controller.CartController;
-import com.duoqlo.duoqlostore.controller.DashboardController;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.model.CartItem;
 import com.duoqlo.duoqlostore.model.ProductDAO;
@@ -17,13 +16,9 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.stage.Screen;
 import javafx.util.Duration;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
-import java.util.Objects;
 
 class CartRow extends BorderPane {
     private ProductDAO productDAO = new ProductDAO();
@@ -187,6 +182,8 @@ public class CartPage extends BasePage{
         numItems = controller.getCartItemList().size();
     }
 
+    @Override
+    public User getUser() { return controller.getUser(); }
     @Override
     public void openCartPage() {
         Navigator.goTo(this.initialize());

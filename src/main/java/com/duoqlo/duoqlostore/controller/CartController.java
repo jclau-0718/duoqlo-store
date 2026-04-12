@@ -22,6 +22,8 @@ public class CartController {
         getCart(user);
     }
 
+    public User getUser() { return this.user; }
+
     public void openOrdersPage() {
         OrderController orderController = new OrderController(this.user);
         OrderPage orderPage = new OrderPage(orderController);
@@ -104,8 +106,7 @@ public class CartController {
     }
 
     public void handleCheckOut() {
-        DashboardController dashController = new DashboardController();
-        dashController.setUser(this.user);
+        UserDashController dashController = new UserDashController(this.user);
 
         UserDashboard userDash = new UserDashboard(dashController);
         Navigator.goTo(userDash.initialize());

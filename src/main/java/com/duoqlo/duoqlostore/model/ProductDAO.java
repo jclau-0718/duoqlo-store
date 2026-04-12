@@ -1,5 +1,8 @@
 package com.duoqlo.duoqlostore.model;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.sql.*;
 import java.util.*;
 
@@ -219,6 +222,42 @@ public class ProductDAO {
 
     public List<Product> getAllProducts() {
         List<Product> products = new ArrayList<>();
+        String sql = """
+                SELECT p.product_id, p.product_sku, p.product_name, g.gender, c.category_name,
+                       p.description, p.image_path
+                FROM product p
+                LEFT JOIN gender g ON p.gender_id = g.gender_id
+                LEFT JOIN category c ON p.category_id = c.category_id
+                ORDER BY g.display_order ASC, p.product_name ASC
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Product product = new Product(
+                        rs.getInt("product_id"),
+                        rs.getString("product_sku"),
+                        rs.getString("product_name"),
+                        rs.getString("gender"),
+                        rs.getString("category_name"),
+                        rs.getString("description"),
+                        rs.getString("image_path")
+                );
+                products.add(product);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return products;
+    }
+
+    public ObservableList<Product> getAllProductsObservable() {
+        ObservableList<Product> products = FXCollections.observableArrayList();
+
         String sql = """
                 SELECT p.product_id, p.product_sku, p.product_name, g.gender, c.category_name,
                        p.description, p.image_path

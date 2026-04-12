@@ -3,6 +3,7 @@ package com.duoqlo.duoqlostore.view;
 import com.duoqlo.duoqlostore.controller.InfoValidation;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.controller.ProfileController;
+import com.duoqlo.duoqlostore.model.User;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -55,6 +56,9 @@ public class ProfilePage extends BasePage {
     public ProfilePage(ProfileController controller) {
         this.controller = controller;
     }
+
+    @Override
+    public User getUser() { return controller.getUser(); }
 
     @Override
     public void openCartPage() { controller.openCartPage(); }
@@ -232,14 +236,19 @@ public class ProfilePage extends BasePage {
 
         Label addressLabel = new Label("Address: ");
         addressLabel.getStyleClass().add("address");
+        addressLabel.setMinWidth(Region.USE_PREF_SIZE);
 
         Label addressValue = new Label(controller.getFullAddress());
         addressValue.getStyleClass().add("address-value");
         addressValue.setWrapText(true);
 
         HBox addressBox = new HBox(addressLabel, addressValue);
+        HBox.setHgrow(addressValue, Priority.ALWAYS);
 
         VBox profileBox = new VBox(5, nameBox, emailLabel, addressBox);
+//        profileBox.setMinHeight(200);
+//        profileBox.setPrefHeight(200);
+//        profileBox.setMaxHeight(300);
         profileBox.setPadding(new Insets(20));
         profileBox.getStyleClass().add("profile-box");
 
@@ -475,6 +484,15 @@ public class ProfilePage extends BasePage {
         vbox.setAlignment(Pos.CENTER);
 
         StackPane body = new StackPane(vbox);
+
+        return body;
+    }
+
+    public StackPane getContent() {
+        initFieldBoxes();
+        packFieldError();
+
+         body = buildBody();
 
         return body;
     }
