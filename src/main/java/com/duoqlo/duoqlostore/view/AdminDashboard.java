@@ -131,6 +131,12 @@ public class AdminDashboard extends ApplicationPage {
         return header;
     }
 
+    private void showInsertButton(String buttonText) {
+        insertButton.setText(buttonText);
+        insertButton.setVisible(true);
+        insertBtnWasVisible = true;
+    }
+
     private GridPane buildCardGrid() {
         VBox userStatCard = new StatCard("Total Users", String.valueOf(controller.getTotalUsers()));
         userStatCard.setOnMouseClicked(e -> {
