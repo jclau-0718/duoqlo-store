@@ -1,7 +1,6 @@
 package com.duoqlo.duoqlostore.controller;
 
 import com.duoqlo.duoqlostore.model.User;
-import com.duoqlo.duoqlostore.view.AdminDashboard;
 import com.duoqlo.duoqlostore.view.UserDashboard;
 import javafx.scene.Scene;
 import javafx.stage.Stage;

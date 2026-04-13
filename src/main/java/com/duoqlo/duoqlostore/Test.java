@@ -1,15 +1,9 @@
 package com.duoqlo.duoqlostore;
 
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Bounds;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
-import javafx.stage.Popup;
 import javafx.stage.Stage;
 
 public class Test extends Application {
@@ -27,7 +21,7 @@ public class Test extends Application {
 
         sortBox.setValue(selectedSort); // restore previous selection
 
-        sortBox.setOnAction(e -> {
+        sortBox.setOnAction(_ -> {
             selectedSort = sortBox.getValue(); // remember selection
         });
 
@@ -47,7 +41,6 @@ public class Test extends Application {
         primaryStage.setTitle("Search Demo");
         primaryStage.show();
     }
-
 
     public static void main(String[] args) {
         launch(args);

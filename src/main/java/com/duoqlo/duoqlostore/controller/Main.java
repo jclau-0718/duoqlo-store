@@ -3,12 +3,8 @@ package com.duoqlo.duoqlostore.controller;
 import com.duoqlo.duoqlostore.model.TableCreator;
 import com.duoqlo.duoqlostore.view.*;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import java.io.IOException;
-import java.util.Objects;
 
 public class Main extends Application {
     @Override
@@ -27,7 +23,6 @@ public class Main extends Application {
 
         stage.setTitle("DUOQLO");
         Navigator.goTo(adminDash.initialize());
-//        stage.setScene(userDash.initialize());
         stage.show();
         stage.centerOnScreen();
         stage.setMaximized(true);

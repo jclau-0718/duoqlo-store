@@ -74,7 +74,7 @@
 
 .table-view .column-header .label {     /* style header text */
     -fx-text-fill: white;
-    -fx-font-size: 14;
+    -fx-font-size: 16;
     -fx-font-weight: bold;
     -fx-padding: 5;
 }
@@ -84,28 +84,18 @@
 }
 
 .table-cell {
-    -fx-font-size: 12;
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
     -fx-padding: 10 15 10 15;
 }
 
 .table-row-cell {                       /* style row cell */
-    -fx-font-size: 12;
-    -fx-font-weight: bold;
     -fx-background-color: rgba(254, 108, 1, 0.2);
 }
 
 .table-row-cell:odd {                   /* style odd row cell */
     -fx-background-color: rgba(254, 108, 1, 0.05);
 }
-
-/*.table-row-cell:filled:hover {          !* style hovered row cell *!*/
-/*    -fx-background-color: #f0f0f0;*/
-/*}*/
-
-/*.table-row-cell:filled:selected {       !* style selected row cell *!*/
-/*    -fx-background-color: #FE6C01;*/
-/*    -fx-text-fill: white;*/
-/*}*/
 
 .scroll-pane {
     -fx-background: transparent;
@@ -182,7 +172,7 @@
     -fx-border-width: 2;
     -fx-border-color: transparent;
     -fx-font-family: Arial;
-    -fx-font-size: 12;
+    -fx-font-size: 14;
     -fx-font-weight: bold;
     -fx-cursor: hand;
 }

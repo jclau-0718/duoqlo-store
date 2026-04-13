@@ -42,7 +42,6 @@ public class AuthController {
 
     public boolean handleLogIn(String username, String enteredPassword) {
         try {
-
             if (userDAO.usernameExists(username)) {
 
                 String storedPassword = userDAO.getPasswordByUsername(username);

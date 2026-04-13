@@ -121,6 +121,11 @@ public class TableCreator {
                 );
                 """;
 
+        final String alterProdSQL = """
+                ALTER TABLE product 
+                ADD COLUMN status TEXT;
+                """;
+
         String[] SQLStatements = {
                 usersSQL,
                 genderSQL,

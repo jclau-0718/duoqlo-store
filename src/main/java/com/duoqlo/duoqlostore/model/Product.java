@@ -40,6 +40,19 @@ public class Product {
         this.size = size;
     }
 
+    //productid
+    //productsku
+    //productname
+    //gender
+    //category
+    //List<Productsize>
+    //stock
+    //added at
+    //status: available OR out of stock
+
+
+
+
     // Getters and Setters
     public int getProductId() { return productId; }
 

@@ -1,7 +1,6 @@
 package com.duoqlo.duoqlostore.view;
 
 import com.duoqlo.duoqlostore.controller.AuthController;
-import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -12,7 +11,6 @@ import javafx.geometry.*;
 
 import java.util.Objects;
 
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class LogInPage extends AuthPage {
@@ -98,7 +96,7 @@ public class LogInPage extends AuthPage {
             String username = usernameField.getText().trim();
             String password = passwordField.getText().trim();
 
-            if (controller.isUserActive(username)) {
+            if (!controller.isUserActive(username)) {
                 alert.setAlertType(AlertMsg.AlertMsgType.ERROR);
                 alert.show(root, "Account has been deactivated.", Pos.TOP_CENTER);
             } else {

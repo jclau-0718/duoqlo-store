@@ -3,7 +3,9 @@ package com.duoqlo.duoqlostore.view;
 import com.duoqlo.duoqlostore.controller.AdminDashController;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.controller.ProfileController;
+import com.duoqlo.duoqlostore.model.Product;
 import com.duoqlo.duoqlostore.model.User;
+import javafx.beans.property.*;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -78,6 +80,185 @@ class StatCard extends VBox {
     }
 }
 
+class UserTableView extends TableView<User> {
+    private AdminDashController controller;
+    private StackPane body;
+    private BorderPane root;
+    private AlertMsg alert;
+
+    private TableColumn<User, Integer> idCol = new TableColumn<>("ID");
+    private TableColumn<User, String> usernameCol = new TableColumn<>("Username");
+    private TableColumn<User, String> fullNameCol = new TableColumn<>("Full Name");
+    private TableColumn<User, String> emailCol = new TableColumn<>("Email");
+    private TableColumn<User, String> addressCol = new TableColumn<>("Address");
+    private TableColumn<User, String> statusCol = new TableColumn<>("Status");
+    private TableColumn<User, Void> actionCol = new TableColumn<>("Actions");
+
+    public UserTableView(AdminDashController controller, StackPane body, BorderPane root) {
+        this.controller = controller;
+        this.body = body;
+        this.root = root;
+
+        build();
+    }
+
+    private void build() {
+        // Set up cell value factories
+        idCol.setCellValueFactory(data ->
+                new SimpleIntegerProperty(data.getValue().getId()).asObject());
+
+        usernameCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getUsername()));
+
+        fullNameCol.setCellValueFactory(data ->
+                new SimpleStringProperty(
+                        data.getValue().getFirstName() + " " + data.getValue().getLastName()));
+
+        emailCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getEmail()));
+
+        addressCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getFullAddress()));
+
+        statusCol.setCellValueFactory(data ->
+                new SimpleStringProperty(
+                        data.getValue().getIsActive() == 1 ? "ACTIVE" : "INACTIVE"));
+
+        statusCol.setCellFactory(column -> new TableCell<User, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+
+                    setAlignment(Pos.CENTER);
+
+                    // Apply different styles based on status
+                    if ("ACTIVE".equals(item)) {
+                        setStyle("""
+                    -fx-text-fill: #10A115;
+                    """);
+                    } else {
+                        setStyle("""
+                    -fx-text-fill: #D32F2F;
+                    """);
+                    }
+                }
+            }
+        });
+
+        actionCol.setCellFactory(col -> new TableCell<User, Void>() {
+            private final Button updateButton = new Button("Update");
+            private final Button deactivateButton = new Button("Deactivate");
+            private final Button reactivateButton = new Button("Reactivate");
+            private final HBox buttons = new HBox(10);
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    User user = getTableView().getItems().get(getIndex());
+
+                    double buttonWidth = 95; // Adjust as needed
+                    updateButton.setPrefWidth(buttonWidth);
+                    deactivateButton.setPrefWidth(buttonWidth);
+                    reactivateButton.setPrefWidth(buttonWidth);
+
+                    buttons.setAlignment(Pos.CENTER);
+
+                    buttons.getChildren().clear();
+
+                    buttons.getChildren().add(updateButton);
+
+                    if (user.getIsActive() == 0) { //User is inactive
+                        buttons.getChildren().add(reactivateButton);
+                    } else {
+                        buttons.getChildren().add(deactivateButton);
+                    }
+
+                    // Update button action
+                    updateButton.setOnAction(e -> {
+                        ProfileController profileController = new ProfileController(user);
+                        ProfilePage profilePage = new ProfilePage(profileController);
+
+                        StackPane content = profilePage.getContent();
+
+                        root.setCenter(content);
+                    });
+                    updateButton.getStyleClass().add("update-button");
+
+                    // Delete button action
+                    deactivateButton.setOnAction(e -> {
+                        //Show confirmation alert
+                        alert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
+                        alert.show(body, "Confirm to deactivate?", Pos.CENTER);
+                        alert.setOnConfirm(() -> {
+                            if (controller.deactivateUser(user.getId())) {
+                                //Refresh table
+                                refresh();
+
+                                //Show success alert
+                                alert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                                alert.show(body, "Deactivated successfully", Pos.CENTER);
+                            }
+                        });
+                    });
+                    deactivateButton.getStyleClass().add("deactivate-button");
+
+                    reactivateButton.setOnAction(e -> {
+                        alert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
+                        alert.show(body, "Confirm to reactivate?", Pos.CENTER);
+                        alert.setOnConfirm(() -> {
+                            if (controller.reactivateUser(user.getId())) {
+                                //Refresh table
+                                refresh();
+
+                                //Show success alert
+                                alert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                                alert.show(body, "Reactivated successfully", Pos.CENTER);
+                            }
+                        });
+                    });
+                    reactivateButton.getStyleClass().add("reactivate-button");
+
+                    setGraphic(buttons);
+                }
+            }
+        });
+
+        getColumns().addAll(idCol, usernameCol, fullNameCol,
+                emailCol, addressCol, statusCol, actionCol);
+
+        setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+
+    }
+}
+
+class ProductTableView extends TableView<Product> {
+    private AdminDashController controller;
+    private StackPane body;
+    private BorderPane root;
+    private AlertMsg alert;
+
+    private TableColumn<User, Integer> idCol = new TableColumn<>("ID");
+
+
+    public ProductTableView(AdminDashController controller, StackPane body, BorderPane root) {
+        this.controller = controller;
+        this.body = body;
+        this.root = root;
+    }
+
+
+}
+
 public class AdminDashboard extends ApplicationPage {
     private AdminDashController controller = new AdminDashController();
     private AlertMsg alert;
@@ -140,9 +321,7 @@ public class AdminDashboard extends ApplicationPage {
     private GridPane buildCardGrid() {
         VBox userStatCard = new StatCard("Total Users", String.valueOf(controller.getTotalUsers()));
         userStatCard.setOnMouseClicked(e -> {
-            insertButton.setText("+ Insert User");
-            insertButton.setVisible(true);
-            insertBtnWasVisible = true;
+            showInsertButton("+ Insert User");
             insertButton.setOnAction(ae -> {
                 SignUpPage signUpPage = new SignUpPage();
 
@@ -158,10 +337,13 @@ public class AdminDashboard extends ApplicationPage {
                 bodyVBox.getChildren().clear();
                 bodyVBox.getChildren().add(content);
             });
-            buildUserTable();
+            showUserTable();
         });
 
         VBox adminStatCard = new StatCard("Total Admins", String.valueOf(controller.getTotalAdmins()));
+        adminStatCard.setOnMouseClicked(e -> {
+            showAdminTable();
+        });
         VBox productStatCard = new StatCard("Total Products", String.valueOf(controller.getTotalProducts()));
         VBox orderStatCard = new StatCard("Total Orders", String.valueOf(controller.getTotalOrders()));
 
@@ -186,150 +368,29 @@ public class AdminDashboard extends ApplicationPage {
         return cardGrid;
     }
 
-    private void buildUserTable() {
-        TableView<User> table = new TableView<>();
-        table.setPrefHeight(1000);
+    private void showUserTable() {
+        TableView<User> userTable = new UserTableView(this.controller, body, root);
 
-        TableColumn<User, Integer> idCol = new TableColumn<>("ID");
-        TableColumn<User, String> usernameCol = new TableColumn<>("Username");
-        TableColumn<User, String> fullNameCol = new TableColumn<>("Full Name");
-        TableColumn<User, String> emailCol = new TableColumn<>("Email");
-        TableColumn<User, String> addressCol = new TableColumn<>("Address");
-        TableColumn<User, String> statusCol = new TableColumn<>("Status");
-        TableColumn<User, Void> actionCol = new TableColumn<>("Actions");
-
-        // Set up cell value factories
-        idCol.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleIntegerProperty(data.getValue().getId()).asObject());
-
-        usernameCol.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleStringProperty(data.getValue().getUsername()));
-
-        fullNameCol.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleStringProperty(
-                        data.getValue().getFirstName() + " " + data.getValue().getLastName()));
-
-        emailCol.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleStringProperty(data.getValue().getEmail()));
-
-        addressCol.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleStringProperty(data.getValue().getFullAddress()));
-
-        statusCol.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleStringProperty(
-                        data.getValue().getIsActive() == 1 ? "Active" : "Inactive"));
-
-        statusCol.setCellFactory(column -> new TableCell<User, String>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-
-                if (empty || item == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    setText(item);
-
-                    // Apply different styles based on status
-                    if ("Active".equals(item)) {
-                        setStyle("""
-                    -fx-text-fill: #10A115;
-                    """);
-                    } else {
-                        setStyle("""
-                    -fx-text-fill: #D32F2F;
-                    """);
-                    }
-                }
-            }
-        });
-
-        actionCol.setCellFactory(col -> new TableCell<User, Void>() {
-                    private final Button updateButton = new Button("Update");
-                    private final Button deactivateButton = new Button("Deactivate");
-                    private final Button reactivateButton = new Button("Reactivate");
-                    private final HBox buttons = new HBox(10);
-
-                    @Override
-                    protected void updateItem(Void item, boolean empty) {
-                        super.updateItem(item, empty);
-
-                        if (empty) {
-                            setGraphic(null);
-                        } else {
-                            User user = getTableView().getItems().get(getIndex());
-
-                            buttons.getChildren().clear();
-
-                            buttons.getChildren().add(updateButton);
-
-                            if (user.getIsActive() == 0) { //User is inactive
-                                buttons.getChildren().add(reactivateButton);
-                            } else {
-                                buttons.getChildren().add(deactivateButton);
-                            }
-
-                            // Update button action
-                            updateButton.setOnAction(e -> {
-                                ProfileController profileController = new ProfileController(user);
-                                ProfilePage profilePage = new ProfilePage(profileController);
-
-                                StackPane content = profilePage.getContent();
-
-                                root.setCenter(content);
-                            });
-                            updateButton.getStyleClass().add("update-button");
-
-                            // Delete button action
-                            deactivateButton.setOnAction(e -> {
-                                //Show confirmation alert
-                                alert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
-                                alert.show(body, "Confirm to deactivate?", Pos.CENTER);
-                                alert.setOnConfirm(() -> {
-                                    if (controller.deactivateUser(user.getId())) {
-                                        //Refresh table
-                                        table.refresh();
-
-                                        //Show success alert
-                                        alert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
-                                        alert.show(body, "Deactivated successfully", Pos.CENTER);
-                                    }
-                                });
-                            });
-                            deactivateButton.getStyleClass().add("deactivate-button");
-
-                            reactivateButton.setOnAction(e -> {
-                                alert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
-                                alert.show(body, "Confirm to reactivate?", Pos.CENTER);
-                                alert.setOnConfirm(() -> {
-                                    if (controller.reactivateUser(user.getId())) {
-                                        //Refresh table
-                                        table.refresh();
-
-                                        //Show success alert
-                                        alert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
-                                        alert.show(body, "Reactivated successfully", Pos.CENTER);
-                                    }
-                                });
-                            });
-                            reactivateButton.getStyleClass().add("reactivate-button");
-
-                            setGraphic(buttons);
-                        }
-                    }
-                });
-
-        // Get users from database (you need to implement this in UserDAO)
+        // Get users from database
         ObservableList<User> users = controller.getUsers();
 
-        table.setItems(users);
-        table.getColumns().addAll(idCol, usernameCol, fullNameCol,
-                emailCol, addressCol, statusCol, actionCol);
-
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        userTable.setItems(users);
 
         displayBox.getChildren().clear();
-        displayBox.getChildren().add(table);
+        displayBox.getChildren().add(userTable);
+        VBox.setVgrow(userTable, Priority.ALWAYS);
+    }
+
+    private void showAdminTable() {
+        TableView<User> adminTable = new UserTableView(this.controller, body, root);
+
+        ObservableList<User> admins = controller.getAdmins();
+
+        adminTable.setItems(admins);
+
+        displayBox.getChildren().clear();
+        displayBox.getChildren().add(adminTable);
+        VBox.setVgrow(adminTable, Priority.ALWAYS);
     }
 
     public Scene initialize() {
