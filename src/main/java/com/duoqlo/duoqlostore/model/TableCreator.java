@@ -121,6 +121,11 @@ public class TableCreator {
                 );
                 """;
 
+        final String alterProdTable ="""
+                ALTER TABLE product
+                ADD COLUMN status TEXT DEFAULT 'AVAILABLE' CHECK(status IN('AVAILABLE','OUT OF STOCK'));
+                """;
+
         String[] SQLStatements = {
                 usersSQL,
                 genderSQL,
@@ -131,6 +136,7 @@ public class TableCreator {
                 cartItemSQL,
                 ordersSQL,
                 orderitemSQL,
+                alterProdTable
         };
 
         try (Connection conn = ConnectDB.connect();
