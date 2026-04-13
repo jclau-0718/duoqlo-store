@@ -98,7 +98,7 @@ public class LogInPage extends AuthPage {
             String username = usernameField.getText().trim();
             String password = passwordField.getText().trim();
 
-            if (controller.isUserActive(username)) {
+            if (!controller.isUserActive(username)) {
                 alert.setAlertType(AlertMsg.AlertMsgType.ERROR);
                 alert.show(root, "Account has been deactivated.", Pos.TOP_CENTER);
             } else {
@@ -115,8 +115,6 @@ public class LogInPage extends AuthPage {
                     alert.show(root, "Invalid username or password.", Pos.TOP_CENTER);
                 }
             }
-
-
         });
 
         signUpButton.setOnAction(e -> {
@@ -159,7 +157,6 @@ public class LogInPage extends AuthPage {
         StackPane root = new StackPane(borderPane);
 
         if(controller.getRegistered()) {
-//            root.getChildren().remove(successBox);
 
             alert.setAlertType(AlertMsg.AlertMsgType.SUCCESS);
             alert.show(root, "Account created!", Pos.TOP_CENTER);

@@ -200,7 +200,7 @@ public class ProductDAO {
     public Map<String, String> getAllCategoriesWithIds() {
         Map<String, String> categoryMap = new LinkedHashMap<>();
 
-        String sql = "SELECT category_id, category_name FROM category ORDER BY display_order";
+        String sql = "SELECT category_id, category_name FROM category";
 
         try (Connection conn = ConnectDB.connect();
              Statement stmt = conn.createStatement();

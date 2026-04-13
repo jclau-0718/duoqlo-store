@@ -258,10 +258,10 @@ public class AdminProductUploader extends Application {
             if (currentGender != null) {
                 // Get ID from pre-loaded map
                 currentGenderId = genderIdMap.get(currentGender);
-
+                System.out.println(currentGender);
                 // Filter categories by gender
                 List<String> categoriesForGender = productDAO.getCategoryNameWithGender(currentGender);
-
+                System.out.println(categoriesForGender.isEmpty());
                 if (categoriesForGender != null && !categoriesForGender.isEmpty()) {
                     categoryCombo.setItems(FXCollections.observableArrayList(categoriesForGender));
                     categoryCombo.setDisable(false);

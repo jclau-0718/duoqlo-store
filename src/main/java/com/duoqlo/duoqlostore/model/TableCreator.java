@@ -55,6 +55,7 @@ public class TableCreator {
                       image_path TEXT NOT NULL,
                       description TEXT NOT NULL,
                       added_at TIMESTAMP DEFAULT (datetime('now', 'localtime')),
+                      status TEXT DEFAULT 'AVAILABLE' CHECK(status IN('AVAILABLE','OUT OF STOCK')),
                       FOREIGN KEY (category_id) REFERENCES category(category_id) ON DELETE CASCADE,
                       FOREIGN KEY (gender_id) REFERENCES gender(gender_id) ON DELETE CASCADE
                   );
@@ -121,11 +122,6 @@ public class TableCreator {
                 );
                 """;
 
-        final String alterProdTable ="""
-                ALTER TABLE product
-                ADD COLUMN status TEXT DEFAULT 'AVAILABLE' CHECK(status IN('AVAILABLE','OUT OF STOCK'));
-                """;
-
         String[] SQLStatements = {
                 usersSQL,
                 genderSQL,
@@ -135,8 +131,7 @@ public class TableCreator {
                 cartSQL,
                 cartItemSQL,
                 ordersSQL,
-                orderitemSQL,
-                alterProdTable
+                orderitemSQL
         };
 
         try (Connection conn = ConnectDB.connect();

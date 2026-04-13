@@ -41,6 +41,10 @@ public class AdminDashController {
         return this.users;
     }
 
+    public ObservableList<User> getAdmins() {
+        return this.admins;
+    }
+
     public int getTotalUsers() {
         return this.users.size();
     }
