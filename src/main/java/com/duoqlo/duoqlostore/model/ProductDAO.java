@@ -66,8 +66,9 @@ public class ProductDAO {
                 category_id = ?,
                 gender_id = ?,
                 image_path = ?,
-                description = ?
-            WHERE product_id = ?
+                description = ?,
+                added_at = datetime('now','localtime')
+            WHERE product_id = ?;
             """;
 
         try (Connection conn = ConnectDB.connect();
