@@ -31,7 +31,7 @@ public class OrderItem {
     }
 
     public String getProductName() {
-        return product.getProductName();
+        return product.getName();
     }
 
     public String getCategory() {

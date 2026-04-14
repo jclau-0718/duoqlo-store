@@ -15,15 +15,13 @@ public class Main extends Application {
         LogInPage logInPage = new LogInPage();
         UserDashboard userDash = new UserDashboard();
         SignUpPage signUpPage = new SignUpPage();
-//        CartPage cartPage = new CartPage();
-        AdminDashboard adminDash = new AdminDashboard();
+        AdminDashboard adminDash = new AdminDashboard(new AdminDashController());
 
         //Create database
         TableCreator.createTable();
 
         stage.setTitle("DUOQLO");
-        Navigator.goTo(logInPage.initialize());
-//        stage.setScene(userDash.initialize());
+        Navigator.goTo(adminDash.initialize());
         stage.show();
         stage.centerOnScreen();
         stage.setMaximized(true);

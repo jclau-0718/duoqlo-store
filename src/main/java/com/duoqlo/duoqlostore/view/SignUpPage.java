@@ -17,7 +17,6 @@ public class SignUpPage extends AuthPage{
     private AuthController controller = new AuthController();
     private InfoValidation validator = new InfoValidation();
 
-
     private TextField firstNameField, lastNameField, emailField, address1Field, address2Field,
     cityField, postcodeField, stateField, usernameField, visiblePassField, visibleConfirmPassField;
     private PasswordField passwordField, confirmPassField;
@@ -33,9 +32,12 @@ public class SignUpPage extends AuthPage{
 
     private Button backButton;
     private Runnable backToAdminDash;
-    private Runnable showSuccess;
 
     private boolean isAdminMode = false;
+
+    public void setIsAdminMode() {
+        this.isAdminMode = true;
+    }
 
     public Region createLine(){
         Region line = new Region();
@@ -291,7 +293,11 @@ public class SignUpPage extends AuthPage{
         signUpButton.setOnAction(e -> {
             try {
                 ArrayList<String> fieldValues = getFieldsValue();
-                fieldValues.add("CUSTOMER");
+                if (isAdminMode) {
+                    fieldValues.add("ADMIN");
+                } else {
+                    fieldValues.add("CUSTOMER");
+                }
 
                 if (!usernameError.getText().isEmpty()) { //Username has error
                     usernameField.requestFocus();
@@ -368,8 +374,6 @@ public class SignUpPage extends AuthPage{
     }
 
     public VBox getContentForAdmin() {
-        this.isAdminMode = true;
-
         initFieldBoxes();
         packFieldError();
 

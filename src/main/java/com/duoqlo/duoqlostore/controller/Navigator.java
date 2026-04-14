@@ -36,7 +36,10 @@ public class Navigator {
 
             goTo(userDash.initialize());
         } else {
-            System.out.println("Open admin dashboard");
+            AdminDashController controller = new AdminDashController();
+            AdminDashboard adminDash = new AdminDashboard(controller);
+
+            goTo(adminDash.initialize());
         }
     }
 }

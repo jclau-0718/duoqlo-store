@@ -1,5 +1,6 @@
 package com.duoqlo.duoqlostore.model;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class Product {
@@ -10,8 +11,13 @@ public class Product {
     private String category;
     private String description;
     private String imagePath;
+    private LocalDateTime addedDateTime;
+    private String addedDateStr;
+    private String status;
     private String size;
     private List<ProductSize> sizes;
+    private String sizeRange;
+    private String priceRange;
 
     // Constructors
     public Product() {}
@@ -40,12 +46,39 @@ public class Product {
         this.size = size;
     }
 
+    public Product(int productId, String productSku, String productName,
+                   String gender, String category, List<ProductSize> sizes, String imagePath,
+                   String description, LocalDateTime addedDateTime, String status) {
+        this.productId = productId;
+        this.productSku = productSku;
+        this.productName = productName;
+        this.gender = gender;
+        this.category = category;
+        this.sizes = sizes;
+        this.imagePath = imagePath;
+        this.description = description;
+        this.addedDateTime = addedDateTime;
+        this.addedDateStr = addedDateTime.toLocalDate().toString();
+        this.status = status;
+    }
+
+    //productid
+    // productsku
+    // productname
+    // gender
+    // categoryname
+    // price range
+    // size range
+    // stock
+    // added at
+    // status
+
     // Getters and Setters
-    public int getProductId() { return productId; }
+    public int getId() { return productId; }
 
-    public String getProductSku() { return productSku; }
+    public String getSku() { return productSku; }
 
-    public String getProductName() { return productName; }
+    public String getName() { return productName; }
 
     public String getGender() { return gender; }
 
@@ -55,9 +88,56 @@ public class Product {
 
     public String getImagePath() { return imagePath; }
 
+    public LocalDateTime getAddedDateTime() {
+        return addedDateTime;
+    }
+
+    public String getAddedDateStr() {
+        return addedDateStr;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
     public String getSize() { return size; }
 
     public List<ProductSize> getSizes() { return sizes; }
+
+    public String getSizeRange() {
+        if (!sizes.isEmpty()) {
+            String first = sizes.get(0).getSize();
+            String last = sizes.get(sizes.size() - 1).getSize();
+
+            String sizeRange = first + " - " + last;
+
+            return sizeRange;
+        } else {
+            System.out.println("sizes is null");
+            return "Hello";
+        }
+
+    }
+
+    public String getPriceRange() {
+        String first = String.format("RM %.2f", sizes.get(0).getPrice());
+        String last = String.format("RM %.2f", sizes.get(sizes.size() - 1).getPrice());
+
+        String priceRange = first + " - " + last;
+
+        return priceRange;
+    }
+
+    public int getStock() {
+        int totalStock = 0;
+
+        for (ProductSize prodSize : sizes) {
+            int stock = prodSize.getStockQuantity();
+            totalStock += stock;
+        }
+
+        return totalStock;
+    }
 
     public void setProductId(int productId) { this.productId = productId; }
 

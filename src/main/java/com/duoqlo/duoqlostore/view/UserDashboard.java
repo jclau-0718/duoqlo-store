@@ -434,12 +434,12 @@ public class UserDashboard extends BasePage {
         Label genderLabel = new Label(product.getGender());
         genderLabel.getStyleClass().add("gender");
 
-        Label nameLabel = new Label(product.getProductName());
+        Label nameLabel = new Label(product.getName());
         nameLabel.getStyleClass().add("product-name");
         nameLabel.setWrapText(true);
         nameLabel.setMaxWidth(cardWidth - 10);
 
-        List<ProductSize> sizes = controller.getCachedProductSizes(product.getProductId());
+        List<ProductSize> sizes = controller.getCachedProductSizes(product.getId());
         double lowestPrice = sizes.stream().mapToDouble(ProductSize::getPrice).min().orElse(0);
         Label priceLabel = new Label(showPrice(lowestPrice));
         priceLabel.getStyleClass().add("price");
@@ -637,7 +637,7 @@ public class UserDashboard extends BasePage {
             closeExpandedCard();
         }
 
-        List<ProductSize> productSizes = controller.getCachedProductSizes(product.getProductId());
+        List<ProductSize> productSizes = controller.getCachedProductSizes(product.getId());
 
         BorderPane enlargedCard = createExpandedCardContent(product, productSizes);
         expandedCardModal = enlargedCard;
@@ -700,7 +700,7 @@ public class UserDashboard extends BasePage {
         genderLabel.getStyleClass().add("gender");
         genderLabel.setStyle("");
 
-        Label nameLabel = new Label(product.getProductName());
+        Label nameLabel = new Label(product.getName());
         nameLabel.getStyleClass().add("expanded-product-name");
         nameLabel.setWrapText(true);
 
@@ -744,9 +744,9 @@ public class UserDashboard extends BasePage {
             if (newVal != null && !newVal.isEmpty() && !newVal.matches("\\d*")) {
                 quantityField.setText(oldVal);
 
-                checkQuantity(product.getProductId());
+                checkQuantity(product.getId());
             } else if (newVal != null && !newVal.isEmpty()) {
-                checkQuantity(product.getProductId());
+                checkQuantity(product.getId());
             } else {
                 productQuantity = 0;
             }
@@ -759,7 +759,7 @@ public class UserDashboard extends BasePage {
                 String text = quantityField.getText();
                 if (text == null || text.isEmpty()) {
                     quantityField.setText("1");
-                    checkQuantity(product.getProductId());
+                    checkQuantity(product.getId());
                 }
             }
         });
@@ -772,7 +772,7 @@ public class UserDashboard extends BasePage {
             productQuantity--;
             quantityField.setText(String.valueOf(productQuantity));
             updatePriceLabel();
-            checkQuantity(product.getProductId());
+            checkQuantity(product.getId());
 
             minusQtyBtn.requestFocus();
 
@@ -785,7 +785,7 @@ public class UserDashboard extends BasePage {
             productQuantity++;
             quantityField.setText(String.valueOf(productQuantity));
             updatePriceLabel();
-            checkQuantity(product.getProductId());
+            checkQuantity(product.getId());
 
             plusQtyBtn.requestFocus();
 
@@ -818,7 +818,7 @@ public class UserDashboard extends BasePage {
                 stockLabel.setManaged(true);
                 return;
             } else {
-                int productSizeId = controller.getSizeId(product.getProductId(), sizeSelected);
+                int productSizeId = controller.getSizeId(product.getId(), sizeSelected);
                 productQuantity = Integer.parseInt(quantityField.getText());
                 double subTotal = Double.parseDouble(priceLabel.getText().substring(3));
 
@@ -995,7 +995,7 @@ public class UserDashboard extends BasePage {
     private void showProductDetails(Product product) {
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Product Details");
-        dialog.setHeaderText(product.getProductName());
+        dialog.setHeaderText(product.getName());
 
         VBox content = new VBox(10);
         content.setPadding(new Insets(20));
@@ -1006,7 +1006,7 @@ public class UserDashboard extends BasePage {
 
         Label categoryLabel = new Label("Category: " + product.getCategory());
 
-        List<ProductSize> sizes = controller.getCachedProductSizes(product.getProductId());
+        List<ProductSize> sizes = controller.getCachedProductSizes(product.getId());
 
         Label sizesLabel = new Label("Available Sizes:");
         sizesLabel.setStyle("-fx-font-weight: bold; -fx-margin-top: 10;");

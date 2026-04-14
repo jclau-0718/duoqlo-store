@@ -36,17 +36,6 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 5);
 }
 
-.insert-button {
-    -fx-background-color: #FE6C01;
-    -fx-background-radius: 5;
-    -fx-border-color: #FE6C01;
-    -fx-border-radius: 5;
-    -fx-font-size: 14;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-cursor: hand;
-}
-
 .display-box {
     -fx-background-color: white;
     -fx-background-radius: 10;
@@ -70,27 +59,23 @@
 
 .table-view .column-header {
     -fx-background-color: transparent;
+    -fx-border-color: transparent;
 }
 
 .table-view .column-header .label {     /* style header text */
     -fx-text-fill: white;
-    -fx-font-size: 14;
+    -fx-font-size: 16;
     -fx-font-weight: bold;
     -fx-padding: 5;
 }
 
-.table-view .column-header {
-    -fx-border-color: transparent;
-}
-
 .table-cell {
-    -fx-font-size: 12;
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
     -fx-padding: 10 15 10 15;
 }
 
 .table-row-cell {                       /* style row cell */
-    -fx-font-size: 12;
-    -fx-font-weight: bold;
     -fx-background-color: rgba(254, 108, 1, 0.2);
 }
 
@@ -98,14 +83,9 @@
     -fx-background-color: rgba(254, 108, 1, 0.05);
 }
 
-/*.table-row-cell:filled:hover {          !* style hovered row cell *!*/
-/*    -fx-background-color: #f0f0f0;*/
-/*}*/
-
-/*.table-row-cell:filled:selected {       !* style selected row cell *!*/
-/*    -fx-background-color: #FE6C01;*/
-/*    -fx-text-fill: white;*/
-/*}*/
+.table-column {
+    -fx-alignment: CENTER;
+}
 
 .scroll-pane {
     -fx-background: transparent;
@@ -176,13 +156,18 @@
     -fx-padding: 0;
 }
 
+.label.click-button {
+    -fx-text-fill: #808080;
+    -fx-font-size: 20px;
+}
 
-.update-button, .deactivate-button, .reactivate-button {
+.action-box .button {
+    -fx-background-radius: 5;
     -fx-border-radius: 5;
     -fx-border-width: 2;
     -fx-border-color: transparent;
     -fx-font-family: Arial;
-    -fx-font-size: 12;
+    -fx-font-size: 14;
     -fx-font-weight: bold;
     -fx-cursor: hand;
 }
@@ -196,12 +181,13 @@
     -fx-background-color: #FFDA8A;
 }
 
-.deactivate-button {
+.deactivate-button, .remove-button {
     -fx-background-color: #FFE5E5;          /* orange color */
     -fx-text-fill: #D32F2F;
 }
 
-.deactivate-button:hover {
+.deactivate-button:hover,
+.remove-button:hover {
     -fx-background-color: #FFCCCC;
 }
 
@@ -212,4 +198,36 @@
 
 .reactivate-button:hover {
     -fx-background-color: #ACE9A0;
+}
+
+.view-button {
+    -fx-background-color: #DEDEDE;
+    -fx-text-fill: #808080;
+}
+
+.view-button:hover {
+    -fx-background-color: #C4C4C4;
+}
+
+.label.title {
+    -fx-font-size: 20;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FE6C01;
+}
+
+.header {
+    -fx-background-color: tranpsarent;
+    -fx-text-fill: black;
+    -fx-font-size: 14;
+}
+
+.orange-button {
+    -fx-background-color: #FE6C01;
+    -fx-background-radius: 5;
+    -fx-border-color: #FE6C01;
+    -fx-border-radius: 5;
+    -fx-font-size: 14;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
 }

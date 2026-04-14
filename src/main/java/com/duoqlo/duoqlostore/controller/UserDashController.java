@@ -69,7 +69,7 @@ public class UserDashController {
 
                 updateMessage("Loading product sizes...");
                 for (Product product : allProducts) {
-                    getCachedProductSizes(product.getProductId());
+                    getCachedProductSizes(product.getId());
                 }
 
                 updateMessage("Loading product images...");
@@ -158,7 +158,7 @@ public class UserDashController {
     public void loadProductsByName(String name, String currentFilter) {
         // Filter by name
         List<Product> nameFiltered = allProducts.stream()
-                .filter(product -> product.getProductName().toLowerCase().contains(name.toLowerCase()))
+                .filter(product -> product.getName().toLowerCase().contains(name.toLowerCase()))
                 .collect(Collectors.toList());
 
         // Then apply gender filter and sort
@@ -235,7 +235,7 @@ public class UserDashController {
         if (sizeSelected != null) {
             filtered = filtered.stream()
                     .filter(product -> {
-                        List<ProductSize> sizes = getCachedProductSizes(product.getProductId());
+                        List<ProductSize> sizes = getCachedProductSizes(product.getId());
                         return sizes.stream().anyMatch(ps -> ps.getSize().equals(sizeSelected));
                     })
                     .collect(Collectors.toList());
@@ -274,7 +274,7 @@ public class UserDashController {
 
             filtered = filtered.stream()
                     .filter(product -> {
-                        List<ProductSize> sizes = getCachedProductSizes(product.getProductId());
+                        List<ProductSize> sizes = getCachedProductSizes(product.getId());
                         double lowestPrice = sizes.stream().mapToDouble(ProductSize::getPrice).min().orElse(0);
                         return lowestPrice >= finalMin && lowestPrice < finalMax;
                     })
@@ -284,11 +284,11 @@ public class UserDashController {
         if (sortingSelected != null) {
             switch (sortingSelected) {
                 case "Name (A - Z)":
-                    filtered.sort(Comparator.comparing(Product::getProductName,
+                    filtered.sort(Comparator.comparing(Product::getName,
                             String.CASE_INSENSITIVE_ORDER));
                     break;
                 case "Name (Z - A)":
-                    filtered.sort(Comparator.comparing(Product::getProductName,
+                    filtered.sort(Comparator.comparing(Product::getName,
                             String.CASE_INSENSITIVE_ORDER.reversed()));
                     break;
                 case "Price (Low - High)":
@@ -304,7 +304,7 @@ public class UserDashController {
     }
 
     private double getLowestPrice(Product product) {
-        List<ProductSize> sizes = getCachedProductSizes(product.getProductId());
+        List<ProductSize> sizes = getCachedProductSizes(product.getId());
         return sizes.stream()
                 .mapToDouble(ProductSize::getPrice)
                 .min()

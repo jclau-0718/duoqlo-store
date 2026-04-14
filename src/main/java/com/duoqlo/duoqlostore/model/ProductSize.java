@@ -37,6 +37,7 @@ public class ProductSize {
     public void setStockQuantity(int stockQuantity) { this.stockQuantity = stockQuantity; }
 
     public double getPrice() { return price; }
+
     public void setPrice(double price) { this.price = price; }
 
     public String getSizeSKU() { return sizeSKU; }

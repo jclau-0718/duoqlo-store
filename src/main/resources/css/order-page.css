@@ -159,8 +159,6 @@
     -fx-transition: all 0.2s ease-in-out; /* Smooth transition */
 }
 
-
-
 /* Hide the scroll bar */
 .order-card .scroll-pane .scroll-bar:vertical {
     -fx-pref-width: 0;
