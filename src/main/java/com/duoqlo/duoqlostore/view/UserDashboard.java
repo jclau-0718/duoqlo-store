@@ -1,5 +1,6 @@
 package com.duoqlo.duoqlostore.view;
 
+import com.duoqlo.duoqlostore.AppConfig;
 import com.duoqlo.duoqlostore.controller.UserDashController;
 import com.duoqlo.duoqlostore.model.*;
 
@@ -218,7 +219,7 @@ public class UserDashboard extends BasePage {
 
         FontIcon sortIcon = new FontIcon("fas-sort");
         sortIcon.setIconSize(16);
-        sortIcon.setIconColor(themeColor);
+        sortIcon.setIconColor(AppConfig.themeColor);
         sortCombo = createSortCombo();
 
         sortBox = createSortBox(sortCombo);
@@ -301,10 +302,16 @@ public class UserDashboard extends BasePage {
                 categoryCombo.getStyleClass().remove("selected");
             } else {
                 controller.setCategorySelected(newVal.toUpperCase());
-                categoryCombo.getStyleClass().add("selected");
+                if(!categoryCombo.getStyleClass().contains("selected")) {
+                    categoryCombo.getStyleClass().add("selected");
+                }
             }
             applyFilters();
+
+            System.out.println(categoryCombo.getStyleClass());
         });
+
+
     }
 
     private void setupPriceMenu() {
@@ -669,9 +676,8 @@ public class UserDashboard extends BasePage {
         closeButton.getStyleClass().add("close-button");
         closeButton.setOnAction(e -> closeExpandedCard());
 
-        HBox headerBox = new HBox();
+        HBox headerBox = new HBox(closeButton);
         headerBox.setAlignment(Pos.TOP_RIGHT);
-        headerBox.getChildren().add(closeButton);
 
         ImageView productImage = new ImageView();
         productImage.setFitWidth(230);
@@ -741,28 +747,50 @@ public class UserDashboard extends BasePage {
         quantityField.setAlignment(Pos.CENTER);
 
         quantityField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && !newVal.isEmpty() && !newVal.matches("\\d*")) {
+            // Allow only digits
+            if (newVal != null && !newVal.matches("\\d*")) {
                 quantityField.setText(oldVal);
-
-                checkQuantity(product.getId());
-            } else if (newVal != null && !newVal.isEmpty()) {
-                checkQuantity(product.getId());
-            } else {
-                productQuantity = 0;
+                return;
             }
 
-            updatePriceLabel();
-        });
+            if(newVal.equals("0")) {
+                productQuantity = 1;
+                quantityField.setText("1");
+                return;
+            }
 
-        quantityField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal) {  // Focus lost
-                String text = quantityField.getText();
-                if (text == null || text.isEmpty()) {
-                    quantityField.setText("1");
-                    checkQuantity(product.getId());
-                }
+            // Handle empty string
+            if (newVal == null || newVal.isEmpty()) {
+                productQuantity = 1;
+                quantityField.setText("1");
+                updatePriceLabel();
+                return;
+            }
+
+            // Valid number
+            int newQuantity = Integer.parseInt(newVal);
+            if (newQuantity > 0) {
+                productQuantity = newQuantity;
+                checkStock(product.getId());
+                updatePriceLabel();
             }
         });
+
+//        quantityField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+//            String text = quantityField.getText();
+//
+//            if (!newVal) {  // Focus lost
+//                if (text == null || text.isEmpty()) {
+//                    quantityField.setText("1");
+//                    checkStock(product.getId());
+//                }
+//            } else if(newVal) {
+//                if(text == null || text.isEmpty()) {
+//                    quantityField.setText("1");
+//                    checkStock(product.getId());
+//                }
+//            }
+//        });
 
         minusQtyBtn = new Button("–");
         minusQtyBtn.setDisable(true);
@@ -772,7 +800,7 @@ public class UserDashboard extends BasePage {
             productQuantity--;
             quantityField.setText(String.valueOf(productQuantity));
             updatePriceLabel();
-            checkQuantity(product.getId());
+            checkStock(product.getId());
 
             minusQtyBtn.requestFocus();
 
@@ -785,7 +813,7 @@ public class UserDashboard extends BasePage {
             productQuantity++;
             quantityField.setText(String.valueOf(productQuantity));
             updatePriceLabel();
-            checkQuantity(product.getId());
+            checkStock(product.getId());
 
             plusQtyBtn.requestFocus();
 
@@ -795,14 +823,16 @@ public class UserDashboard extends BasePage {
         qtyActionBox.getStyleClass().add("quantity-box");
         qtyActionBox.getChildren().addAll(minusQtyBtn, quantityField, plusQtyBtn);
         qtyActionBox.setAlignment(Pos.CENTER);
+        qtyActionBox.setDisable(true);
 
         HBox quantityBox = new HBox(5);
         quantityBox.getChildren().addAll(selectQuantityLabel, qtyActionBox);
         quantityBox.setAlignment(Pos.CENTER_LEFT);
 
         qtyErrorLabel.getStyleClass().add("quantity-error");
-        qtyErrorLabel.setVisible(false);
-        qtyErrorLabel.setManaged(false);
+        qtyErrorLabel.setText("Select size first");
+        qtyErrorLabel.setVisible(true);
+        qtyErrorLabel.setManaged(true);
 
         BorderPane quantityPane = new BorderPane();
         quantityPane.setLeft(quantityBox);
@@ -863,9 +893,18 @@ public class UserDashboard extends BasePage {
                             });
 
                             sizeButton.setOnAction(e -> {
+                                System.out.println("Size: "+sizeButton.getText());
+                                qtyActionBox.setDisable(false);
+
+                                qtyErrorLabel.setText("");
+                                qtyErrorLabel.setVisible(false);
+                                qtyErrorLabel.setManaged(false);
+
                                 isSizesSelected = true;
                                 sizeSelected = sizeButton.getText();
+
                                 updateStockLabel(stock);
+
                                 unitPrice = ps.getPrice();
                                 priceLabel.setText(showPrice(unitPrice));
                                 resetQtyField();
@@ -948,7 +987,8 @@ public class UserDashboard extends BasePage {
         productQuantity = 1;
     }
 
-    private void checkQuantity(int productId) {
+    private void checkStock(int productId) {
+        int maxStock = controller.getMaxStock(productId);
         productQuantity = Integer.parseInt(quantityField.getText());
 
         if (productQuantity == 1) {
@@ -957,8 +997,9 @@ public class UserDashboard extends BasePage {
             minusQtyBtn.setDisable(false);
         }
 
-        if (productQuantity == controller.getMaxStock(productId)) {
+        if (productQuantity >= maxStock) {
             plusQtyBtn.setDisable(true);
+            quantityField.setText(String.valueOf(maxStock));
             qtyErrorLabel.setVisible(true);
             qtyErrorLabel.setManaged(true);
         } else {

@@ -132,8 +132,8 @@ public class InfoValidation {
 
             case "city":
             case "state":
-                if (!value.matches("^[A-Za-z]+$")) {
-                    return "Only letters are allowed.";
+                if (!value.matches("^[A-Za-z ]+$")) {
+                    return "Only letters and spaces are allowed.";
                 }
 
                 if (value.length() < 2) {

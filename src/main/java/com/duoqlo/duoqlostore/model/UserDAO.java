@@ -286,8 +286,7 @@ public class UserDAO extends DataAccessObject<User> {
     public ObservableList<User> getAllUsersObservable() {
         ObservableList<User> users = FXCollections.observableArrayList();
         String query = """
-                SELECT * FROM users
-                WHERE role = "CUSTOMER";
+                SELECT * FROM users;
                 """;
 
         try (Connection conn = ConnectDB.connect();
@@ -321,46 +320,6 @@ public class UserDAO extends DataAccessObject<User> {
         }
 
         return users;
-    }
-
-    public ObservableList<User> getAllAdminsObservable() {
-        ObservableList<User> admins = FXCollections.observableArrayList();
-        String query = """
-                SELECT * FROM users
-                WHERE role = "ADMIN";
-                """;
-
-        try (Connection conn = ConnectDB.connect();
-             PreparedStatement stmt = conn.prepareStatement(query);
-             ResultSet rs = stmt.executeQuery()) {
-
-            while (rs.next()) {
-                User user = new User();
-                user.setId(rs.getInt("user_id"));
-                user.setUsername(rs.getString("username"));
-                user.setPassword(rs.getString("password"));
-                user.setFullName(rs.getString("first_name"), rs.getString("last_name"));
-                user.setEmail(rs.getString("email"));
-                user.setRole(rs.getString("role"));
-                user.setIs_active(rs.getInt("is_active"));
-
-                // Set address fields
-                user.setFullAddress(
-                        rs.getString("address_line1"),
-                        rs.getString("address_line2"),
-                        rs.getString("city"),
-                        rs.getInt("postal_code"),
-                        rs.getString("state")
-                );
-
-                admins.add(user);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return admins;
     }
 
     public boolean isActive(String username) {

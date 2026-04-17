@@ -23,27 +23,29 @@ public class OrderItem {
     }
 
     public int getQuantity() {
-        return quantity;
+        return this.quantity;
     }
 
     public double getSubTotal() {
-        return subTotal;
+        return this.subTotal;
     }
 
-    public String getProductName() {
-        return product.getName();
-    }
+    public int getProductId() { return this.product.getId(); }
+
+    public String getProductName() { return this.product.getName(); }
+
+    public String getProductSize() { return this.product.getSize(); }
 
     public String getCategory() {
-        return product.getCategory();
+        return this.product.getCategory();
     }
 
     public String getSize() {
-        return product.getSize();
+        return this.product.getSize();
     }
 
     public String getImagePath(int productSizeId) {
-        return productDAO.getImagePath(productSizeId);
+        return this.productDAO.getImagePath(productSizeId);
     }
 
     public void setOrderItemId(int orderItemId) {

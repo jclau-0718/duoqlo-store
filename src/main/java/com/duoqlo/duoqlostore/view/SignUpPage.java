@@ -357,7 +357,9 @@ public class SignUpPage extends AuthPage{
         GridPane personalInfoBox = personalInfoBox();
         HBox buttonBox = personalInfoButtonBox();
 
-        backButton.setDisable(true);
+        if(isAdminMode) {
+            backButton.setDisable(true);
+        }
 
         VBox form = createForm(personalInfoBox, buttonBox);
 

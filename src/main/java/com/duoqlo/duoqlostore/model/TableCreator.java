@@ -102,6 +102,7 @@ public class TableCreator {
                 order_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
                 order_date TIMESTAMP DEFAULT (datetime('now', 'localtime')),
+                total_items INT NOT NULL,
                 total_price REAL NOT NULL,
                 status TEXT DEFAULT 'PENDING' CHECK(status IN('PENDING','DONE')),
                 shipping_add TEXT NOT NULL,

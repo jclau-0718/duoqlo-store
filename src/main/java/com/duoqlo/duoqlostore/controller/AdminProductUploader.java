@@ -1,27 +1,30 @@
 package com.duoqlo.duoqlostore.controller;
 
-import com.duoqlo.duoqlostore.model.ConnectDB;
 import com.duoqlo.duoqlostore.model.Product;
 import com.duoqlo.duoqlostore.model.ProductDAO;
 import com.duoqlo.duoqlostore.model.ProductSize;
-import javafx.geometry.HPos;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.stage.Stage;
-import javafx.stage.FileChooser;
-import javafx.scene.layout.*;
-import javafx.scene.control.*;
-import javafx.scene.image.*;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
-import java.io.*;
-import java.util.Properties;
-import java.nio.file.*;
-import java.sql.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.sql.SQLException;
 import java.util.*;
 
 public class AdminProductUploader {

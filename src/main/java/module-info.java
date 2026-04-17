@@ -6,6 +6,12 @@ module com.duoqlo.duoqlostore {
     requires java.prefs;
     requires jbcrypt;
 
+    requires org.jfree.jfreechart;
+    requires kernel;
+    requires layout;
+    requires io;
+    requires commons;
+
     requires org.controlsfx.controls;
     requires com.dlsc.formsfx;
     requires net.synedra.validatorfx;

@@ -1,5 +1,7 @@
 package com.duoqlo.duoqlostore.model;
 
+import com.duoqlo.duoqlostore.AppConfig;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -40,7 +42,8 @@ public class Product {
         this.imagePath = imagePath;
     }
 
-    public Product(String productName, String category, String size) {
+    public Product(int productId, String productName, String category, String size) {
+        this.productId = productId;
         this.productName = productName;
         this.category = category;
         this.size = size;
@@ -62,17 +65,6 @@ public class Product {
         this.status = status;
     }
 
-    //productid
-    // productsku
-    // productname
-    // gender
-    // categoryname
-    // price range
-    // size range
-    // stock
-    // added at
-    // status
-
     // Getters and Setters
     public int getId() { return productId; }
 
@@ -88,12 +80,8 @@ public class Product {
 
     public String getImagePath() { return imagePath; }
 
-    public LocalDateTime getAddedDateTime() {
-        return addedDateTime;
-    }
-
     public String getAddedDateStr() {
-        return addedDateStr;
+        return addedDateTime.format(AppConfig.DATE_FORMATTER);
     }
 
     public String getStatus() {
@@ -120,8 +108,8 @@ public class Product {
     }
 
     public String getPriceRange() {
-        String first = String.format("RM %.2f", sizes.get(0).getPrice());
-        String last = String.format("RM %.2f", sizes.get(sizes.size() - 1).getPrice());
+        String first = String.format("%.2f", sizes.get(0).getPrice());
+        String last = String.format("%.2f", sizes.get(sizes.size() - 1).getPrice());
 
         String priceRange = first + " - " + last;
 

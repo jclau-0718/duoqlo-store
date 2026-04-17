@@ -558,6 +558,7 @@ public class ProductDAO {
     public Product getProduct(int prodSizeId) {
         String sql = """
         SELECT 
+            p.product_id,
             p.product_name,
             c.category_name,
             ps.size
@@ -574,11 +575,12 @@ public class ProductDAO {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
+                    int productId = rs.getInt("product_id");
                     String productName = rs.getString("product_name");
                     String categoryName = rs.getString("category_name");
                     String size = rs.getString("size");
 
-                    return new Product(productName, categoryName, size);
+                    return new Product(productId, productName, categoryName, size);
                 }
             }
         } catch (SQLException e) {
@@ -762,7 +764,7 @@ public class ProductDAO {
 
     public boolean updateCategory(String categoryId, String categoryName, String genderId) {
         String sql = """
-                UPDATE FROM category
+                UPDATE category
                 SET category_name = ? AND gender_id = ?
                 WHERE category_id = ?;
                 """;

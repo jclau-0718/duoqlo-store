@@ -1,5 +1,6 @@
 package com.duoqlo.duoqlostore.view;
 
+import com.duoqlo.duoqlostore.AppConfig;
 import com.duoqlo.duoqlostore.controller.InfoValidation;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.controller.ProfileController;
@@ -257,7 +258,7 @@ public class ProfilePage extends BasePage {
 
     private FontIcon createCaretRight() {
         FontIcon rightCaret = new FontIcon("fas-caret-right");
-        rightCaret.setIconColor(themeColor);
+        rightCaret.setIconColor(AppConfig.themeColor);
         rightCaret.setIconSize(18);
 
         return rightCaret;

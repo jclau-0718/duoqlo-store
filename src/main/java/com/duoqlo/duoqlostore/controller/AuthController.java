@@ -96,20 +96,20 @@ public class AuthController {
         }
     }
 
-    public void updatePassFieldStyle(HBox passwordBox, TextField passwordField, Label errorLabel){
+    public void updatePassFieldStyle(HBox passwordBox, PasswordField passwordField, Label errorLabel){
         boolean focused = passwordField.isFocused();
         boolean isEmpty = passwordField.getText().isEmpty();
 
         passwordBox.getStyleClass().removeAll("error","valid", "focused");
 
-        if (!passFieldTyped[0]) { // Remove initial focus on the password field
-            return;
-        }
-
         if (focused) {
             passwordBox.getStyleClass().add("focused");
         } else {
             passwordBox.getStyleClass().remove("focused");
+        }
+
+        if (!passFieldTyped[0]) { // Remove initial focus on the password field
+            return;
         }
 
         if(passFieldError[0]) {

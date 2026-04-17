@@ -172,14 +172,14 @@ public class CartPage extends BasePage{
     private StackPane body;
     private BorderPane root;
 
-    private int numItems = 0;
+    private int totalItems = 0;
     private double total;
 
     public CartPage(CartController controller) {
         super();
         this.controller = controller;
 
-        numItems = controller.getCartItemList().size();
+        totalItems = controller.getTotalItems();
     }
 
     @Override
@@ -278,7 +278,7 @@ public class CartPage extends BasePage{
 
         // Total Items
         Label totalItemLabel = new Label(" Total items");
-        Label totalItemValue = new Label(String.valueOf(numItems));
+        Label totalItemValue = new Label(String.valueOf(totalItems));
         BorderPane totalItemBox = buildContentRow(totalItemLabel, totalItemValue);
         totalItemBox.getStyleClass().add("summary-details-box");
 
@@ -328,7 +328,7 @@ public class CartPage extends BasePage{
                 // Wait for 3 seconds
                 PauseTransition pause = new PauseTransition(Duration.seconds(3));
                 pause.setOnFinished(event -> {
-                    if (controller.handleOrder(total)) {
+                    if (controller.handleOrder(total, totalItems)) {
                         controller.handleCheckOut();
                     }
                 });

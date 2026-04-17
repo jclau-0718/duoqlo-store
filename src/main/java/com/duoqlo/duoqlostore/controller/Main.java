@@ -21,7 +21,7 @@ public class Main extends Application {
         TableCreator.createTable();
 
         stage.setTitle("DUOQLO");
-        Navigator.goTo(adminDash.initialize());
+        Navigator.goTo(logInPage.initialize());
         stage.show();
         stage.centerOnScreen();
         stage.setMaximized(true);

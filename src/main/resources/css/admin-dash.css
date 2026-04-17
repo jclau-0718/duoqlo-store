@@ -8,7 +8,7 @@
     -fx-padding: 0 0 0 0;
 }
 
-.admindash-label {
+.admin-dash-label {
     -fx-text-fill: #FE6C01;
     -fx-font-family: Arial;
     -fx-font-size: 25;
@@ -20,12 +20,15 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); /* Floating effect */
 }
 
-.header .button{
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-font-size: 14px;
+.logout-button {
+    -fx-background-color: #FE6C01;
+    -fx-background-radius: 10;
+    -fx-border-color: #FE6C01;
+    -fx-border-radius: 10;
+    -fx-font-size: 23px;
+    -fx-text-fill: white;
     -fx-cursor: hand;
-    -fx-padding: 5 10 5 10;
+    /*-fx-padding: 5 10 5 10;*/
 }
 
 .stat-card {
@@ -34,6 +37,16 @@
 
 .stat-card:hover {
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 5);
+}
+
+.back-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #808080;
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 0;
 }
 
 .display-box {
@@ -49,7 +62,7 @@
     -fx-border-radius: 10;
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-table-cell-border-color: transparent;
+    -fx-table-cell-border-color: transparent; /* Removes vertical border lines */
 }
 
 .table-view .column-header-background {
@@ -73,10 +86,12 @@
     -fx-font-size: 14;
     -fx-font-weight: bold;
     -fx-padding: 10 15 10 15;
+    -fx-alignment: CENTER;
 }
 
 .table-row-cell {                       /* style row cell */
     -fx-background-color: rgba(254, 108, 1, 0.2);
+    -fx-alignment: CENTER;
 }
 
 .table-row-cell:odd {                   /* style odd row cell */
@@ -85,6 +100,10 @@
 
 .table-column {
     -fx-alignment: CENTER;
+}
+
+.zero-row .table-cell {
+    -fx-text-fill: red;
 }
 
 .scroll-pane {
@@ -156,12 +175,12 @@
     -fx-padding: 0;
 }
 
-.label.click-button {
+.start-label, .empty-label {
     -fx-text-fill: #808080;
     -fx-font-size: 20px;
 }
 
-.action-box .button {
+.action-box .button, .sales-button {
     -fx-background-radius: 5;
     -fx-border-radius: 5;
     -fx-border-width: 2;
@@ -170,6 +189,10 @@
     -fx-font-size: 14;
     -fx-font-weight: bold;
     -fx-cursor: hand;
+}
+
+.action-box .button .label {
+    -fx-padding: 0 0 0 0;
 }
 
 .update-button {
@@ -191,12 +214,12 @@
     -fx-background-color: #FFCCCC;
 }
 
-.reactivate-button {
+.reactivate-button, .set-done-button {
     -fx-background-color: #CDF1C5;
     -fx-text-fill: #10A115;
 }
 
-.reactivate-button:hover {
+.reactivate-button:hover, .set-done-button:hover {
     -fx-background-color: #ACE9A0;
 }
 
@@ -209,13 +232,19 @@
     -fx-background-color: #C4C4C4;
 }
 
+.sales-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #FE6C01;
+}
+
 .label.title {
     -fx-font-size: 20;
     -fx-font-weight: bold;
     -fx-text-fill: #FE6C01;
 }
 
-.header {
+.form-header {
     -fx-background-color: tranpsarent;
     -fx-text-fill: black;
     -fx-font-size: 14;
@@ -230,4 +259,64 @@
     -fx-text-fill: white;
     -fx-font-weight: bold;
     -fx-cursor: hand;
+}
+
+.close-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #666;
+    -fx-font-size: 20px;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+    -fx-padding: 0
+}
+
+.detail-box {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: white;
+    -fx-border-radius: 10;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 5);
+}
+
+.detail-box .label {
+    -fx-font-size: 16;
+}
+
+.detail-box .order-id, .detail-box .status, .detail-box .total {
+    -fx-font-size: 20;
+    -fx-font-weight: bold;
+}
+
+.detail-box .order-id {
+    -fx-text-fill: #FE6C01;
+}
+
+.detail-box .section-title {
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+}
+
+.toggle-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 20;
+    -fx-border-color: #FE6C01;
+    -fx-border-radius: 20;
+    -fx-border-width: 1.5;
+    -fx-text-fill: #FE6C01;
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.toggle-button:selected {
+    -fx-background-color: #FE6C01;
+    -fx-border-color: #FE6C01;
+    -fx-text-fill: white;
+}
+
+.total-rev {
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+    -fx-font-size: 20;
 }

@@ -16,15 +16,18 @@ public class AdminDashController {
     private OrderDAO orderDAO = new OrderDAO();
 
     private ObservableList<User> users = FXCollections.observableArrayList();
+    private ObservableList<User> customers = FXCollections.observableArrayList();
     private ObservableList<User> admins = FXCollections.observableArrayList();
     private ObservableList<Product> products = FXCollections.observableArrayList();
     private ObservableList<Gender> genders = FXCollections.observableArrayList();
     private ObservableList<Category> categories = FXCollections.observableArrayList();
     private ObservableList<Order> orders = FXCollections.observableArrayList();
+    private ObservableList<SalesRecord> sales = FXCollections.observableArrayList();
 
     public void initializeAllData() {
         this.users.setAll(userDAO.getAllUsersObservable());
-        this.admins.setAll(userDAO.getAllAdminsObservable());
+        setCustomers();
+        setAdmins();
         this.products.setAll(productDAO.getAllProductsObservable());
         this.genders.setAll(productDAO.getAllGenders());
         this.categories.setAll(productDAO.getAllCategories());
@@ -43,24 +46,82 @@ public class AdminDashController {
         this.categories.setAll(productDAO.getAllCategories());
     }
 
-    public ObservableList<User> getUsers() {
-        return this.users;
+    public void refreshOrderData() { this.orders.setAll(orderDAO.getAllOrdersObservable()); }
+
+    public ObservableList<User> getCustomers() {
+        return this.customers;
     }
 
-    public ObservableList<User> getAdmins() {
-        return this.admins;
-    }
+    public ObservableList<User> getAdmins() { return this.admins; }
 
-    public ObservableList<Product> getProducts() {
-        return this.products;
-    }
+    public ObservableList<Product> getProducts() { return this.products; }
 
     public ObservableList<Gender> getGenders() { return this.genders; }
 
+    public ObservableList<String> getAllGenders() {
+        ObservableList<String> genderList = FXCollections.observableArrayList();
+        for(Gender gender : this.genders) {
+            genderList.add(gender.getGender());
+        }
+
+        return genderList;
+    }
+
+    public ObservableList<String> getAllCategories() {
+        ObservableList<String> categoryList = FXCollections.observableArrayList();
+        for(Category category : this.categories) {
+            categoryList.add(category.getCategoryName());
+        }
+
+        return categoryList;
+    }
+
     public ObservableList<Category> getCategories() { return this.categories; }
 
-    public int getTotalUsers() {
-        return this.users.size();
+    public ObservableList<Order> getOrders() { return this.orders; }
+
+    public ObservableList<OrderItem> getOrderItems(int orderId) {
+        return FXCollections.observableArrayList(orderDAO.getOrderItems(orderId));
+    }
+
+    public ObservableList<SalesRecord> getSales() { return this.sales; }
+
+    public ObservableList<SalesRecord> getDailySales() {
+        this.sales.setAll(SalesDAO.getDailySales());
+        return this.sales;
+    }
+
+    public ObservableList<SalesRecord> getWeeklySales() {
+        this.sales.setAll(SalesDAO.getWeeklySales());
+        return this.sales;
+    }
+
+    public ObservableList<SalesRecord> getMonthlySales() {
+        this.sales.setAll(SalesDAO.getMonthlySales());
+        return this.sales;
+    }
+
+    public ObservableList<SalesRecord> getSalesByGenders() {
+        this.sales.setAll(SalesDAO.getSalesByGenders());
+        return this.sales;
+    }
+
+    public ObservableList<SalesRecord> getSalesByCategories() {
+        this.sales.setAll(SalesDAO.getSalesByCategories());
+        return this.sales;
+    }
+
+    public ObservableList<SalesRecord> getSalesByFilter(FilterBy currentFilter, String value) {
+        this.sales.setAll(SalesDAO.getSalesByFilter(currentFilter, value));
+        return this.sales;
+    }
+
+    public int getTotalCustomers() {
+        return this.customers.size();
+    }
+
+    public int getTotalAdmins() {
+        return this.admins.size();
     }
 
     public int getTotalProducts() {
@@ -71,11 +132,23 @@ public class AdminDashController {
         return this.orders.size();
     }
 
-    public int getTotalAdmins() {
-        return this.admins.size();
+    public void setCustomers() {
+        this.customers = FXCollections.observableArrayList(
+                users.stream()
+                        .filter(u -> u.getRole().equals("CUSTOMER"))
+                        .toList()
+        );
     }
 
-    public boolean deactivateUser(int userId) {
+    public void setAdmins() {
+        this.admins = FXCollections.observableArrayList(
+                users.stream()
+                        .filter(u -> u.getRole().equals("ADMIN"))
+                        .toList()
+        );
+    }
+
+    public boolean deactivateCustomers(int userId) {
         try {
             for (User user : users) {
                 if (user.getId() == userId) {
@@ -87,6 +160,34 @@ public class AdminDashController {
                         if (index >= 0) {
                             users.set(index, user);
                         }
+
+                        setCustomers();
+
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean deactivateAdmins(int userId) {
+        try {
+            for (User user : users) {
+                if (user.getId() == userId) {
+                    if (userDAO.deactivateUser(userId)) {
+                        user.setIs_active(0);
+
+                        //Update ObservableList
+                        int index = users.indexOf(user);
+                        if (index >= 0) {
+                            users.set(index, user);
+                        }
+
+                        setAdmins();
 
                         return true;
                     }
@@ -111,6 +212,9 @@ public class AdminDashController {
                         if (index >= 0) {
                             users.set(index, user);
                         }
+
+                        setCustomers();
+                        setAdmins();
 
                         return true;
                     }
@@ -200,5 +304,19 @@ public class AdminDashController {
 
     public boolean removeCategory(String categoryId) {
         return productDAO.deleteCategory(categoryId);
+    }
+
+    public boolean setOrderAsDone(int orderId) {
+        return orderDAO.setOrderAsDone(orderId);
+    }
+
+    public double getTotalRevenue() {
+        double totalRevenue = 0;
+
+        for(Order order: orders) {
+            totalRevenue += order.getTotalPrice();
+        }
+
+        return totalRevenue;
     }
 }

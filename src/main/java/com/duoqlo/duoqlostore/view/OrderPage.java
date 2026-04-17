@@ -108,7 +108,19 @@ class OrderCard extends VBox {
 
         Region line = buildLine();
 
-        VBox headerBox = new VBox(orderDateBox, line);
+        Label statusLabel = new Label(order.getStatus());
+        statusLabel.getStyleClass().add("status");
+        if(statusLabel.getText().equals("DONE")) {
+            statusLabel.setStyle("-fx-text-fill: #10A115;");
+        } else {
+            statusLabel.setStyle("-fx-text-fill: #F59E0B;");
+        }
+
+        BorderPane dateStatusPane = new BorderPane();
+        dateStatusPane.setLeft(orderDateBox);
+        dateStatusPane.setRight(statusLabel);
+
+        VBox headerBox = new VBox(dateStatusPane, line);
 
         return headerBox;
     }

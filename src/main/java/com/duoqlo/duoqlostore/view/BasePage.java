@@ -1,5 +1,6 @@
 package com.duoqlo.duoqlostore.view;
 
+import com.duoqlo.duoqlostore.AppConfig;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.model.User;
 import javafx.animation.PauseTransition;
@@ -27,7 +28,6 @@ public abstract class BasePage extends ApplicationPage {
     public abstract void openCartPage();
     public abstract void openOrdersPage();
     public abstract void openProfilePage();
-//    public abstract void deleteAccount();
 
     protected StackPane header;
     protected TextField searchField;
@@ -39,8 +39,6 @@ public abstract class BasePage extends ApplicationPage {
     protected Popup popup;
 
     protected int iconSize = 19;
-
-    protected Color themeColor = Color.web("FE6C01");
 
     public BasePage(){
         this.searchField = createSearchField();
@@ -80,21 +78,21 @@ public abstract class BasePage extends ApplicationPage {
         //Cart Button
         FontIcon cartIcon = new FontIcon("fas-shopping-cart");
         cartIcon.setIconSize(iconSize);
-        cartIcon.setIconColor(themeColor);
+        cartIcon.setIconColor(AppConfig.themeColor);
         Button cartButton = new Button("", cartIcon);
         cartButton.setOnAction(e -> openCartPage());
 
         //Orders Button
         FontIcon receiptIcon = new FontIcon("fas-receipt");
         receiptIcon.setIconSize(iconSize);
-        receiptIcon.setIconColor(themeColor);
+        receiptIcon.setIconColor(AppConfig.themeColor);
         Button ordersButton = new Button("", receiptIcon);
         ordersButton.setOnAction(e -> openOrdersPage());
 
         //Profile Button
         FontIcon profileIcon = new FontIcon("fas-user");
         profileIcon.setIconSize(iconSize);
-        profileIcon.setIconColor(themeColor);
+        profileIcon.setIconColor(AppConfig.themeColor);
         profileButton = new Button("", profileIcon);
 
         createPopUpContainer();
@@ -288,7 +286,7 @@ public abstract class BasePage extends ApplicationPage {
     public HBox createSearchBar(){
         int searchBarLength = 250;
         FontIcon searchIcon = new FontIcon("fas-search");
-        searchIcon.setIconColor(themeColor);
+        searchIcon.setIconColor(AppConfig.themeColor);
         searchIcon.setIconSize(iconSize);
 
         FontIcon rightIcon = new FontIcon("fas-arrow-right");
@@ -354,10 +352,6 @@ public abstract class BasePage extends ApplicationPage {
         return pane;
     }
 
-    public String showPrice(double amount) {
-        return String.format("RM %.2f", amount);
-    }
-
     public ComboBox<String> createSortCombo() {
         ComboBox<String> sortCombo = new ComboBox<>();
         sortCombo.setPromptText("Sort by");
@@ -395,7 +389,7 @@ public abstract class BasePage extends ApplicationPage {
    public HBox createSortBox(ComboBox<String> sortCombo) {
        FontIcon sortIcon = new FontIcon("fas-sort");
        sortIcon.setIconSize(16);
-       sortIcon.setIconColor(themeColor);
+       sortIcon.setIconColor(AppConfig.themeColor);
 
        HBox sortBox = new HBox(sortIcon, sortCombo);
        sortBox.setAlignment(Pos.CENTER_LEFT);

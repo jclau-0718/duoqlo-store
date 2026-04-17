@@ -75,6 +75,7 @@ public class LogInPage extends AuthPage {
         visiblePassField.setPromptText(passwordField.getPromptText());
 
         HBox passwordHBox = createPasswordHBox(passwordField, visiblePassField);
+        passwordHBox.getStyleClass().add("password-box");
         Label passwordErrorLabel = createErrorLabel();
         VBox passwordBox = createPasswordVBox(passwordHBox, passwordErrorLabel);
 
@@ -157,12 +158,13 @@ public class LogInPage extends AuthPage {
         StackPane root = new StackPane(borderPane);
 
         if(controller.getRegistered()) {
-
             alert.setAlertType(AlertMsg.AlertMsgType.SUCCESS);
             alert.show(root, "Account created!", Pos.TOP_CENTER);
         }
 
         Scene logInScene = setScene(root, "login-page");
+
+        usernameField.positionCaret(0);
 
         return logInScene;
     }

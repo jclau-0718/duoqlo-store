@@ -68,6 +68,16 @@ public class CartController {
         return cartItemList;
     }
 
+    public int getTotalItems() {
+        int totalItem = 0;
+
+        for(CartItem cartItem : cartItemList) {
+            totalItem += cartItem.getProductQuantity();
+        }
+
+        return totalItem;
+    }
+
     public boolean listIsEmpty() {
         return cartItemList.isEmpty();
     }
@@ -119,10 +129,11 @@ public class CartController {
         delay.play();
     }
 
-    public boolean handleOrder(double totalPrice) {
+    public boolean handleOrder(double totalPrice, int totalItems) {
         // Order
         Order order = new Order();
         order.setUserId(user.getId());
+        order.setTotalItems(totalItems);
         order.setTotalPrice(totalPrice);
         order.setShippingAddress(user.getFullAddress());
 

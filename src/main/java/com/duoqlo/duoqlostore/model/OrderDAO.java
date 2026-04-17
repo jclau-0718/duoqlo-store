@@ -13,16 +13,17 @@ import java.util.List;
 public class OrderDAO {
     public Order insertOrder(Order order) {
         String sql = """
-                INSERT INTO orders(user_id, total_price, shipping_add) 
-                VALUES (?, ?, ?);
+                INSERT INTO orders(user_id, total_items, total_price, shipping_add) 
+                VALUES (?, ?, ?, ?);
                 """;
 
         try (Connection conn = ConnectDB.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, order.getUserId());
-            pstmt.setDouble(2, order.getTotalPrice());
-            pstmt.setString(3, order.getShippingAddress());
+            pstmt.setInt(2, order.getTotalItems());
+            pstmt.setDouble(3, order.getTotalPrice());
+            pstmt.setString(4, order.getShippingAddress());
 
             int affectedRows = pstmt.executeUpdate();
 
@@ -95,7 +96,13 @@ public class OrderDAO {
     public List<OrderItem> getOrderItems(int orderId) {
         List<OrderItem> orderItemList = new ArrayList<>();
 
-        String sql = "SELECT * FROM orderitem WHERE order_id = ?";
+        String sql = """
+            SELECT oi.*, p.product_name, ps.size
+            FROM orderitem oi
+            JOIN productsize ps ON oi.productsize_id = ps.productsize_id
+            JOIN product p ON ps.product_id = p.product_id
+            WHERE oi.order_id = ?
+            """;
 
         try (Connection conn = ConnectDB.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -166,6 +173,8 @@ public class OrderDAO {
     }
 
     public ObservableList<Order> getAllOrdersObservable() {
+        UserDAO userDAO = new UserDAO();
+
         ObservableList<Order> orders = FXCollections.observableArrayList();
 
         String sql = """
@@ -181,8 +190,9 @@ public class OrderDAO {
             while(rs.next()) {
                 Order order = new Order(
                         rs.getInt("order_id"),
-                        rs.getInt("user_id"),
+                        userDAO.getUserById(rs.getInt("user_id")),
                         rs.getTimestamp("order_date").toLocalDateTime(),
+                        rs.getInt("total_items"),
                         rs.getDouble("total_price"),
                         rs.getString("status"),
                         rs.getString("shipping_add")
@@ -196,5 +206,28 @@ public class OrderDAO {
         }
 
         return orders;
+    }
+
+    public boolean setOrderAsDone(int orderId) {
+        String sql = """
+                UPDATE orders
+                SET status = 'DONE'
+                WHERE order_id = ?;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, orderId);
+
+            int rowsAffected = pstmt.executeUpdate();
+
+            return rowsAffected > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 }

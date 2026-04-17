@@ -1,15 +1,18 @@
 package com.duoqlo.duoqlostore.model;
 
-import java.time.LocalDate;
+import com.duoqlo.duoqlostore.AppConfig;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Order {
     private int orderId;
+    private User user;
     private int userId;
     private LocalDateTime orderDateTime;
     private String orderDateStr;
+    private int totalItems;
     private double totalPrice;
     private String status;
     private String shippingAddress;
@@ -29,11 +32,32 @@ public class Order {
 
     }
 
+    public Order(int orderId, User user, LocalDateTime orderDateTime, int totalItems,
+                 double totalPrice, String status, String shippingAddress) {
+        this.orderId = orderId;
+        this.user = user;
+        this.userId = user.getId();
+        this.orderDateTime = orderDateTime;
+        this.orderDateStr = orderDateTime.toLocalDate().toString();
+        this.totalItems = totalItems;
+        this.totalPrice = totalPrice;
+        this.status = status;
+        this.shippingAddress = shippingAddress;
+    }
+
     public int getOrderId() { return this.orderId; }
 
     public int getUserId() { return this.userId; }
 
-    public String getOrderDateString() { return this.orderDateStr; }
+    public String getUsername() { return this.user.getUsername(); }
+
+    public String getFullName() { return user.getLastName() + ", " + user.getFirstName(); }
+
+    public LocalDateTime getOrderDateTime() { return this.orderDateTime; }
+
+    public String getOrderDateString() { return this.orderDateTime.format(AppConfig.DATE_FORMATTER); }
+
+    public int getTotalItems() { return this.totalItems; }
 
     public double getTotalPrice() { return this.totalPrice; }
 
@@ -47,13 +71,13 @@ public class Order {
 
     public void setUserId(int userId) { this.userId = userId; }
 
-    public void setOrderDateTime(LocalDateTime orderDateTime) { this.orderDateTime = orderDateTime; }
-
     public void setOrderDate(LocalDateTime orderDateTime) {
         this.orderDateTime = orderDateTime;
 
-        this.orderDateStr = orderDateTime.toLocalDate().toString();
+        this.orderDateStr = orderDateTime.format(AppConfig.DATE_FORMATTER);
     }
+
+    public void setTotalItems(int totalItems) { this.totalItems = totalItems; }
 
     public void setTotalPrice(double totalPrice) { this.totalPrice = totalPrice; }
 

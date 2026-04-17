@@ -7,17 +7,27 @@ import com.duoqlo.duoqlostore.view.CartPage;
 import com.duoqlo.duoqlostore.view.ProfilePage;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class OrderController {
     private  User user;
     private OrderDAO orderDAO = new OrderDAO();
-    private List<Order> orderList = new ArrayList<>();
+    private List<Order> orderList;
 
     public OrderController(User user) {
         this.user = user;
 
         orderList = orderDAO.getAllOrders(user.getId());
+        orderList.sort(
+                Comparator
+                        // 1. Sort by status (PENDING first)
+                        .comparing((Order o) ->
+                                o.getStatus().equals("PENDING") ? 0 : 1
+                        )
+                        // 2. Then sort by date ascending
+                        .thenComparing(Order::getOrderDateTime)
+        );
     }
 
     public User getUser() { return this.user; }

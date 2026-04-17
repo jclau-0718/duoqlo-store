@@ -172,6 +172,7 @@
 
 .label.orderdate,
 .label.orderdate-value,
+.label.status,
 .label.total,
 .label.total-value,
 .label.tax {
@@ -180,6 +181,7 @@
 }
 
 .label.orderdate-value,
+.label.status,
 .label.total-value {
     -fx-font-weight: bold;
 }

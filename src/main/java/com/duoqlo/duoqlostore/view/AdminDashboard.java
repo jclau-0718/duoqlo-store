@@ -4,10 +4,7 @@ import com.duoqlo.duoqlostore.controller.AdminDashController;
 import com.duoqlo.duoqlostore.controller.AdminProductUploader;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.controller.ProfileController;
-import com.duoqlo.duoqlostore.model.Category;
-import com.duoqlo.duoqlostore.model.Gender;
-import com.duoqlo.duoqlostore.model.Product;
-import com.duoqlo.duoqlostore.model.User;
+import com.duoqlo.duoqlostore.model.*;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,6 +15,8 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Objects;
 
@@ -113,23 +112,6 @@ class UserTableView extends TableView<User> {
         build();
     }
 
-    private <T> void centerAlign(TableColumn<User, T> column) {
-        column.setCellFactory(col -> new TableCell<>() {
-            @Override
-            protected void updateItem(T item, boolean empty) {
-                super.updateItem(item, empty);
-
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.toString());
-                }
-
-                setAlignment(Pos.CENTER);
-            }
-        });
-    }
-
     private void build() {
         // Set up cell value factories
         idCol.setCellValueFactory(data ->
@@ -139,8 +121,7 @@ class UserTableView extends TableView<User> {
                 new SimpleStringProperty(data.getValue().getUsername()));
 
         fullNameCol.setCellValueFactory(data ->
-                new SimpleStringProperty(
-                        data.getValue().getFirstName() + " " + data.getValue().getLastName()));
+                new SimpleStringProperty(data.getValue().getFullName()));
 
         emailCol.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getEmail()));
@@ -151,14 +132,6 @@ class UserTableView extends TableView<User> {
         statusCol.setCellValueFactory(data ->
                 new SimpleStringProperty(
                         data.getValue().getIsActive() == 1 ? "ACTIVE" : "INACTIVE"));
-
-        //Center allign columns
-        centerAlign(idCol);
-        centerAlign(usernameCol);
-        centerAlign(fullNameCol);
-        centerAlign(emailCol);
-        centerAlign(statusCol);
-        centerAlign(actionsCol);
 
         //Setting up status column style
         statusCol.setCellFactory(column -> new TableCell<User, String>() {
@@ -182,7 +155,6 @@ class UserTableView extends TableView<User> {
             }
         });
 
-
         //Setting up actions column
         actionsCol.setCellFactory(col -> new TableCell<User, Void>() {
             private final Button updateButton = new Button("Update");
@@ -198,6 +170,9 @@ class UserTableView extends TableView<User> {
                     setGraphic(null);
                 } else {
                     User user = getTableView().getItems().get(getIndex());
+
+                    final boolean[] isAdmin = {false};
+                    if(user.getRole().equals("ADMIN")) isAdmin[0] = true;
 
                     double buttonWidth = 100;
                     updateButton.setPrefWidth(buttonWidth);
@@ -226,19 +201,28 @@ class UserTableView extends TableView<User> {
                     });
                     updateButton.getStyleClass().add("update-button");
 
-                    // Delete button action
+                    // Deactivate button action
                     deactivateButton.setOnAction(e -> {
-                        //Show confirmation alert
+                        if (isAdmin[0] && controller.getTotalAdmins() == 1) {
+                            AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                            errorAlert.show(body, "Minimum one admin must remain active.", Pos.TOP_CENTER);
+                            return;
+                        }
+
                         AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
                         confirmAlert.show(body, "Confirm to deactivate?", Pos.TOP_CENTER);
                         confirmAlert.setOnConfirm(() -> {
-                            if (controller.deactivateUser(user.getId())) {
-                                //Refresh table
-                                refresh();
+                            boolean success = isAdmin[0]
+                                    ? controller.deactivateAdmins(user.getId())
+                                    : controller.deactivateCustomers(user.getId());
 
-                                //Show success alert
+                            if (success) {
+                                refresh();
                                 AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
                                 successAlert.show(body, "Deactivated successfully", Pos.TOP_CENTER);
+                            } else {
+                                AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                                errorAlert.show(body, "Error. Failed to deactivate.", Pos.TOP_CENTER);
                             }
                         });
                     });
@@ -268,7 +252,19 @@ class UserTableView extends TableView<User> {
         getColumns().addAll(idCol, usernameCol, fullNameCol,
                 emailCol, addressCol, statusCol, actionsCol);
 
+        TableUtils.addColToolTip(fullNameCol);
+        TableUtils.addColToolTip(emailCol);
+        TableUtils.addColToolTip(addressCol);
+
+        setColWidth(statusCol, 100);
+
         setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+    }
+
+    private <T> void setColWidth(TableColumn<User, T> column, int width) {
+        column.setMinWidth(width);
+        column.setPrefWidth(width);
+        column.setMaxWidth(width);
     }
 }
 
@@ -313,23 +309,6 @@ class ProductTableView extends TableView<Product> {
         this.showProductPage = show;
     }
 
-    private <T> void centerAlign(TableColumn<Product, T> column) {
-        column.setCellFactory(col -> new TableCell<>() {
-            @Override
-            protected void updateItem(T item, boolean empty) {
-                super.updateItem(item, empty);
-
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.toString());
-                }
-
-                setAlignment(Pos.CENTER);
-            }
-        });
-    }
-
     private void build() {
         idCol.setCellValueFactory(data ->
                 new SimpleIntegerProperty(data.getValue().getId()).asObject());
@@ -360,10 +339,6 @@ class ProductTableView extends TableView<Product> {
 
         statusCol.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getStatus()));
-
-        //Center allign columnns
-        centerAlign(idCol);
-        centerAlign(statusCol);
 
         statusCol.setCellFactory(column -> new TableCell<Product, String>() {
             @Override
@@ -448,6 +423,11 @@ class ProductTableView extends TableView<Product> {
         getColumns().addAll(idCol, skuCol, nameCol, genderCol, categoryCol,
                 sizesCol, priceRangeCol, stockCol, addedDateCol, statusCol, actionsCol);
 
+        TableUtils.addColToolTip(nameCol);
+        TableUtils.addColToolTip(categoryCol);
+        TableUtils.addColToolTip(priceRangeCol);
+        TableUtils.addColToolTip(addedDateCol);
+
         setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
         //Make the columns compact
@@ -461,29 +441,44 @@ class ProductTableView extends TableView<Product> {
 
         getColumns().forEach(col -> col.setStyle("-fx-padding: 2;"));
 
-        setCompactCol(idCol, 50);
-        setCompactCol(nameCol, 200);
-        setCompactCol(statusCol, 110);
+        setColWidth(idCol, 50);
+        setColWidth(nameCol, 200);
+        setColWidth(priceRangeCol, 150);
+        setColWidth(statusCol, 110);
     }
 
-    private <T> void setCompactCol(TableColumn<Product, T> column, int width) {
+    private <T> void setColWidth(TableColumn<Product, T> column, int width) {
+        column.setMinWidth(width);
         column.setPrefWidth(width);
         column.setMaxWidth(width);
     }
 }
 
 public class AdminDashboard extends ApplicationPage {
+    private enum ActiveView {
+        CUSTOMERS, ADMINS, PRODUCTS, NONE
+    }
+
     private AdminDashController controller;
     private AlertMsg alert;
 
-    private StatCard userStatCard;
+    private ActiveView currentActiveView = ActiveView.NONE;
+
+    private StatCard customerStatCard;
     private StatCard adminStatCard;
     private StatCard productStatCard;
     private StatCard orderStatCard;
+    private StatCard revenueStatCard;
 
+    private BorderPane buttonPane;
     private Button addButton = new Button();
+    private Button backButton;
     private VBox mainTableBox = new VBox();
 
+    private Label titleLabel;
+    private HBox titleBox;
+
+    private GridPane genderCategoryGrid;
     private VBox genderTableBox = new VBox();
     private TableView<Gender> genderTable;
     private TextField genderIdField;
@@ -494,6 +489,9 @@ public class AdminDashboard extends ApplicationPage {
     private TextField categoryIdField;
     private TextField categoryNameField;
     private ComboBox<Gender> categoryGenderCombo;
+
+    private TableView<Order> orderTable;
+    private VBox detailBox;
 
     private VBox bodyVBox;
     private StackPane body;
@@ -515,7 +513,7 @@ public class AdminDashboard extends ApplicationPage {
         logoView.setFitHeight(logoHeight);
         logoView.setPreserveRatio(true);
 
-        //Logo button
+        //LEFT - Logo button
         Button logoButton = new Button();
         logoButton.setGraphic(logoView);
         logoButton.getStyleClass().add("logo-button");
@@ -523,12 +521,17 @@ public class AdminDashboard extends ApplicationPage {
             Navigator.goTo(this.initialize());
         });
 
+        //MIDDLE
         Label label = new Label("ADMIN DASHBOARD");
-        label.getStyleClass().add("admindash-label");
+        label.getStyleClass().add("admin-dash-label");
         HBox labelBox = new HBox(label);
         labelBox.setAlignment(Pos.CENTER);
-
         labelBox.setMaxWidth(Region.USE_PREF_SIZE);
+
+        //RIGHT
+        Button logOutButton = new Button("LOG OUT");
+        logOutButton.getStyleClass().add("logout-button");
+        logOutButton.setOnAction(e -> Navigator.goTo(new LogInPage().initialize()));
 
         StackPane header = new StackPane(); //Button-to-Button space
         header.getStyleClass().add("header");
@@ -536,91 +539,41 @@ public class AdminDashboard extends ApplicationPage {
         header.setPrefHeight(10);
         header.setPadding(new Insets(20)); //Space between children edge and HBox edge
 
-        header.getChildren().addAll(logoButton, labelBox);
+        header.getChildren().addAll(logoButton, labelBox, logOutButton);
 
         StackPane.setAlignment(logoButton, Pos.CENTER_LEFT);
         StackPane.setAlignment(labelBox, Pos.CENTER);
+        StackPane.setAlignment(logOutButton, Pos.CENTER_RIGHT);
 
         StackPane.setMargin(logoButton, new Insets(0, 0, 0, sidePad));
+        StackPane.setMargin(logOutButton, new Insets(0, sidePad, 0, 0));
+
 
         return header;
     }
 
-    private void showAddButton(String buttonText) {
-        addButton.setText(buttonText);
-        addButton.setVisible(true);
-        addBtnWasVisible = true;
-    }
-
     private GridPane buildCardGrid() {
-        userStatCard = new StatCard("Total Users", String.valueOf(controller.getTotalUsers()));
-        userStatCard.setOnMouseClicked(e -> {
-            showAddButton("+ Add User");
-            addButton.setOnAction(ae -> {
-                SignUpPage signUpPage = new SignUpPage();
-                signUpPage.setIsAdminMode();
-
-                signUpPage.setBackToAdminDash(() -> {
-                    Navigator.goTo(this.initialize());
-
-                    alert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
-                    alert.show(body, "New user added.", Pos.TOP_CENTER);
-                });
-
-                VBox content = signUpPage.getContentForAdmin();
-
-                bodyVBox.getChildren().clear();
-                bodyVBox.getChildren().add(content);
-            });
-            showUserTable();
-        });
+        customerStatCard = new StatCard("Total Customers", String.valueOf(controller.getTotalCustomers()));
+        customerStatCard.setOnMouseClicked(e -> buildCustomerPage());
 
         adminStatCard = new StatCard("Total Admins", String.valueOf(controller.getTotalAdmins()));
-        adminStatCard.setOnMouseClicked(e -> {
-            showAddButton("+ Add Admin");
-            addButton.setOnAction(ae -> {
-                SignUpPage signUpPage = new SignUpPage();
-                signUpPage.setIsAdminMode();
-
-                signUpPage.setBackToAdminDash(() -> {
-                    Navigator.goTo(this.initialize());
-
-                    alert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
-                    alert.show(body, "New admin added.", Pos.TOP_CENTER);
-                });
-
-                VBox content = signUpPage.getContentForAdmin();
-
-                bodyVBox.getChildren().clear();
-                bodyVBox.getChildren().add(content);
-            });
-            showAdminTable();
-        });
+        adminStatCard.setOnMouseClicked(e -> buildAdminPage());
 
         productStatCard = new StatCard("Total Products", String.valueOf(controller.getTotalProducts()));
-        productStatCard.setOnMouseClicked(e -> {
-            showGendersCategories();
-            showAddButton("+ Add Product");
-            addButton.setOnAction(ae -> {
-                AdminProductUploader uploader = new AdminProductUploader(mainTableBox);
-                uploader.setShowProductPage(() -> {
-                    refreshProductPage();
-
-                    AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
-                    successAlert.show(body, "Successfully added product.", Pos.TOP_CENTER);
-                });
-                switchDisplayBox(uploader.show());
-            });
-            showProductTable();
-        });
+        productStatCard.setOnMouseClicked(e -> buildProductPage());
 
         orderStatCard = new StatCard("Total Orders", String.valueOf(controller.getTotalOrders()));
+        orderStatCard.setOnMouseClicked(e -> buildOrderPage());
+
+        revenueStatCard = new StatCard("Total Revenue (RM)", String.format("%.2f", controller.getTotalRevenue()));
+        revenueStatCard.setOnMouseClicked(e -> buildSalesPage());
 
         GridPane cardGrid = new GridPane();
-        cardGrid.add(userStatCard, 0, 0);
+        cardGrid.add(customerStatCard, 0, 0);
         cardGrid.add(adminStatCard, 1, 0);
         cardGrid.add(productStatCard, 2, 0);
         cardGrid.add(orderStatCard, 3, 0);
+        cardGrid.add(revenueStatCard, 4, 0);
 
         cardGrid.setPadding(new Insets(30, 35, 15, 35));
         cardGrid.setAlignment(Pos.CENTER);
@@ -637,30 +590,93 @@ public class AdminDashboard extends ApplicationPage {
         return cardGrid;
     }
 
-    private void switchDisplayBox(Pane pane) {
-        mainTableBox.getChildren().clear();
-        mainTableBox.getChildren().add(pane);
+    private void buildSalesPage() {
+        bodyVBox.getChildren().clear();
+
+        SalesPage salesPage = new SalesPage(this.controller);
+
+        bodyVBox.getChildren().add(salesPage.getContent());
     }
 
-    private void showEmptyDisplayBox() {
-        Label clickButtonLabel = new Label("Click a statistic box above to view data.");
-        clickButtonLabel.getStyleClass().add("click-button");
+    private HBox buildTableTitle(Label titleLabel) {
+        titleLabel.getStyleClass().add("title");
 
-        mainTableBox.getChildren().clear();
-        mainTableBox.getChildren().add(clickButtonLabel);
+        Region rightLine = new Region();
+        rightLine.setStyle("-fx-background-color: #A1A1A1");
+        rightLine.setMaxHeight(3);
+
+        Region leftLine = new Region();
+        leftLine.setStyle("-fx-background-color: #A1A1A1");
+        leftLine.setMaxHeight(3);
+
+        HBox titleBox = new HBox(20, leftLine, titleLabel, rightLine);
+        titleBox.setAlignment(Pos.CENTER);
+        HBox.setHgrow(rightLine, Priority.ALWAYS);
+        HBox.setHgrow(leftLine, Priority.ALWAYS);
+
+        return titleBox;
     }
 
-    private void showUserTable() {
-        TableView<User> userTable = new UserTableView(this.controller, body, root);
+    private void setTitleLabel(String title) {
+        titleBox.setVisible(true);
+        titleBox.setManaged(true);
+        titleLabel.setText(title);
+    }
+
+    private void showButtonBox(String buttonText) {
+        buttonPane.setVisible(true);
+        buttonPane.setManaged(true);
+
+        addButton.setText(buttonText);
+        addButton.setVisible(true);
+        addBtnWasVisible = true;
+    }
+
+    private void hideButtonBox() {
+        buttonPane.setVisible(false);
+        buttonPane.setManaged(false);
+    }
+
+    private void showCustomerTable() {
+        TableView<User> customerTable = new UserTableView(this.controller, body, root);
 
         // Get users from database
-        ObservableList<User> users = controller.getUsers();
+        ObservableList<User> customers = controller.getCustomers();
 
-        userTable.setItems(users);
+        customerTable.setItems(customers);
 
         mainTableBox.getChildren().clear();
-        mainTableBox.getChildren().add(userTable);
-        VBox.setVgrow(userTable, Priority.ALWAYS);
+        mainTableBox.getChildren().add(customerTable);
+        VBox.setVgrow(customerTable, Priority.ALWAYS);
+    }
+
+    private void buildCustomerPage() {
+        currentActiveView = ActiveView.CUSTOMERS;
+
+        setTitleLabel("CUSTOMERS");
+
+        showButtonBox("+ Add Customer");
+        addButton.setOnAction(ae -> {
+            backButton.setVisible(true);
+
+            SignUpPage signUpPage = new SignUpPage();
+            signUpPage.setIsAdminMode();
+
+            signUpPage.setBackToAdminDash(() -> {
+                Navigator.goTo(this.initialize());
+
+                alert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                alert.show(body, "New user added.", Pos.TOP_CENTER);
+            });
+
+            VBox content = signUpPage.getContentForAdmin();
+
+            switchDisplayBox(content);
+        });
+
+        showCustomerTable();
+
+        removeGendersCategories();
     }
 
     private void showAdminTable() {
@@ -673,6 +689,35 @@ public class AdminDashboard extends ApplicationPage {
         mainTableBox.getChildren().clear();
         mainTableBox.getChildren().add(adminTable);
         VBox.setVgrow(adminTable, Priority.ALWAYS);
+    }
+
+    private void buildAdminPage() {
+        currentActiveView = ActiveView.ADMINS;
+
+        setTitleLabel("ADMINS");
+
+        showButtonBox("+ Add Admin");
+        addButton.setOnAction(ae -> {
+            backButton.setVisible(true);
+
+            SignUpPage signUpPage = new SignUpPage();
+            signUpPage.setIsAdminMode();
+
+            signUpPage.setBackToAdminDash(() -> {
+                Navigator.goTo(this.initialize());
+
+                alert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                alert.show(body, "New admin added.", Pos.TOP_CENTER);
+            });
+
+            VBox content = signUpPage.getContentForAdmin();
+
+            switchDisplayBox(content);
+        });
+
+        showAdminTable();
+
+        removeGendersCategories();
     }
 
     private void showProductTable() {
@@ -700,19 +745,12 @@ public class AdminDashboard extends ApplicationPage {
         });
     }
 
-    private void refreshStatCards() {
-        userStatCard.update(String.valueOf(controller.getTotalUsers()));
-        adminStatCard.update(String.valueOf(controller.getTotalAdmins()));
-        productStatCard.update(String.valueOf(controller.getTotalProducts()));
-        orderStatCard.update(String.valueOf(controller.getTotalOrders()));
-    }
-
     private GridPane buildGenderForm() {
         Label idLabel = new Label("Gender ID");
-        idLabel.getStyleClass().add("header");
+        idLabel.getStyleClass().add("form-header");
 
         Label genderLabel = new Label("Gender");
-        genderLabel.getStyleClass().add("header");
+        genderLabel.getStyleClass().add("form-header");
 
         genderIdField = new TextField();
         genderIdField.textProperty().addListener((obs, oldval, newVal) -> {
@@ -819,7 +857,7 @@ public class AdminDashboard extends ApplicationPage {
         genderTableBox.getChildren().add(vbox);
     }
 
-    private TableView<Gender> buildGenderTable() {
+    private void buildGenderTable() {
         genderTable = new TableView<>();
 
         TableColumn<Gender, String> idCol = new TableColumn<>("ID");
@@ -866,14 +904,16 @@ public class AdminDashboard extends ApplicationPage {
                     removeButton.setOnAction(e -> {
                         String id = getTableView().getItems().get(getIndex()).getId();
 
+                        if(controller.genderInUse(id)) {
+                            AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                            errorAlert.show(body, "Gender is in use!", Pos.TOP_CENTER);
+                            return;
+                        }
+
                         AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
                         confirmAlert.show(body, "Confirm to remove?", Pos.TOP_CENTER);
                         confirmAlert.setOnConfirm(() -> {
-                            if (controller.genderInUse(id)) {
-                                AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
-                                errorAlert.show(body, "Gender is in use!", Pos.TOP_CENTER);
-                                return;
-                            } else if (controller.removeGender(id)) {
+                            if (controller.removeGender(id)) {
                                 AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
                                 successAlert.show(body, "Successfully removed gender.", Pos.TOP_CENTER);
 
@@ -897,21 +937,17 @@ public class AdminDashboard extends ApplicationPage {
 
         genderTable.getColumns().addAll(idCol, genderCol, actionsCol);
 
-        ObservableList<Gender> genders = controller.getGenders();
+        TableUtils.addColToolTip(genderCol);
 
-        genderTable.setItems(genders);
+        genderTable.setItems(controller.getGenders());
 
         genderTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
-
-        return genderTable;
     }
 
     private VBox buildGenderSection() {
-        Label genderTitle = new Label("Genders");
-        genderTitle.getStyleClass().add("title");
+        Label genderTitleLabel = new Label("GENDERS");
 
-        HBox genderTitleBox = new HBox(genderTitle);
-        genderTitleBox.setAlignment(Pos.CENTER);
+        HBox genderTitleBox = buildTableTitle(genderTitleLabel);
 
         Button addButton = new Button("+ Add Gender");
         addButton.setOnAction(e -> showAddGenderForm());
@@ -920,7 +956,9 @@ public class AdminDashboard extends ApplicationPage {
         HBox buttonBox = new HBox(addButton);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
-        genderTableBox = new VBox(buildGenderTable());
+        buildGenderTable();
+
+        genderTableBox = new VBox(genderTable);
         genderTableBox.setPrefHeight(300);
         genderTableBox.getStyleClass().add("display-box");
 
@@ -935,13 +973,13 @@ public class AdminDashboard extends ApplicationPage {
 
     private GridPane buildCategoryForm() {
         Label idLabel = new Label("Category ID");
-        idLabel.getStyleClass().add("header");
+        idLabel.getStyleClass().add("form-header");
 
         Label categoryLabel = new Label("Category Name");
-        categoryLabel.getStyleClass().add("header");
+        categoryLabel.getStyleClass().add("form-header");
 
         Label genderLabel = new Label("Gender");
-        genderLabel.getStyleClass().add("header");
+        genderLabel.getStyleClass().add("form-header");
 
         categoryIdField = new TextField();
         categoryIdField.textProperty().addListener((obs, oldval, newVal) -> {
@@ -1033,7 +1071,7 @@ public class AdminDashboard extends ApplicationPage {
     }
 
 
-    private void showUpdateCategoryrForm() {
+    private void showUpdateCategoryForm() {
         Label titleLabel = new Label("Enter New Category Details");
         titleLabel.getStyleClass().add("title");
 
@@ -1073,8 +1111,8 @@ public class AdminDashboard extends ApplicationPage {
         categoryTableBox.getChildren().add(vbox);
     }
 
-    private TableView<Category> buildCategoryTable() {
-        TableView<Category> categoryTable = new TableView<>();
+    private void buildCategoryTable() {
+        categoryTable = new TableView<>();
 
         TableColumn<Category, String> idCol = new TableColumn<>("ID");
         TableColumn<Category, String> categoryCol = new TableColumn<>("Category");
@@ -1108,11 +1146,12 @@ public class AdminDashboard extends ApplicationPage {
                     updateButton.setPrefWidth(buttonWidth);
                     removeButton.setPrefWidth(buttonWidth);
 
+                    buttonBox.getStyleClass().add("action-box");
                     buttonBox.getChildren().clear();
                     buttonBox.getChildren().addAll(updateButton, removeButton);
 
                     updateButton.setOnAction(e -> {
-                        showUpdateCategoryrForm();
+                        showUpdateCategoryForm();
 
                         categoryIdField.setText(category.getId());
                         categoryNameField.setText(category.getCategoryName());
@@ -1123,25 +1162,25 @@ public class AdminDashboard extends ApplicationPage {
                     removeButton.setOnAction(e -> {
                         String id = getTableView().getItems().get(getIndex()).getId();
 
+                        if (controller.categoryInUse(id)) {
+                            AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                            errorAlert.show(body, "Category is in use!", Pos.TOP_CENTER);
+                            return;
+                        }
+
                         AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
                         confirmAlert.show(body, "Confirm to remove?", Pos.TOP_CENTER);
                         confirmAlert.setOnConfirm(() -> {
-                            if (controller.categoryInUse(id)) {
-                                AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
-                                errorAlert.show(body, "Category is in use!", Pos.TOP_CENTER);
-                                return;
-                            } else if (controller.removeCategory(id)) {
+                             if (controller.removeCategory(id)) {
                                 AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
                                 successAlert.show(body, "Successfully removed category.", Pos.TOP_CENTER);
 
                                 //Refresh table content
                                 controller.refreshCategoryData();
                                 categoryTable.setItems(controller.getCategories());
-
                             } else {
                                 AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
                                 errorAlert.show(body, "Error removing category. Try again.", Pos.TOP_CENTER);
-                                return;
                             }
                         });
                     });
@@ -1154,20 +1193,18 @@ public class AdminDashboard extends ApplicationPage {
 
         categoryTable.getColumns().addAll(idCol, categoryCol, genderCol, actionsCol);
 
-        ObservableList<Category> categories = controller.getCategories();
-        categoryTable.setItems(categories);
+        TableUtils.addColToolTip(categoryCol);
+        TableUtils.addColToolTip(genderCol);
+
+        categoryTable.setItems(controller.getCategories());
 
         categoryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
-
-        return categoryTable;
     }
 
     private VBox buildCategorySection() {
-        Label categoryTitle = new Label("Categories");
-        categoryTitle.getStyleClass().add("title");
+        Label categoryTitleLabel = new Label("CATEGORIES");
 
-        HBox categoryTitleBox = new HBox(categoryTitle);
-        categoryTitleBox.setAlignment(Pos.CENTER);
+        HBox categoryTitleBox = buildTableTitle(categoryTitleLabel);
 
         Button addButton = new Button("+ Add Category");
         addButton.getStyleClass().add("orange-button");
@@ -1176,7 +1213,9 @@ public class AdminDashboard extends ApplicationPage {
         HBox buttonBox = new HBox(addButton);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
 
-        categoryTableBox = new VBox(buildCategoryTable());
+        buildCategoryTable();
+
+        categoryTableBox = new VBox(categoryTable);
         categoryTableBox.setPrefHeight(300);
         categoryTableBox.getStyleClass().add("display-box");
 
@@ -1200,36 +1239,415 @@ public class AdminDashboard extends ApplicationPage {
         ColumnConstraints col2 = new ColumnConstraints();
         col2.setPercentWidth(50);
 
-        GridPane grid = new GridPane();
-        grid.setHgap(50);
-        grid.add(genderSection, 0, 0);
-        grid.add(categorySection, 1, 0);
+        genderCategoryGrid = new GridPane();
+        genderCategoryGrid.setHgap(50);
+        genderCategoryGrid.add(genderSection, 0, 0);
+        genderCategoryGrid.add(categorySection, 1, 0);
 
-        grid.getColumnConstraints().addAll(col1, col2);
+        genderCategoryGrid.getColumnConstraints().addAll(col1, col2);
 
-        bodyVBox.getChildren().add(grid);
-        VBox.setMargin(grid, new Insets(10, 22, 0, 22));
+        bodyVBox.getChildren().add(genderCategoryGrid);
+        VBox.setMargin(genderCategoryGrid, new Insets(10, 22, 0, 22));
+    }
+
+    private void removeGendersCategories() {
+        bodyVBox.getChildren().remove(genderCategoryGrid);
+    }
+
+    private void buildProductPage() {
+        currentActiveView = ActiveView.PRODUCTS;
+
+        setTitleLabel("PRODUCTS");
+
+        showButtonBox("+ Add Product");
+        addButton.setOnAction(ae -> {
+            backButton.setVisible(true);
+
+            AdminProductUploader uploader = new AdminProductUploader(mainTableBox);
+            uploader.setShowProductPage(() -> {
+                refreshProductPage();
+
+                AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                successAlert.show(body, "Successfully added product.", Pos.TOP_CENTER);
+            });
+            switchDisplayBox(uploader.show());
+        });
+
+        showGendersCategories();
+
+        showProductTable();
+    }
+
+    private void buildOrderTable() {
+        orderTable = new TableView<>();
+        orderTable.getStyleClass().add("order-table");
+
+        TableColumn<Order, Integer> orderIdCol = new TableColumn<>("ID");
+        TableColumn<Order, Integer> userIdCol = new TableColumn<>("User ID");
+        TableColumn<Order, String> usernameCol = new TableColumn<>("Username");
+        TableColumn<Order, String> fullNameCol = new TableColumn<>("Full Name");
+        TableColumn<Order, String> shipAddrCol = new TableColumn<>("Shipping Address");
+        TableColumn<Order, String> orderDateCol = new TableColumn<>("Order Date");
+        TableColumn<Order, Integer> totalItemsCol = new TableColumn<>("Total Items");
+        TableColumn<Order, Double> totalPriceCol = new TableColumn<>("Total Price (RM)");
+        TableColumn<Order, String> statusCol = new TableColumn<>("Status");
+        TableColumn<Order, Void> actionsCol = new TableColumn<>("Actions");
+
+        orderIdCol.setCellValueFactory(data ->
+                new SimpleIntegerProperty(data.getValue().getOrderId()).asObject());
+
+        userIdCol.setCellValueFactory(data ->
+                new SimpleIntegerProperty(data.getValue().getUserId()).asObject());
+
+        usernameCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getUsername()));
+
+        fullNameCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getFullName()));
+
+        shipAddrCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getShippingAddress()));
+
+        orderDateCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getOrderDateString()));
+
+        totalItemsCol.setCellValueFactory(data ->
+                new SimpleIntegerProperty(data.getValue().getTotalItems()).asObject());
+
+        totalPriceCol.setCellValueFactory(data ->
+                new SimpleDoubleProperty(data.getValue().getTotalPrice()).asObject());
+
+        statusCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getStatus()));
+
+        TableUtils.addTwoDecimalFormatting(totalPriceCol);
+
+        //Setting up status column style
+        statusCol.setCellFactory(column -> new TableCell<Order, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+
+                    // Apply different styles based on status
+                    if (item.equals("DONE")) {
+                        setStyle("-fx-text-fill: #10A115;");
+                    } else {
+                        setStyle("-fx-text-fill: #F59E0B;");
+                    }
+                }
+            }
+        });
+
+        actionsCol.setCellFactory(column -> new TableCell<Order, Void>() {
+            private final Button setAsDoneButton = new Button("Set As DONE");
+            private final Button viewDetailsButton = new Button("View Details");
+            private final HBox buttonBox = new HBox(10);
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    Order order = getTableView().getItems().get(getIndex());
+
+                    double buttonWidth = 100;
+                    viewDetailsButton.setPrefWidth(buttonWidth);
+                    setAsDoneButton.setPrefWidth(buttonWidth);
+
+                    buttonBox.getStyleClass().add("action-box");
+                    buttonBox.setAlignment(Pos.CENTER);
+                    buttonBox.getChildren().clear();
+                    buttonBox.getChildren().addAll(viewDetailsButton, setAsDoneButton);
+                    if(order.getStatus().equals("DONE")) {
+                        setAsDoneButton.setDisable(true);
+                    }
+
+                    setAsDoneButton.setOnAction(e -> {
+                        if(controller.setOrderAsDone(order.getOrderId())) {
+                            AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                            successAlert.show(body, "Order set as done.", Pos.TOP_CENTER);
+
+                            refreshOrderPage();
+                        } else {
+                            AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                            errorAlert.show(body, "Error! Please try again.", Pos.TOP_CENTER);
+                        }
+                    });
+                    setAsDoneButton.getStyleClass().add("set-done-button");
+
+                    viewDetailsButton.setOnAction(e -> {
+                        showOrderDetails(order);
+                    });
+                    viewDetailsButton.getStyleClass().add("view-button");
+
+                    setGraphic(buttonBox);
+                }
+            }
+        });
+
+        setOrderColWidth(orderIdCol, 80);
+        setOrderColWidth(fullNameCol, 150);
+        setOrderColWidth(shipAddrCol, 200);
+        setOrderColWidth(orderDateCol, 110);
+        setOrderColWidth(totalPriceCol, 150);
+
+        orderTable.getColumns().addAll(orderIdCol, userIdCol, usernameCol,
+                fullNameCol, shipAddrCol, orderDateCol, totalItemsCol,
+                totalPriceCol, statusCol, actionsCol
+        );
+
+        TableUtils.addColToolTip(usernameCol);
+        TableUtils.addColToolTip(fullNameCol);
+        TableUtils.addColToolTip(shipAddrCol);
+        TableUtils.addColToolTip(orderDateCol);
+
+        orderTable.setItems(controller.getOrders());
+
+        orderTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+    }
+
+    private <T> void setOrderColWidth(TableColumn<Order, T> column, int width) {
+        column.setPrefWidth(width);
+        column.setMaxWidth(width);
+    }
+
+    private void buildOrderPage() {
+        setTitleLabel("ORDERS");
+
+        hideButtonBox();
+
+        buildOrderTable();
+
+        mainTableBox.getChildren().clear();
+        mainTableBox.getChildren().add(orderTable);
+
+        removeGendersCategories();
+    }
+
+    private TableView<OrderItem> buildOrderItemTable(int orderId) {
+        TableView<OrderItem> orderItemTable = new TableView<>();
+
+        TableColumn<OrderItem, Integer> productIdCol = new TableColumn<>("Product ID");
+        TableColumn<OrderItem, String> productNameCol = new TableColumn<>("Product Name");
+        TableColumn<OrderItem, String> categoryCol = new TableColumn<>("Category");
+        TableColumn<OrderItem, String> sizeCol = new TableColumn<>("Size");
+        TableColumn<OrderItem, Integer> quantityCol = new TableColumn<>("Quantity");
+        TableColumn<OrderItem, Double> subtotalCol = new TableColumn<>("Sub-Total (RM)");
+
+        productIdCol.setCellValueFactory(data ->
+                new SimpleIntegerProperty(data.getValue().getProductId()).asObject());
+
+        productNameCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getProductName()));
+
+        categoryCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getCategory()));
+
+        sizeCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getProductSize()));
+
+        quantityCol.setCellValueFactory(data ->
+                new SimpleIntegerProperty(data.getValue().getQuantity()).asObject());
+
+        subtotalCol.setCellValueFactory(data ->
+                new SimpleDoubleProperty(data.getValue().getSubTotal()).asObject());
+
+        orderItemTable.getColumns().addAll(
+                productIdCol, productNameCol, categoryCol,
+                sizeCol, quantityCol, subtotalCol);
+
+        orderItemTable.setItems(controller.getOrderItems(orderId));
+
+        orderItemTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+
+        return orderItemTable;
+    }
+
+    private void showOrderDetails(Order order) {
+        Button closeButton = new Button("✕");
+        closeButton.getStyleClass().add("close-button");
+        closeButton.setOnAction(e -> body.getChildren().remove(detailBox));
+
+        HBox closeHBox = new HBox(closeButton);
+        closeHBox.setAlignment(Pos.TOP_RIGHT);
+
+        String orderIdText = "Order ID: " + String.valueOf(order.getOrderId());
+        Label orderIdLabel = new Label(orderIdText);
+        orderIdLabel.getStyleClass().add("order-id");
+
+        Label statusLabel = new Label(order.getStatus());
+        statusLabel.getStyleClass().add("status");
+        if(statusLabel.getText().equals("DONE")) {
+            statusLabel.setStyle("-fx-text-fill: #10A115;");
+        } else {
+            statusLabel.setStyle("-fx-text-fill: #F59E0B;");
+        }
+
+        BorderPane idStatusSection = new BorderPane();
+        idStatusSection.setLeft(orderIdLabel);
+        idStatusSection.setRight(statusLabel);
+
+        Label customerDetailsLabel = new Label("Customer Details");
+        customerDetailsLabel.getStyleClass().add("section-title");
+
+        Region firstSeparator = new Region();
+        firstSeparator.setStyle("-fx-background-color: #FE6C01");
+        firstSeparator.setMaxHeight(2);
+
+        HBox firstSepBox = new HBox(firstSeparator);
+        HBox.setHgrow(firstSeparator, Priority.ALWAYS);
+        firstSepBox.setPrefWidth(Double.MAX_VALUE);
+
+        String userIdText = "User ID: " + String.valueOf(order.getUserId());
+        Label userIdLabel = new Label(userIdText);
+
+        String usernameText = "Username: " + order.getUsername();
+        Label usernameLabel = new Label(usernameText);
+
+        String fullNameText = "Full Name: " + order.getFullName();
+        Label fullNameLabel = new Label(fullNameText);
+
+        Label orderDetailsLabel = new Label("Order Details");
+        orderDetailsLabel.getStyleClass().add("section-title");
+
+        Region secondSeparator = new Region();
+        secondSeparator.setStyle("-fx-background-color: #FE6C01");
+        secondSeparator.setMaxHeight(2);
+
+        HBox secondSepBox = new HBox(secondSeparator);
+        HBox.setHgrow(secondSeparator, Priority.ALWAYS);
+        secondSepBox.setPrefWidth(Double.MAX_VALUE);
+
+        firstSeparator.setMinHeight(3);
+        firstSeparator.setPrefHeight(3);
+        firstSepBox.setMinHeight(3);
+        firstSepBox.setMaxWidth(Double.MAX_VALUE); // make HBox stretch full width
+
+        secondSeparator.setMinHeight(3);
+        secondSeparator.setPrefHeight(3);
+        secondSepBox.setMinHeight(3);
+        secondSepBox.setMaxWidth(Double.MAX_VALUE);
+
+        String shipAddrText = "Shipping Address: " + order.getShippingAddress();
+        Label shipAddrLabel = new Label(shipAddrText);
+
+        String orderDateText = "Order Date: " + order.getOrderDateString();
+        Label orderDateLabel = new Label(orderDateText);
+
+        String totalItemText = "Total Items: " + String.valueOf(order.getTotalItems());
+        Label totalItemLabel = new Label(totalItemText);
+
+        Label orderItemsLabel = new Label("Order Items:");
+
+        TableView<OrderItem> orderItemTable = buildOrderItemTable(order.getOrderId());
+
+        String totalText = "Total: " + showPrice(order.getTotalPrice());
+        Label totalLabel = new Label(totalText);
+        totalLabel.getStyleClass().add("total");
+
+        int height = 710;
+        int width = height * 3/2;
+
+        detailBox = new VBox(5);
+        detailBox.getStyleClass().add("detail-box");
+        detailBox.setAlignment(Pos.TOP_LEFT);
+        detailBox.setPrefHeight(height);
+        detailBox.setMaxHeight(height);
+        detailBox.setPrefWidth(width);
+        detailBox.setMaxWidth(width);
+        detailBox.getChildren().addAll(
+                closeHBox, idStatusSection,
+                customerDetailsLabel, firstSepBox,
+                userIdLabel, usernameLabel, fullNameLabel,
+                orderDetailsLabel, secondSepBox,
+                shipAddrLabel, orderDateLabel, totalItemLabel,
+                orderItemsLabel, orderItemTable,
+                totalLabel
+        );
+
+        body.getChildren().add(detailBox);
+        StackPane.setAlignment(detailBox, Pos.CENTER);
+    }
+
+    private void switchDisplayBox(Pane pane) {
+        mainTableBox.getChildren().clear();
+        mainTableBox.getChildren().add(pane);
+    }
+
+    private void showEmptyDisplayBox() {
+        Label startLabel = new Label("Click a statistic box above to view data.");
+        startLabel.getStyleClass().add("start-label");
+
+        mainTableBox.getChildren().clear();
+        mainTableBox.getChildren().add(startLabel);
+    }
+
+    private void refreshStatCards() {
+        customerStatCard.update(String.valueOf(controller.getTotalCustomers()));
+        adminStatCard.update(String.valueOf(controller.getTotalAdmins()));
+        productStatCard.update(String.valueOf(controller.getTotalProducts()));
+        orderStatCard.update(String.valueOf(controller.getTotalOrders()));
     }
 
     private void refreshProductPage() {
-        controller.initializeAllData();
+        controller.refreshProductData();
+        controller.refreshGenderData();
+        controller.refreshCategoryData();
 
         mainTableBox.getChildren().clear();
         showProductTable();
 
         genderTableBox.getChildren().clear();
-        genderTableBox.getChildren().add(buildGenderTable());
+        buildGenderTable();
+        genderTableBox.getChildren().add(genderTable);
 
         categoryTableBox.getChildren().clear();
-        categoryTableBox.getChildren().add(buildCategoryTable());
+        buildCategoryTable();
+        categoryTableBox.getChildren().add(categoryTable);
 
         refreshStatCards();
+    }
+
+    private void refreshOrderPage() {
+        controller.refreshOrderData();
+
+        buildOrderPage();
+
+        refreshStatCards();
+    }
+
+    private void backToTable() {
+        switch(currentActiveView) {
+            case ActiveView.NONE -> showEmptyDisplayBox();
+            case ActiveView.CUSTOMERS -> showCustomerTable();
+            case ActiveView.ADMINS -> showAdminTable();
+            case ActiveView.PRODUCTS -> showProductTable();
+        }
+
+        backButton.setVisible(false);
     }
 
     public Scene initialize() {
         controller.initializeAllData();
 
         GridPane cardGrid = buildCardGrid();
+
+        StackPane topStackPane = new StackPane();
+        topStackPane.getChildren().add(cardGrid);
+
+        titleLabel = new Label("");
+
+        titleBox = buildTableTitle(titleLabel);
+        titleBox.setVisible(false);
+        titleBox.setManaged(false);
 
         addButton.getStyleClass().add("orange-button");
         if (addBtnWasVisible) {
@@ -1238,11 +1656,20 @@ public class AdminDashboard extends ApplicationPage {
             addButton.setVisible(false);
         }
 
-        HBox addHBox = new HBox(addButton);
-        addHBox.setAlignment(Pos.CENTER_RIGHT);
-        addHBox.setPadding(new Insets(0, sidePad+22, 0, 0));
+        FontIcon backIcon = new FontIcon("far-caret-square-left");
+        backIcon.setIconSize(16);
+        backIcon.setIconColor(Color.web("#A1A1A1"));
+        backButton = new Button("Back To Table", backIcon);
+        backButton.getStyleClass().add("back-button");
+        backButton.setVisible(false);
+        backButton.setOnAction(e -> backToTable());
 
-        mainTableBox.setAlignment(Pos.CENTER);
+        buttonPane = new BorderPane();
+        buttonPane.setLeft(backButton);
+        buttonPane.setRight(addButton);
+        buttonPane.setPadding(new Insets(0, sidePad-15, 0, sidePad-15));
+
+        mainTableBox.setAlignment(Pos.TOP_CENTER);
         mainTableBox.getStyleClass().add("display-box");
         showEmptyDisplayBox();
 
@@ -1253,16 +1680,19 @@ public class AdminDashboard extends ApplicationPage {
         mainTableScrollPane.setFitToHeight(true);
         mainTableScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-        bodyVBox = new VBox(cardGrid, addHBox, mainTableScrollPane);
+        bodyVBox = new VBox(topStackPane, titleBox, buttonPane, mainTableScrollPane);
         bodyVBox.setAlignment(Pos.CENTER);
         bodyVBox.setPadding(new Insets(0, sidePad, 20, sidePad));
         VBox.setVgrow(mainTableBox, Priority.ALWAYS);
         VBox.setVgrow(mainTableScrollPane, Priority.ALWAYS);
+        VBox.setMargin(titleBox, new Insets(10, 22, 10, 22));
 
         ScrollPane bodyScrollPane = new ScrollPane(bodyVBox);
         bodyScrollPane.setPadding(new Insets(0));
         bodyScrollPane.setFitToWidth(true);
         bodyScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+
+        bodyScrollPane.setMinHeight(600);
 
         body = new StackPane();
         body.getChildren().add(bodyScrollPane);
