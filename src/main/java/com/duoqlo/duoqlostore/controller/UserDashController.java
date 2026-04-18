@@ -66,6 +66,7 @@ public class UserDashController {
             protected Void call() throws Exception {
                 updateMessage("Fetching products...");
                 allProducts = productDAO.getAllProducts();
+                allProducts.sort(Comparator.comparing(Product::hasStock).reversed());
 
                 updateMessage("Loading product sizes...");
                 for (Product product : allProducts) {

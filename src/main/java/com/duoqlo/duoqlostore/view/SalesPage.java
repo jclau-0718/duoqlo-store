@@ -10,7 +10,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -28,7 +27,6 @@ class SalesTableView extends TableView<SalesRecord> {
         this.frequency = frequency;
 
         setLabelTitle();
-        System.out.println(labelTitle);
 
         buildColumns();
     }
@@ -92,6 +90,24 @@ class SalesTableView extends TableView<SalesRecord> {
 
         setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
     }
+
+    public void setData(ObservableList<SalesRecord> salesData) {
+        double totalRevenue = 0;
+        int totalItemsSold = 0;
+        int totalOrders = 0;
+
+        for(SalesRecord salesRecord: salesData) {
+            totalRevenue += salesRecord.getRevenue();
+            totalItemsSold += salesRecord.getTotalItems();
+            totalOrders += salesRecord.getOrders();
+        }
+
+        SalesRecord totalRow = new SalesRecord("TOTAL", totalRevenue, totalItemsSold, totalOrders);
+        
+        salesData.add(totalRow);
+        
+        setItems(salesData);
+    }
 }
 
 public class SalesPage {
@@ -118,33 +134,11 @@ public class SalesPage {
 
     private SalesTableView salesTable;
 
-    private int sidePad = 35;
-
     public SalesPage(AdminDashController controller) {
         this.controller = controller;
     }
 
-    private HBox buildTableTitle() {
-        Label titleLabel = new Label("Sales Report");
-        titleLabel.getStyleClass().add("title");
-
-        Region rightLine = new Region();
-        rightLine.setStyle("-fx-background-color: #808080");
-        rightLine.setMaxHeight(3);
-
-        Region leftLine = new Region();
-        leftLine.setStyle("-fx-background-color: #808080");
-        leftLine.setMaxHeight(3);
-
-        HBox titleBox = new HBox(20, leftLine, titleLabel, rightLine);
-        titleBox.setAlignment(Pos.CENTER);
-        HBox.setHgrow(rightLine, Priority.ALWAYS);
-        HBox.setHgrow(leftLine, Priority.ALWAYS);
-
-        return titleBox;
-    }
-
-    private HBox buildFilterSection() {
+    public HBox getFilterSection() {
         int filterButtonWidth = 120;
         int freqButtonWidth = 80;
 
@@ -159,7 +153,7 @@ public class SalesPage {
                 if (!isFrequencySelected()) {
                     hideFilterCombo();
 
-                    salesTable.setItems(controller.getSalesByGenders());
+                    salesTable.setData(controller.getSalesByGenders());
                 } else {
                     showFilterCombo();
 
@@ -171,7 +165,7 @@ public class SalesPage {
 
                 if(!isFrequencySelected()) {
                     //Base case - show daily sales (No filter and frequency selected
-                    salesTable.setItems(controller.getDailySales());
+                    salesTable.setData(controller.getDailySales());
                 } else {
                     hideFilterCombo();
 
@@ -189,7 +183,7 @@ public class SalesPage {
                 if (!isFrequencySelected()) {
                     hideFilterCombo();
 
-                    salesTable.setItems(controller.getSalesByCategories());
+                    salesTable.setData(controller.getSalesByCategories());
                 } else {
                     showFilterCombo();
 
@@ -201,7 +195,7 @@ public class SalesPage {
 
                 if(!isFrequencySelected()) {
                     //Base case - show daily sales (No filter and frequency selected
-                    salesTable.setItems(controller.getDailySales());
+                    salesTable.setData(controller.getDailySales());
                 } else {
                     hideFilterCombo();
 
@@ -224,7 +218,7 @@ public class SalesPage {
                 if(!isFilterSelected()) {
                     hideFilterCombo();
 
-                    salesTable.setItems(controller.getDailySales());
+                    salesTable.setData(controller.getDailySales());
                 } else {
                     showFilterCombo();
 
@@ -238,7 +232,7 @@ public class SalesPage {
 
                 if(!isFilterSelected()) {
                     //Base case - show daily sales (No filter and frequency selected
-                    salesTable.setItems(controller.getDailySales());
+                    salesTable.setData(controller.getDailySales());
                 } else {
                     showFilterTable(currentFilter);
                 }
@@ -254,9 +248,9 @@ public class SalesPage {
                 if(!isFilterSelected()) {
                     hideFilterCombo();
 
-                    salesTable.setItems(controller.getWeeklySales());
+                    salesTable.setData(controller.getWeeklySales());
                 } else {
-                    showFilterCombo();
+                    showFilterCombo();  //Will show sales table with filter as well
                 }
 
             } else {
@@ -267,7 +261,7 @@ public class SalesPage {
 
                 if(!isFilterSelected()) {
                     //Base case - show daily sales (No filter and frequency selected
-                    salesTable.setItems(controller.getDailySales());
+                    salesTable.setData(controller.getDailySales());
                 } else {
                     showFilterTable(currentFilter);
                 }
@@ -283,11 +277,9 @@ public class SalesPage {
                 if(!isFilterSelected()) {
                     hideFilterCombo();
 
-                    salesTable.setItems(controller.getMonthlySales());
+                    salesTable.setData(controller.getMonthlySales());
                 } else {
-                    showFilterCombo();
-
-                    //Will do controller.getSalesByFilter as well
+                    showFilterCombo();  //Will show sales table with filter as well
                 }
 
             } else {
@@ -298,7 +290,7 @@ public class SalesPage {
 
                 if(!isFilterSelected()) {
                     //Base case - show daily sales (No filter and frequency selected
-                    salesTable.setItems(controller.getDailySales());
+                    salesTable.setData(controller.getDailySales());
                 } else {
                     showFilterTable(currentFilter);
                 }
@@ -332,16 +324,16 @@ public class SalesPage {
 
     private void showFrequencyTable(Freq freq) {
         switch(freq) {
-            case Freq.DAILY -> salesTable.setItems(controller.getDailySales());
-            case Freq.WEEKLY -> salesTable.setItems(controller.getWeeklySales());
-            case Freq.MONTHLY -> salesTable.setItems(controller.getMonthlySales());
+            case Freq.DAILY -> salesTable.setData(controller.getDailySales());
+            case Freq.WEEKLY -> salesTable.setData(controller.getWeeklySales());
+            case Freq.MONTHLY -> salesTable.setData(controller.getMonthlySales());
         }
     }
 
     private void showFilterTable(FilterBy filter) {
         switch(filter) {
-            case FilterBy.GENDER -> salesTable.setItems(controller.getSalesByGenders());
-            case FilterBy.CATEGORY -> salesTable.setItems(controller.getSalesByCategories());
+            case FilterBy.GENDER -> salesTable.setData(controller.getSalesByGenders());
+            case FilterBy.CATEGORY -> salesTable.setData(controller.getSalesByCategories());
         }
     }
 
@@ -368,12 +360,12 @@ public class SalesPage {
 
         String value = filterCombo.getValue();
         if (value != null) {
-            ObservableList<SalesRecord> filtered = controller.getSalesByFilter(currentFilter, value);
+            ObservableList<SalesRecord> filtered = controller.getSalesByFilterAndFreq(currentFilter, currentFreq, value);
 
             if(!filtered.isEmpty()) {
-                salesTable.setItems(filtered);
+                salesTable.setData(filtered);
             } else {
-                salesTable.setItems(FXCollections.observableArrayList());
+                salesTable.setData(FXCollections.observableArrayList());
 
                 Label emptyLabel = new Label("No sales data");
                 emptyLabel.getStyleClass().add("empty-label");
@@ -386,12 +378,12 @@ public class SalesPage {
 
     private final ChangeListener<String> filterComboListener = (obs, oldVal, newVal) -> {
         if (newVal != null) {
-            ObservableList<SalesRecord> filtered = controller.getSalesByFilter(currentFilter, newVal);
+            ObservableList<SalesRecord> filtered = controller.getSalesByFilterAndFreq(currentFilter, currentFreq, newVal);;
 
             if(!filtered.isEmpty()) {
-                salesTable.setItems(filtered);
+                salesTable.setData(filtered);
             } else {
-                salesTable.setItems(FXCollections.observableArrayList());
+                salesTable.setData(FXCollections.observableArrayList());
 
                 Label emptyLabel = new Label("No sales data");
                 emptyLabel.getStyleClass().add("empty-label");
@@ -418,7 +410,7 @@ public class SalesPage {
 
     private void showTable() {
         salesTable = new SalesTableView(currentFilter, currentFreq);
-        salesTable.setItems(controller.getDailySales());
+        salesTable.setData(controller.getDailySales());
 
         displayBox.getChildren().clear();
         displayBox.getChildren().add(salesTable);
@@ -439,27 +431,15 @@ public class SalesPage {
     }
 
     public VBox getContent() {
-        HBox titleBox = buildTableTitle();
-
-        HBox filterSection = buildFilterSection();
-
-        displayBox = new VBox(10);
-        displayBox.getStyleClass().add("display-box");
+        displayBox = new VBox();
 
         showTable();
 
-        String totalRevText = "Total Revenue: RM " + String.format("%.2f", controller.getTotalRevenue());
-        Label totalRevLabel = new Label(totalRevText);
-        totalRevLabel.getStyleClass().add("total-rev");
-
-        displayBox.getChildren().add(totalRevLabel);
-
         Button exportButton = buildExportButton();
 
-        VBox bodyVBox = new VBox(10, titleBox, filterSection, displayBox, exportButton);
+        VBox bodyVBox = new VBox(10);
+        bodyVBox.getChildren().addAll(displayBox, exportButton);
         bodyVBox.setAlignment(Pos.CENTER);
-        bodyVBox.setPadding(new Insets(0, sidePad, 20, sidePad));
-        VBox.setMargin(titleBox, new Insets(10, 0, 10, 0));
 
         return bodyVBox;
     }

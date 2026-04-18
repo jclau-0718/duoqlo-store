@@ -19,14 +19,14 @@ public class OrderController {
         this.user = user;
 
         orderList = orderDAO.getAllOrders(user.getId());
-        orderList.sort(
-                Comparator
-                        // 1. Sort by status (PENDING first)
-                        .comparing((Order o) ->
-                                o.getStatus().equals("PENDING") ? 0 : 1
-                        )
-                        // 2. Then sort by date ascending
-                        .thenComparing(Order::getOrderDateTime)
+        orderList.sort(Comparator
+                //Sort PENDING order first then DONE
+                .comparing((Order o) ->
+                        o.getStatus().equals("PENDING") ? 0 : 1
+                )
+
+                //Sort by order date ASC
+                .thenComparing(Order::getOrderDateTime)
         );
     }
 
@@ -52,5 +52,15 @@ public class OrderController {
 
     public boolean isOrdersEmpty() {
         return this.orderList.isEmpty();
+    }
+
+    public boolean orderCancelled(int orderId) {
+        if(orderDAO.deleteOrder(orderId)) {
+            boolean removed =  orderList.removeIf(order -> order.getOrderId() == orderId);
+
+            return removed;
+        }
+
+        return false;
     }
 }

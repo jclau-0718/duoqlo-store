@@ -23,7 +23,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Objects;
 
-public abstract class BasePage extends ApplicationPage {
+public abstract class UserPage extends ApplicationPage {
     public abstract User getUser();
     public abstract void openCartPage();
     public abstract void openOrdersPage();
@@ -40,18 +40,20 @@ public abstract class BasePage extends ApplicationPage {
 
     protected int iconSize = 19;
 
-    public BasePage(){
+    public UserPage(){
         this.searchField = createSearchField();
         this.searchBar = createSearchBar();
     }
 
     public void addToolTip(Node node, String text) {
         Tooltip tooltip = new Tooltip(text);
-        tooltip.setShowDelay(javafx.util.Duration.seconds(2));
+        tooltip.setShowDelay(javafx.util.Duration.seconds(1));
         tooltip.setStyle("""
-                -fx-background-color: #C7C4C3;
-                -fx-border-color: #9A9593;
-                -fx-text-fill: black;
+                -fx-font-size: 12;
+                -fx-background-color: black;
+                -fx-background-radius: 8;
+                -fx-border-radius: 8;
+                -fx-effect: null;
                 """);
         Tooltip.install(node, tooltip);
     }

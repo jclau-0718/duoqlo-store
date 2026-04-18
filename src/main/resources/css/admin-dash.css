@@ -20,15 +20,15 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); /* Floating effect */
 }
 
-.logout-button {
-    -fx-background-color: #FE6C01;
-    -fx-background-radius: 10;
-    -fx-border-color: #FE6C01;
-    -fx-border-radius: 10;
-    -fx-font-size: 23px;
+.header .logout-button {
+    -fx-background-color: #FE6C01 !important;
+    -fx-background-radius: 10 !important;
+    -fx-border-color: #FE6C01 !important;
+    -fx-border-radius: 10 !important;
+    -fx-font-size: 18px !important;
+    -fx-font-weight: bold;
     -fx-text-fill: white;
     -fx-cursor: hand;
-    /*-fx-padding: 5 10 5 10;*/
 }
 
 .stat-card {
@@ -313,10 +313,4 @@
     -fx-background-color: #FE6C01;
     -fx-border-color: #FE6C01;
     -fx-text-fill: white;
-}
-
-.total-rev {
-    -fx-text-fill: black;
-    -fx-font-weight: bold;
-    -fx-font-size: 20;
 }

@@ -11,9 +11,9 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -62,7 +62,7 @@ class ImageCarousel {
     }
 }
 
-public class UserDashboard extends BasePage {
+public class UserDashboard extends UserPage {
     private UserDashController controller;
     private AlertMsg alert = new AlertMsg();
 
@@ -76,7 +76,7 @@ public class UserDashboard extends BasePage {
     private Label loadingLabel = new Label("");
     private StackPane loadingPane = createLoadingPane(loadingLabel);
 
-    private TilePane productGrid;
+    private TilePane productTiles;
     private Label stockLabel;
 
     private ComboBox<String> sizeCombo;
@@ -90,10 +90,12 @@ public class UserDashboard extends BasePage {
 
     private HBox sortBox;
 
-    private int cardWidth = 200;
-    private int cardHeight = cardWidth + 180;
-    private int enlargedWidth = cardWidth + 350;
-    private int enlargedHeight = enlargedWidth + 200;
+    private int sidePad = 63;
+
+    private double cardWidth = 197;
+    private double cardHeight = cardWidth + 180;
+    private double enlargedWidth = cardWidth + 354;
+    private double enlargedHeight = enlargedWidth + 200;
 
     private Label qtyErrorLabel = new Label("Maximum stock reached.");
     private Label priceLabel;
@@ -200,7 +202,6 @@ public class UserDashboard extends BasePage {
 
     public BorderPane buildFilterBar() {
         int tbPad = 20;
-        int sidePad = 63;
 
         sizeCombo = new ComboBox<>();
         sizeCombo.setPromptText("All sizes");
@@ -231,18 +232,25 @@ public class UserDashboard extends BasePage {
         filterBar.setLeft(filterBox);
         filterBar.setRight(sortBox);
 
-        filterBar.setPadding(new Insets(tbPad, sidePad, tbPad, sidePad));
+        filterBar.setPadding(new Insets(tbPad, 0, tbPad, 0));
         return filterBar;
     }
 
-    public ScrollPane buildProductGrid() {
-        productGrid = new TilePane();
-        productGrid.setHgap(15);
-        productGrid.setVgap(20);
-        productGrid.setPrefColumns(4);
-        productGrid.setAlignment(Pos.CENTER);
+    public ScrollPane buildBodyScrollPane() {
+        productTiles = new TilePane();
+        productTiles.setHgap(15);
+        productTiles.setVgap(20);
+        productTiles.setPrefColumns(4);
+        productTiles.setAlignment(Pos.CENTER_LEFT);
 
-        VBox productSection = new VBox(buildFilterBar(), productGrid);
+        VBox productContainer = new VBox(productTiles);
+        productContainer.setAlignment(Pos.CENTER);
+
+        BorderPane filterBar = buildFilterBar();
+
+        VBox productSection = new VBox(filterBar, productContainer);
+        VBox.setMargin(productContainer, new Insets(0, sidePad, 0, sidePad));
+        VBox.setMargin(filterBar, new Insets(0, sidePad, 0, sidePad));
 
         ScrollPane scrollPane = new ScrollPane(productSection);
         scrollPane.setFitToWidth(true);
@@ -395,17 +403,17 @@ public class UserDashboard extends BasePage {
     }
 
     private void displayProducts(List<Product> products) {
-        productGrid.getChildren().clear();
+        productTiles.getChildren().clear();
 
         if (!products.isEmpty()) {
             for (Product product : products) {
                 VBox productCard = createProductCard(product);
-                productGrid.getChildren().add(productCard);
+                productTiles.getChildren().add(productCard);
             }
         } else {
             Label noProductsLabel = new Label("No products available");
             noProductsLabel.getStyleClass().add("no-products");
-            productGrid.getChildren().add(noProductsLabel);
+            productTiles.getChildren().add(noProductsLabel);
         }
     }
 
@@ -425,13 +433,6 @@ public class UserDashboard extends BasePage {
     }
 
     private VBox createProductCard(Product product) {
-        VBox card = new VBox();
-        card.setPrefSize(cardWidth, cardHeight);
-        card.setMaxSize(cardWidth, cardHeight);
-        card.setMinSize(cardWidth, cardHeight);
-        card.getStyleClass().add("product-card");
-        addToolTip(card, "Click for more details.");
-
         ImageView productImage = new ImageView();
         productImage.setFitWidth(cardWidth - 3);
         productImage.setPreserveRatio(true);
@@ -451,47 +452,60 @@ public class UserDashboard extends BasePage {
         Label priceLabel = new Label(showPrice(lowestPrice));
         priceLabel.getStyleClass().add("price");
 
-        Button viewButton = new Button("View Details");
-        viewButton.setStyle("-fx-background-color: #FE6C01; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 15; -fx-background-radius: 5;");
-        viewButton.setOnAction(e -> showProductDetails(product));
+        VBox card = new VBox();
+        card.setPrefSize(cardWidth, cardHeight);
+        card.setMaxSize(cardWidth, cardHeight);
+        card.setMinSize(cardWidth, cardHeight);
 
-        Button cartButton = new Button("Add to Cart");
-        cartButton.setStyle("-fx-background-color: transparent; -fx-text-fill: #FE6C01; -fx-border-color: #FE6C01; -fx-border-radius: 5; -fx-padding: 5 15;");
-
-        HBox buttonBox = new HBox(10, viewButton, cartButton);
-        buttonBox.setAlignment(Pos.CENTER);
-
+        card.getStyleClass().add("product-card");
         card.getChildren().addAll(imageContainer, genderLabel, nameLabel, priceLabel);
 
         VBox.setMargin(genderLabel, new Insets(8, 0, 0, 8));
         VBox.setMargin(nameLabel, new Insets(5, 8, 0, 8));
         VBox.setMargin(priceLabel, new Insets(0, 8, 5, 8));
 
-        card.setOnMouseEntered(e -> {
-            card.setStyle("-fx-background-color: white; -fx-cursor: hand;");
-            card.setEffect(new DropShadow(20, Color.rgb(0, 0, 0, 0.25)));
+        if (product.hasStock()) {
+            addToolTip(card, "Click for more details.");
 
-            TranslateTransition lift = new TranslateTransition(Duration.millis(200), card);
-            lift.setToY(-5);
-            lift.play();
-        });
+            card.setOnMouseEntered(e -> {
+                TranslateTransition lift = new TranslateTransition(Duration.millis(200), card);
+                lift.setToY(-5);
+                lift.play();
+            });
 
-        card.setOnMouseExited(e -> {
-            card.setStyle("");
-            card.setEffect(null);
+            card.setOnMouseExited(e -> {
+                TranslateTransition lift = new TranslateTransition(Duration.millis(200), card);
+                lift.setToY(0);
+                lift.play();
+            });
 
-            TranslateTransition lift = new TranslateTransition(Duration.millis(200), card);
-            lift.setToY(0);
-            lift.play();
-        });
+            card.setOnMouseClicked(e -> {
+                if (e.getClickCount() == 1) {
+                    showExpandedCard(product);
+                }
+            });
 
-        card.setOnMouseClicked(e -> {
-            if (e.getClickCount() == 1) {
-                showExpandedCard(product);
-            }
-        });
+            return card;
 
-        return card;
+        } else {
+            addToolTip(card, "Sold out for now — restocking soon!");
+
+            card.getStyleClass().add("sold-out");
+
+            imageContainer.setOnMouseEntered(null);
+            imageContainer.setOnMouseExited(null);
+
+            Label soldOutLabel = new Label("SOLD OUT");
+            soldOutLabel.getStyleClass().add("sold-out");
+
+            StackPane soldOutStack = new StackPane();
+            soldOutStack.getChildren().addAll(card, soldOutLabel);
+            StackPane.setAlignment(soldOutLabel, Pos.CENTER);
+
+            VBox wrapper = new VBox(soldOutStack);
+
+            return wrapper;
+        }
     }
 
     private StackPane createImageContainer(Product product, ImageView productImage) {
@@ -776,22 +790,6 @@ public class UserDashboard extends BasePage {
             }
         });
 
-//        quantityField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-//            String text = quantityField.getText();
-//
-//            if (!newVal) {  // Focus lost
-//                if (text == null || text.isEmpty()) {
-//                    quantityField.setText("1");
-//                    checkStock(product.getId());
-//                }
-//            } else if(newVal) {
-//                if(text == null || text.isEmpty()) {
-//                    quantityField.setText("1");
-//                    checkStock(product.getId());
-//                }
-//            }
-//        });
-
         minusQtyBtn = new Button("–");
         minusQtyBtn.setDisable(true);
         minusQtyBtn.setOnAction(e -> {
@@ -936,11 +934,6 @@ public class UserDashboard extends BasePage {
         );
         VBox.setMargin(genderLabel, new Insets(10, 0, 10, 0));
         VBox.setMargin(quantityPane, new Insets(10, 0, 10, 0));
-
-//        VBox mainLayout = new VBox();
-//        mainLayout.getChildren().addAll(headerBox, imageContainer, contentBox);
-//        mainLayout.setAlignment(Pos.TOP_CENTER);
-//        VBox.setMargin(headerBox, new Insets(0, 10, 10, 0));
 
         BorderPane card = new BorderPane();
         card.setPrefSize(enlargedWidth, enlargedHeight);
@@ -1094,7 +1087,9 @@ public class UserDashboard extends BasePage {
 
         loadingPane = createLoadingPane(loadingLabel);
 
-        body.getChildren().addAll(buildProductGrid(), overlay, loadingPane);
+        ScrollPane bodyScrollPane = buildBodyScrollPane();
+
+        body.getChildren().addAll(bodyScrollPane, overlay, loadingPane);
 
         BorderPane root = new BorderPane();
         root.setTop(buildHeader());

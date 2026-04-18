@@ -19,7 +19,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ProfilePage extends BasePage {
+public class ProfilePage extends UserPage {
     private ProfileController controller;
     private InfoValidation validator = new InfoValidation();
 

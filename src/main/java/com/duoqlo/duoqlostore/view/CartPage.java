@@ -165,7 +165,7 @@ class CartRow extends BorderPane {
     }
 }
 
-public class CartPage extends BasePage{
+public class CartPage extends UserPage{
     private CartController controller;
     private AlertMsg alert;
 

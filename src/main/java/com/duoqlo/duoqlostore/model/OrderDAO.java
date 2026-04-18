@@ -68,6 +68,36 @@ public class OrderDAO {
         return false;
     }
 
+    public boolean deleteOrder(int orderId) {
+        String sql1 = """
+                DELETE FROM orderitem
+                WHERE order_id = ?;
+                """;
+
+        String sql2 = """
+                DELETE FROM orders
+                WHERE order_id = ?;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement ps1 = conn.prepareStatement(sql1);
+             PreparedStatement ps2 = conn.prepareStatement(sql2);) {
+
+            ps1.setInt(1, orderId);
+            ps2.setInt(1, orderId);
+
+            ps1.executeUpdate();
+            int affectedRows = ps2.executeUpdate();
+
+            return affectedRows > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     public Order getOrderById(int orderId) {
         String sql = "SELECT * FROM orders WHERE order_id = ?";
 

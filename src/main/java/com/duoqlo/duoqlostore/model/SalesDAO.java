@@ -14,31 +14,31 @@ public class SalesDAO {
         ObservableList<SalesRecord> sales = FXCollections.observableArrayList();
 
         String sql = """
-    SELECT 
-        o.date,
-        o.revenue,
-        o.total_orders,
-        i.items_sold
-    FROM (
-        SELECT 
-            strftime('%Y-%m-%d', order_date) AS date,
-            SUM(total_price) AS revenue,
-            COUNT(order_id) AS total_orders
-        FROM orders
-        WHERE status = 'DONE'
-        GROUP BY date
-    ) o
-    JOIN (
-        SELECT 
-            strftime('%Y-%m-%d', ord.order_date) AS date,
-            SUM(oi.quantity) AS items_sold
-        FROM orderitem oi
-        JOIN orders ord ON oi.order_id = ord.order_id
-        WHERE ord.status = 'DONE'
-        GROUP BY date
-    ) i ON o.date = i.date
-    ORDER BY o.date;
-    """;
+            SELECT 
+                o.date,
+                o.revenue,
+                o.total_orders,
+                i.items_sold
+            FROM (
+                SELECT 
+                    strftime('%Y-%m-%d', order_date) AS date,
+                    SUM(total_price) AS revenue,
+                    COUNT(order_id) AS total_orders
+                FROM orders
+                WHERE status = 'DONE'
+                GROUP BY date
+            ) o
+            JOIN (
+                SELECT 
+                    strftime('%Y-%m-%d', ord.order_date) AS date,
+                    SUM(oi.quantity) AS items_sold
+                FROM orderitem oi
+                JOIN orders ord ON oi.order_id = ord.order_id
+                WHERE ord.status = 'DONE'
+                GROUP BY date
+            ) i ON o.date = i.date
+            ORDER BY o.date;
+            """;
 
         try (Connection conn = ConnectDB.connect();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -47,8 +47,7 @@ public class SalesDAO {
             while (rs.next()) {
                 String date = rs.getString("date");
 
-                LocalDate localDate = LocalDate.parse(date);
-                String formattedDate = localDate.format(AppConfig.DATE_FORMATTER);
+                String formattedDate = formatAsDaily(date);
 
                 SalesRecord record = new SalesRecord(
                         formattedDate,
@@ -90,21 +89,7 @@ public class SalesDAO {
             while (rs.next()) {
                 String rawWeek = rs.getString("week"); // e.g. "2026-15"
 
-                // Parse into start (Monday) and end (Sunday) of that week
-                String[] parts = rawWeek.split("-");
-                int year = Integer.parseInt(parts[0]);
-                int week = Integer.parseInt(parts[1])+1;
-
-                LocalDate startOfWeek = LocalDate.of(year, 1, 1)
-                        .with(WeekFields.ISO.weekOfYear(), week)
-                        .with(WeekFields.ISO.dayOfWeek(), 1); // Monday
-
-                LocalDate endOfWeek = startOfWeek.plusDays(6); // Sunday
-
-                //Format to 15/04/2026 - 22/04/2026
-                String weekLabel = startOfWeek.format(AppConfig.DATE_FORMATTER) +
-                        " - " +
-                        endOfWeek.format(AppConfig.DATE_FORMATTER);
+                String weekLabel = formatAsWeekly(rawWeek);
 
                 SalesRecord record = new SalesRecord(
                         weekLabel,
@@ -126,31 +111,31 @@ public class SalesDAO {
         ObservableList<SalesRecord> sales = FXCollections.observableArrayList();
 
         String sql = """
-        SELECT 
-            o.month,
-            o.revenue,
-            o.total_orders,
-            i.items_sold
-        FROM (
             SELECT 
-                strftime('%Y-%m', order_date) AS month,
-                SUM(total_price) AS revenue,
-                COUNT(order_id) AS total_orders
-            FROM orders
-            WHERE status = 'DONE'
-            GROUP BY month
-        ) o
-        JOIN (
-            SELECT 
-                strftime('%Y-%m', ord.order_date) AS month,
-                SUM(oi.quantity) AS items_sold
-            FROM orderitem oi
-            JOIN orders ord ON oi.order_id = ord.order_id
-            WHERE ord.status = 'DONE'
-            GROUP BY month
-        ) i ON o.month = i.month
-        ORDER BY o.month;
-        """;
+                o.month,
+                o.revenue,
+                o.total_orders,
+                i.items_sold
+            FROM (
+                SELECT 
+                    strftime('%Y-%m', order_date) AS month,
+                    SUM(total_price) AS revenue,
+                    COUNT(order_id) AS total_orders
+                FROM orders
+                WHERE status = 'DONE'
+                GROUP BY month
+            ) o
+            JOIN (
+                SELECT 
+                    strftime('%Y-%m', ord.order_date) AS month,
+                    SUM(oi.quantity) AS items_sold
+                FROM orderitem oi
+                JOIN orders ord ON oi.order_id = ord.order_id
+                WHERE ord.status = 'DONE'
+                GROUP BY month
+            ) i ON o.month = i.month
+            ORDER BY o.month;
+            """;
 
         try (Connection conn = ConnectDB.connect();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -159,13 +144,7 @@ public class SalesDAO {
             while (rs.next()) {
                 String rawMonth = rs.getString("month"); // e.g. "2026-04"
 
-                // Parse into "April 2026" format
-                int year = Integer.parseInt(rawMonth.substring(0, 4));
-                int month = Integer.parseInt(rawMonth.substring(5));
-
-                LocalDate date = LocalDate.of(year, month, 1);
-                String monthLabel = date.format(DateTimeFormatter.ofPattern("MMMM yyyy"));
-                // e.g. "April 2026"
+                String monthLabel = formatAsMonthly(rawMonth);
 
                 SalesRecord record = new SalesRecord(
                         monthLabel,
@@ -187,19 +166,19 @@ public class SalesDAO {
         ObservableList<SalesRecord> sales = FXCollections.observableArrayList();
 
         String sql = """
-         SELECT
-             g.gender AS label,
-             COALESCE(SUM(oi.quantity), 0) AS items_sold,
-             COALESCE(COUNT(DISTINCT o.order_id), 0) AS total_orders,
-             COALESCE(SUM(oi.sub_total), 0) AS revenue
-         FROM gender g
-         LEFT JOIN product p ON g.gender_id = p.gender_id
-         LEFT JOIN productsize ps ON p.product_id = ps.product_id
-         LEFT JOIN orderitem oi ON ps.productsize_id = oi.productsize_id
-         LEFT JOIN orders o ON oi.order_id = o.order_id AND o.status = 'DONE'
-         GROUP BY g.gender
-         ORDER BY g.display_order;
-         """;
+             SELECT
+                 g.gender AS label,
+                 COALESCE(SUM(oi.quantity), 0) AS items_sold,
+                 COALESCE(COUNT(DISTINCT o.order_id), 0) AS total_orders,
+                 COALESCE(SUM(oi.sub_total), 0) AS revenue
+             FROM gender g
+             LEFT JOIN product p ON g.gender_id = p.gender_id
+             LEFT JOIN productsize ps ON p.product_id = ps.product_id
+             LEFT JOIN orderitem oi ON ps.productsize_id = oi.productsize_id
+             LEFT JOIN orders o ON oi.order_id = o.order_id AND o.status = 'DONE'
+             GROUP BY g.gender
+             ORDER BY g.display_order;
+             """;
 
         try (Connection conn = ConnectDB.connect();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -227,19 +206,19 @@ public class SalesDAO {
         ObservableList<SalesRecord> sales = FXCollections.observableArrayList();
 
         String sql = """
-          SELECT
-              c.category_name AS label,
-              COALESCE(SUM(oi.quantity), 0) AS items_sold,
-              COALESCE(COUNT(DISTINCT o.order_id), 0) AS total_orders,
-              COALESCE(SUM(oi.sub_total), 0) AS revenue
-          FROM category c
-          LEFT JOIN product p ON c.category_id = p.category_id
-          LEFT JOIN productsize ps ON p.product_id = ps.product_id
-          LEFT JOIN orderitem oi ON ps.productsize_id = oi.productsize_id
-          LEFT JOIN orders o ON oi.order_id = o.order_id AND o.status = 'DONE'
-          GROUP BY c.category_name
-          ORDER BY revenue DESC;
-          """;
+            SELECT
+                c.category_name AS label,
+                COALESCE(SUM(oi.quantity), 0) AS items_sold,
+                COALESCE(COUNT(DISTINCT o.order_id), 0) AS total_orders,
+                COALESCE(SUM(oi.sub_total), 0) AS revenue
+            FROM category c
+            LEFT JOIN product p ON c.category_id = p.category_id
+            LEFT JOIN productsize ps ON p.product_id = ps.product_id
+            LEFT JOIN orderitem oi ON ps.productsize_id = oi.productsize_id
+            LEFT JOIN orders o ON oi.order_id = o.order_id AND o.status = 'DONE'
+            GROUP BY c.category_name
+            ORDER BY revenue DESC;
+            """;
 
         try (Connection conn = ConnectDB.connect();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -263,15 +242,22 @@ public class SalesDAO {
         return sales;
     }
 
-    public static ObservableList<SalesRecord> getSalesByFilter(FilterBy filter, String value) {
+    public static ObservableList<SalesRecord> getSalesByFilterAndFrequency(FilterBy filter, Freq frequency, String value) {
         ObservableList<SalesRecord> list = FXCollections.observableArrayList();
 
+        String dateExpr;
+        switch (frequency) {
+            case Freq.WEEKLY  -> dateExpr = "strftime('%Y-%W', o.order_date)";
+            case Freq.MONTHLY -> dateExpr = "strftime('%Y-%m', o.order_date)";
+            default -> dateExpr = "strftime('%Y-%m-%d', o.order_date)"; // DAILY
+        }
+
         String sql = """
-            SELECT 
-                strftime('%Y-%m-%d', o.order_date) AS label,
-                SUM(oi.quantity) AS items_sold,
-                COUNT(DISTINCT o.order_id) AS total_orders,
-                SUM(oi.sub_total) AS revenue
+            SELECT
+            %s AS label,
+            SUM(oi.quantity) AS items_sold,
+            COUNT(DISTINCT o.order_id) AS total_orders,
+            SUM(oi.sub_total) AS revenue
             FROM orders o
             JOIN orderitem oi ON o.order_id = oi.order_id
             JOIN productsize ps ON oi.productsize_id = ps.productsize_id
@@ -279,7 +265,7 @@ public class SalesDAO {
             JOIN gender g ON p.gender_id = g.gender_id
             JOIN category c ON p.category_id = c.category_id
             WHERE o.status = 'DONE'
-        """;
+            """.formatted(dateExpr);
 
         if (filter == FilterBy.GENDER) {
             sql += " AND g.gender = ? ";
@@ -287,14 +273,11 @@ public class SalesDAO {
             sql += " AND c.category_name = ? ";
         }
 
-        sql += """
-            GROUP BY strftime('%Y-%m-%d', o.order_date)
-            ORDER BY label;
-        """;
+        sql += " GROUP BY label ORDER BY label;";
 
         try (Connection conn = ConnectDB.connect();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            // Set parameter
+
             if (filter != FilterBy.NONE) {
                 ps.setString(1, value);
             }
@@ -302,13 +285,21 @@ public class SalesDAO {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                SalesRecord record = new SalesRecord(
-                        rs.getString("label"),
+                String rawLabel = rs.getString("label");
+                String formattedLabel;
+
+                switch (frequency) {
+                    case Freq.WEEKLY -> formattedLabel = formatAsWeekly(rawLabel);
+                    case Freq.MONTHLY -> formattedLabel = formatAsMonthly(rawLabel);
+                    default -> formattedLabel = formatAsDaily(rawLabel);
+                }
+
+                list.add(new SalesRecord(
+                        formattedLabel,
                         rs.getDouble("revenue"),
                         rs.getInt("items_sold"),
                         rs.getInt("total_orders")
-                );
-                list.add(record);
+                ));
             }
 
         } catch (SQLException e) {
@@ -316,5 +307,38 @@ public class SalesDAO {
         }
 
         return list;
+    }
+
+    private static String formatAsDaily(String rawLabel) {
+        String formattedLabel = LocalDate.parse(rawLabel)
+                .format(AppConfig.DATE_FORMATTER);
+
+        return formattedLabel;
+    }
+
+    private static String formatAsWeekly(String rawLabel) {
+        String[] parts = rawLabel.split("-");
+        int year = Integer.parseInt(parts[0]);
+        int week = Integer.parseInt(parts[1]) + 1;
+
+        LocalDate startOfWeek = LocalDate.of(year, 1, 1)
+                .with(WeekFields.ISO.weekOfYear(), week)
+                .with(WeekFields.ISO.dayOfWeek(), 1);
+        LocalDate endOfWeek = startOfWeek.plusDays(6);
+
+        String formattedLabel = startOfWeek.format(AppConfig.DATE_FORMATTER)
+                + " - " + endOfWeek.format(AppConfig.DATE_FORMATTER);
+
+        return formattedLabel;
+    }
+
+    private static String formatAsMonthly(String rawLabel) {
+        int year = Integer.parseInt(rawLabel.substring(0, 4));
+        int month = Integer.parseInt(rawLabel.substring(5));
+
+        String formattedLabel = LocalDate.of(year, month, 1)
+                .format(DateTimeFormatter.ofPattern("MMMM yyyy"));
+
+        return formattedLabel;
     }
 }

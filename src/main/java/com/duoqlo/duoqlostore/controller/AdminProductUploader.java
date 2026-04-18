@@ -127,16 +127,8 @@ public class AdminProductUploader {
         currentGender = product.getGender();
         currentCategory = product.getCategory();
 
-        System.out.println("Product gender: '" + currentGender + "'");
-        System.out.println("Product category: '" + currentCategory + "'");
-        System.out.println("Gender Map: " + genderIdMap);
-        System.out.println("Category Map: " + categoryIdMap);
-
         currentGenderId = genderIdMap.get(currentGender);
         currentCategoryId = categoryIdMap.get(currentCategory);
-
-        System.out.println("Found gender ID: " + currentGenderId);
-        System.out.println("Found category ID: " + currentCategoryId);
 
         List<String> categoriesForGender = productDAO.getCategoryNameWithGender(currentGender);
         if (categoriesForGender != null) {
@@ -172,7 +164,6 @@ public class AdminProductUploader {
             categoryIdMap = categories;
         }
 
-        System.out.println("Data initialized - Genders: " + genderIdMap.size() + ", Categories: " + categoryIdMap.size());
     }
 
     private void loadConfig() {
@@ -291,7 +282,6 @@ public class AdminProductUploader {
                 if (parentFolder != null && parentFolder.exists()) {
                     configProps.setProperty(LAST_IMAGE_PATH_KEY, parentFolder.getAbsolutePath());
                     saveConfig();
-                    System.out.println("Saved path: " + parentFolder.getAbsolutePath());
                 } else if (imageFolder != null && imageFolder.exists()) {
                     // Fallback to image folder if parent doesn't exist
                     configProps.setProperty(LAST_IMAGE_PATH_KEY, imageFolder.getAbsolutePath());
@@ -364,8 +354,6 @@ public class AdminProductUploader {
     }
 
     private void updateAutoSku() {
-        System.out.println(currentGenderId);
-        System.out.println(currentCategoryId);
         if (currentGenderId != null && currentCategoryId != null) {
             if (!isUpdateMode) {
                 identifier = String.valueOf(System.currentTimeMillis()).substring(9);
@@ -684,10 +672,6 @@ public class AdminProductUploader {
                         return false;
                     }
                 }
-
-                System.out.println(currentGenderId);
-                System.out.println(currentCategoryId);
-                System.out.println(description);
 
                 productDAO.updateProduct(productId, productSKU, name, currentCategoryId, currentGenderId, imagePath, description);
 

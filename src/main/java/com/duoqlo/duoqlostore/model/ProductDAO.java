@@ -206,6 +206,31 @@ public class ProductDAO {
         return new HashMap<>();
     }
 
+    private boolean hasStock(int productId) {
+        String sql = """
+                SELECT SUM(stock_quantity) as stock
+                FROM productsize
+                WHERE product_id = ?;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql);) {
+
+            pstmt.setInt(1, productId);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            if(rs.next()) {
+                return rs.getInt("stock") > 0;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     public List<Product> getAllProducts() {
         List<Product> products = new ArrayList<>();
         String sql = """
@@ -222,14 +247,18 @@ public class ProductDAO {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
+                int productId = rs.getInt("product_id");
+
                 Product product = new Product(
-                        rs.getInt("product_id"),
+                        productId,
                         rs.getString("product_sku"),
                         rs.getString("product_name"),
                         rs.getString("gender"),
                         rs.getString("category_name"),
                         rs.getString("description"),
-                        rs.getString("image_path")
+                        rs.getString("image_path"),
+                        getProductSizes(productId),
+                        hasStock(productId)
                 );
                 products.add(product);
             }

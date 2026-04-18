@@ -111,8 +111,8 @@ public class AdminDashController {
         return this.sales;
     }
 
-    public ObservableList<SalesRecord> getSalesByFilter(FilterBy currentFilter, String value) {
-        this.sales.setAll(SalesDAO.getSalesByFilter(currentFilter, value));
+    public ObservableList<SalesRecord> getSalesByFilterAndFreq(FilterBy filter, Freq freq, String value) {
+        this.sales.setAll(SalesDAO.getSalesByFilterAndFrequency(filter, freq, value));
         return this.sales;
     }
 
@@ -314,7 +314,9 @@ public class AdminDashController {
         double totalRevenue = 0;
 
         for(Order order: orders) {
-            totalRevenue += order.getTotalPrice();
+            if(order.getStatus().equals("DONE")) {
+                totalRevenue += order.getTotalPrice();
+            }
         }
 
         return totalRevenue;

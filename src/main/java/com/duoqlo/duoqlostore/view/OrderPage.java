@@ -18,6 +18,8 @@ class OrderCard extends VBox {
 
     private ScrollPane contentPane;
 
+    private Runnable cancelOrder;
+
     private Order order;
     private int orderId;
 
@@ -30,6 +32,10 @@ class OrderCard extends VBox {
         this.order = setOrder(orderId);
 
         create();
+    }
+
+    public void setCancelOrder(Runnable cancelOrder) {
+        this.cancelOrder = cancelOrder;
     }
 
     private ImageView getImageView(OrderItem orderItem) {
@@ -190,18 +196,34 @@ class OrderCard extends VBox {
     private VBox buildFooter() {
         Region line = buildLine();
 
+        Label shippingFeeLabel = new Label("Shipping Fee: ");
+        shippingFeeLabel.getStyleClass().add("ship-fee");
+
+        Label shippingFeeValue = new Label("RM 50");
+        shippingFeeValue.getStyleClass().add("ship-fee-value");
+
         Label totalLabel = new Label("Order Total: ");
         totalLabel.getStyleClass().add("total");
 
         Label totalValue = new Label(String.format("RM %.2f", order.getTotalPrice()));
         totalValue.getStyleClass().add("total-value");
 
-        Label taxLabel = new Label(" (Incl. tax)");
-        taxLabel.getStyleClass().add("tax");
+        HBox footerShipFeeBox = new HBox(shippingFeeLabel, shippingFeeValue);
+        HBox footerTotalBox = new HBox(totalLabel, totalValue);
 
-        HBox footerLabelBox = new HBox(totalLabel, totalValue, taxLabel);
+        Button cancelButton = new Button("Cancel");
+        cancelButton.getStyleClass().add("cancel-button");
+        cancelButton.setOnAction(e -> cancelOrder.run());
 
-        VBox footerBox = new VBox(line, footerLabelBox);
+        BorderPane bottomPane = new BorderPane();
+        bottomPane.setLeft(footerTotalBox);
+        BorderPane.setAlignment(footerTotalBox, Pos.CENTER_LEFT);
+
+        if(order.getStatus().equals("PENDING")) {
+            bottomPane.setRight(cancelButton);
+        }
+
+        VBox footerBox = new VBox(line, footerShipFeeBox, bottomPane);
 
         return footerBox;
     }
@@ -213,27 +235,29 @@ class OrderCard extends VBox {
 
         VBox footerBox = buildFooter();
 
-        this.setPadding(new Insets(15));
+        setPadding(new Insets(15));
 
-        this.setMinWidth(cardWidth);
-        this.setPrefWidth(cardWidth);
-        this.setMaxWidth(cardWidth);
+        setMinWidth(cardWidth);
+        setPrefWidth(cardWidth);
+        setMaxWidth(cardWidth);
 
-        this.setMinHeight(cardHeight);
-        this.setPrefHeight(cardHeight);
-        this.setMaxHeight(cardHeight);
+        setMinHeight(cardHeight);
+        setPrefHeight(cardHeight);
+        setMaxHeight(cardHeight);
 
-        this.getStyleClass().add("order-card");
+        getStyleClass().add("order-card");
 
-        this.getChildren().addAll(headerBox, contentPane, footerBox);
+        getChildren().addAll(headerBox, contentPane, footerBox);
 
         VBox.setVgrow(contentPane, Priority.ALWAYS);
-        VBox.setMargin(contentPane, new Insets(15, 0, 15, 0));
+        VBox.setMargin(contentPane, new Insets(15, 0, 8, 0));
     }
 }
 
-public class OrderPage extends BasePage {
+public class OrderPage extends UserPage {
     private OrderController controller;
+
+    private HBox cardSection;
 
     public OrderPage(OrderController controller) {
         this.controller = controller;
@@ -285,26 +309,34 @@ public class OrderPage extends BasePage {
         return emptyLabelBox;
     }
 
-    private HBox buildCardSection() {
-        HBox cardBox = new HBox(30);
+    private void cancelOrder(int orderId) {
+        if(controller.orderCancelled(orderId)) {
+            cardSection.getChildren().clear();
+            addOrderCards();
+        }
+    }
 
+    private void addOrderCards() {
         if (!controller.isOrdersEmpty()) {
             for (Order order: controller.getOrders()) {
-                cardBox.getChildren().add(new OrderCard(order.getOrderId()));
-            }
-            cardBox.setPadding(new Insets(30));
-        } else {
-            cardBox = buildOrderEmptyBox();
-        }
+                int orderId = order.getOrderId();
 
-        return cardBox;
+                OrderCard orderCard = new OrderCard(orderId);
+                orderCard.setCancelOrder(() -> cancelOrder(orderId));
+
+                cardSection.getChildren().add(orderCard);
+            }
+        } else {
+            cardSection = buildOrderEmptyBox();
+        }
     }
 
     public Scene initialize(){
-        HBox cardSection = buildCardSection();
+        cardSection = new HBox(30);
+        cardSection.setPadding(new Insets(30));
+        addOrderCards();
 
         VBox bodyBox = new VBox();
-
         bodyBox.getChildren().add(cardSection);
         VBox.setMargin(cardSection, new Insets(10, 0, 10, 0));
 

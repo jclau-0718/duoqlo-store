@@ -6,7 +6,6 @@ module com.duoqlo.duoqlostore {
     requires java.prefs;
     requires jbcrypt;
 
-    requires org.jfree.jfreechart;
     requires kernel;
     requires layout;
     requires io;

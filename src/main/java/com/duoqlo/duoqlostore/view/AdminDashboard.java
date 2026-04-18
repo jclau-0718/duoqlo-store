@@ -5,15 +5,18 @@ import com.duoqlo.duoqlostore.controller.AdminProductUploader;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.controller.ProfileController;
 import com.duoqlo.duoqlostore.model.*;
+import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -47,13 +50,13 @@ class StatCard extends VBox {
         Label titleLabel = new Label(title);
         titleLabel.setStyle("""
                 -fx-text-fill: black;
-                -fx-font-size: 12;
+                -fx-font-size: 15;
                 """);
 
         valueLabel = new Label(value);
         valueLabel.setStyle("""
                 -fx-text-fill: black;
-                -fx-font-size: 24;
+                -fx-font-size: 26;
                 """);
 
         VBox contentBox = new VBox(titleLabel, valueLabel);
@@ -76,7 +79,8 @@ class StatCard extends VBox {
         StackPane stackPane = new StackPane();
         stackPane.getChildren().addAll(orangeBox, contentBox);
         stackPane.setAlignment(Pos.TOP_CENTER);
-        StackPane.setMargin(contentBox, new Insets(0, 0, 3, 0));
+        StackPane.setMargin(contentBox, new Insets(0, 0, 5, 0));
+        stackPane.setPrefHeight(80);
 
         this.getChildren().add(stackPane);
         this.getStyleClass().add("stat-card");
@@ -493,6 +497,8 @@ public class AdminDashboard extends ApplicationPage {
     private TableView<Order> orderTable;
     private VBox detailBox;
 
+    private HBox salesFilterSection;
+
     private VBox bodyVBox;
     private StackPane body;
     private BorderPane root;
@@ -531,6 +537,7 @@ public class AdminDashboard extends ApplicationPage {
         //RIGHT
         Button logOutButton = new Button("LOG OUT");
         logOutButton.getStyleClass().add("logout-button");
+        System.out.println(logOutButton.getStyleClass());
         logOutButton.setOnAction(e -> Navigator.goTo(new LogInPage().initialize()));
 
         StackPane header = new StackPane(); //Button-to-Button space
@@ -581,9 +588,9 @@ public class AdminDashboard extends ApplicationPage {
         cardGrid.setMaxHeight(Region.USE_PREF_SIZE);
 
         //Add column constraints
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < cardGrid.getChildren().size(); i++) {
             ColumnConstraints col = new ColumnConstraints();
-            col.setPercentWidth(10);
+            col.setPercentWidth(14);
             cardGrid.getColumnConstraints().add(col);
         }
 
@@ -591,11 +598,25 @@ public class AdminDashboard extends ApplicationPage {
     }
 
     private void buildSalesPage() {
-        bodyVBox.getChildren().clear();
+        setTitleLabel("SALES");
 
         SalesPage salesPage = new SalesPage(this.controller);
 
-        bodyVBox.getChildren().add(salesPage.getContent());
+        salesFilterSection = salesPage.getFilterSection();
+
+        hideAddButton();
+        buttonPane.setLeft(salesFilterSection);
+
+        mainTableBox.getChildren().clear();
+        mainTableBox.getChildren().add(salesPage.getContent());
+
+        removeGendersCategories();
+    }
+
+    private void removeSalesFilter() {
+        if(buttonPane.getLeft() != null) {
+            buttonPane.setLeft(null);
+        }
     }
 
     private HBox buildTableTitle(Label titleLabel) {
@@ -624,17 +645,14 @@ public class AdminDashboard extends ApplicationPage {
     }
 
     private void showButtonBox(String buttonText) {
-        buttonPane.setVisible(true);
-        buttonPane.setManaged(true);
-
         addButton.setText(buttonText);
         addButton.setVisible(true);
         addBtnWasVisible = true;
     }
 
-    private void hideButtonBox() {
-        buttonPane.setVisible(false);
-        buttonPane.setManaged(false);
+    private void hideAddButton() {
+        addButton.setVisible(false);
+        addBtnWasVisible = false;
     }
 
     private void showCustomerTable() {
@@ -654,6 +672,8 @@ public class AdminDashboard extends ApplicationPage {
         currentActiveView = ActiveView.CUSTOMERS;
 
         setTitleLabel("CUSTOMERS");
+
+        removeSalesFilter();
 
         showButtonBox("+ Add Customer");
         addButton.setOnAction(ae -> {
@@ -695,6 +715,8 @@ public class AdminDashboard extends ApplicationPage {
         currentActiveView = ActiveView.ADMINS;
 
         setTitleLabel("ADMINS");
+
+        removeSalesFilter();
 
         showButtonBox("+ Add Admin");
         addButton.setOnAction(ae -> {
@@ -1259,6 +1281,8 @@ public class AdminDashboard extends ApplicationPage {
 
         setTitleLabel("PRODUCTS");
 
+        removeSalesFilter();
+
         showButtonBox("+ Add Product");
         addButton.setOnAction(ae -> {
             backButton.setVisible(true);
@@ -1375,6 +1399,8 @@ public class AdminDashboard extends ApplicationPage {
                             AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
                             successAlert.show(body, "Order set as done.", Pos.TOP_CENTER);
 
+                            refreshStatCards();
+
                             refreshOrderPage();
                         } else {
                             AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
@@ -1422,7 +1448,8 @@ public class AdminDashboard extends ApplicationPage {
     private void buildOrderPage() {
         setTitleLabel("ORDERS");
 
-        hideButtonBox();
+        hideAddButton();
+        removeSalesFilter();
 
         buildOrderTable();
 
@@ -1595,6 +1622,7 @@ public class AdminDashboard extends ApplicationPage {
         adminStatCard.update(String.valueOf(controller.getTotalAdmins()));
         productStatCard.update(String.valueOf(controller.getTotalProducts()));
         orderStatCard.update(String.valueOf(controller.getTotalOrders()));
+        revenueStatCard.update(String.format("%.2f", controller.getTotalRevenue()));
     }
 
     private void refreshProductPage() {
@@ -1691,6 +1719,7 @@ public class AdminDashboard extends ApplicationPage {
         bodyScrollPane.setPadding(new Insets(0));
         bodyScrollPane.setFitToWidth(true);
         bodyScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        bodyScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
 
         bodyScrollPane.setMinHeight(600);
 

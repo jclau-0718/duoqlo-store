@@ -11,8 +11,43 @@ import com.itextpdf.kernel.colors.DeviceRgb;
 import com.duoqlo.duoqlostore.model.SalesRecord;
 import javafx.collections.ObservableList;
 
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import java.io.File;
 
 public class ExportPDF {
+
+    public void exportPDFWithChooser(Stage stage, ObservableList<SalesRecord> salesData, String filterLabel) {
+        FileChooser fileChooser = new FileChooser();
+
+        // Set dialog title
+        fileChooser.setTitle("Save Sales Report");
+
+        // Default filename
+        fileChooser.setInitialFileName("sales-report.pdf");
+
+        // Filter (only PDF)
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("PDF Files (*.pdf)", "*.pdf")
+        );
+
+        // Optional: set default directory
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+
+        // Show save dialog
+        File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            // Ensure .pdf extension
+            String path = file.getAbsolutePath();
+            if (!path.toLowerCase().endsWith(".pdf")) {
+                path += ".pdf";
+            }
+
+            // Call your existing method
+            ExportPDF.export(salesData, filterLabel, path);
+        }
+    }
 
     public static void export(ObservableList<SalesRecord> salesData, String filterLabel, String outputPath) {
         try {

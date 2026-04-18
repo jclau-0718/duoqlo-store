@@ -18,15 +18,15 @@ public class Product {
     private String status;
     private String size;
     private List<ProductSize> sizes;
-    private String sizeRange;
-    private String priceRange;
+    private boolean hasStock;
 
     // Constructors
-    public Product() {}
+    public Product() {
+    }
 
     public Product(int productId, String productSku, String productName,
-                   String gender, String category,
-                   String description, String imagePath) {
+                   String gender, String category, String description,
+                   String imagePath, List<ProductSize> sizes, boolean hasStock) {
         this.productId = productId;
         this.productSku = productSku;
         this.productName = productName;
@@ -34,12 +34,8 @@ public class Product {
         this.category = category;
         this.description = description;
         this.imagePath = imagePath;
-    }
-
-    public Product(int productId, String productName, String imagePath) {
-        this.productId = productId;
-        this.productName = productName;
-        this.imagePath = imagePath;
+        this.sizes = sizes;
+        this.hasStock = hasStock;
     }
 
     public Product(int productId, String productName, String category, String size) {
@@ -66,19 +62,33 @@ public class Product {
     }
 
     // Getters and Setters
-    public int getId() { return productId; }
+    public int getId() {
+        return productId;
+    }
 
-    public String getSku() { return productSku; }
+    public String getSku() {
+        return productSku;
+    }
 
-    public String getName() { return productName; }
+    public String getName() {
+        return productName;
+    }
 
-    public String getGender() { return gender; }
+    public String getGender() {
+        return gender;
+    }
 
-    public String getCategory() { return category; }
+    public String getCategory() {
+        return category;
+    }
 
-    public String getDescription() { return description; }
+    public String getDescription() {
+        return description;
+    }
 
-    public String getImagePath() { return imagePath; }
+    public String getImagePath() {
+        return imagePath;
+    }
 
     public String getAddedDateStr() {
         return addedDateTime.format(AppConfig.DATE_FORMATTER);
@@ -88,9 +98,13 @@ public class Product {
         return status;
     }
 
-    public String getSize() { return size; }
+    public String getSize() {
+        return size;
+    }
 
-    public List<ProductSize> getSizes() { return sizes; }
+    public List<ProductSize> getSizes() {
+        return sizes;
+    }
 
     public String getSizeRange() {
         if (!sizes.isEmpty()) {
@@ -127,19 +141,13 @@ public class Product {
         return totalStock;
     }
 
-    public void setProductId(int productId) { this.productId = productId; }
+    public boolean hasStock() { return this.hasStock; }
 
-    public void setProductSku(String productSku) { this.productSku = productSku; }
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
 
-    public void setProductName(String productName) { this.productName = productName; }
-
-    public void setGender(String gender) { this.gender = gender; }
-
-    public void setCategory(String category) { this.category = category; }
-
-    public void setDescription(String description) { this.description = description; }
-
-    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
-
-    public void setSizes(List<ProductSize> sizes) { this.sizes = sizes; }
+    public void setCategory(String category) {
+        this.category = category;
+    }
 }

@@ -216,6 +216,7 @@
     -fx-background-radius: 8px;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
     -fx-transition: all 0.2s ease-in-out; /* Smooth transition */
+    -fx-cursor: hand;
 }
 
 .product-card:hover {
@@ -226,6 +227,19 @@
     -fx-transition: all 0.2s ease-in-out;
 }
 
+.product-card.sold-out {
+    -fx-opacity: 0.6;
+    -fx-background-color: #AFAFAF;
+    -fx-cursor: null;
+}
+
+.label.sold-out {
+    -fx-background-color: #AFAFAF;
+    -fx-text-fill: #6A6A6A;
+    -fx-font-weight: bold;
+    -fx-font-size: 18;
+
+}
 
 .label.no-products {
     -fx-text-fill: #808080;
@@ -442,6 +456,7 @@
 .right-button, .left-button {
     -fx-background-color: #DEDEDE;
     -fx-border-color: transparent;
+    -fx-cursor: hand;
 }
 
 .right-button .ikonli-font-icon, .left-button .ikonli-font-icon {
