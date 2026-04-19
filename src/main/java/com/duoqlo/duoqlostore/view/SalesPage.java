@@ -35,6 +35,9 @@
         }
     
         private void setLabelTitle() {
+            System.out.println("In setLabelTitle: "+ filter);
+            System.out.println("In setLabelTitle: "+ frequency);
+
             if(frequency.equals(Freq.NONE)) {
                 switch(filter) {
                     case FilterBy.GENDER -> labelTitle = "Genders";
@@ -46,6 +49,8 @@
             } else {
                 labelTitle = "Date Range";
             }
+
+            System.out.println(labelTitle);
         }
     
         public void update(FilterBy filter, Freq frequency) {
@@ -142,12 +147,10 @@
         private ComboBox<String> filterCombo;
     
         private SalesTableView salesTable;
-    
-        private Runnable onDataChanged;
-    
-        private LineChart<String, Number> revenueChart;
-        private LineChart<String, Number> itemsChart;
-        private LineChart<String, Number> ordersChart;
+
+        private XYChart<String, Number> revenueChart;
+        private XYChart<String, Number> itemsChart;
+        private XYChart<String, Number> ordersChart;
         private VBox chartBox;
     
         public SalesPage(AdminDashController controller) {
@@ -164,22 +167,28 @@
             genderButton.setOnAction(e -> {
                 if(genderButton.isSelected()) {
                     currentFilter = FilterBy.GENDER;
-                    salesTable.update(currentFilter, currentFreq);
-    
+
                     if (!isFrequencySelected()) {
+                        currentFreq = Freq.NONE;
+
+                        salesTable.update(currentFilter, currentFreq);
+
                         hideFilterCombo();
     
                         salesTable.setData(controller.getSalesByGenders());
                     } else {
+                        salesTable.update(currentFilter, currentFreq);
+
                         showFilterCombo();
-    
-    //                    showFrequencyTable(currentFreq);
                     }
                 } else {
                     currentFilter = FilterBy.NONE;
-                    salesTable.update(currentFilter, currentFreq);
-    
+
                     if(!isFrequencySelected()) {
+                        currentFreq = Freq.DAILY;
+
+                        salesTable.update(currentFilter, currentFreq);
+
                         //Base case - show daily sales (No filter and frequency selected
                         salesTable.setData(controller.getDailySales());
                     } else {
@@ -194,22 +203,26 @@
             categoryButton.setOnAction(e -> {
                 if(categoryButton.isSelected()) {
                     currentFilter = FilterBy.CATEGORY;
-                    salesTable.update(currentFilter, currentFreq);
-    
+
                     if (!isFrequencySelected()) {
+                        currentFreq = Freq.NONE;
+
+                        salesTable.update(currentFilter, currentFreq);
+
                         hideFilterCombo();
     
                         salesTable.setData(controller.getSalesByCategories());
                     } else {
                         showFilterCombo();
-    
-    //                    showFrequencyTable(currentFreq);
                     }
                 } else {
                     currentFilter = FilterBy.NONE;
-                    salesTable.update(currentFilter, currentFreq);
-    
+
                     if(!isFrequencySelected()) {
+                        currentFreq = Freq.DAILY;
+
+                        salesTable.update(currentFilter, currentFreq);
+
                         //Base case - show daily sales (No filter and frequency selected
                         salesTable.setData(controller.getDailySales());
                     } else {
@@ -236,20 +249,21 @@
     
                         salesTable.setData(controller.getDailySales());
                     } else {
-                        showFilterCombo();
-    
-                        //Will do controller.getSalesByFilter as well
+                        showFilterCombo();  //Will show sales table with filter as well
                     }
                 } else {
-                    currentFreq = Freq.NONE;
-                    salesTable.update(currentFilter, currentFreq);
-    
                     hideFilterCombo();
     
                     if(!isFilterSelected()) {
+                        currentFreq = Freq.DAILY;
+                        salesTable.update(currentFilter, currentFreq);
+
                         //Base case - show daily sales (No filter and frequency selected
                         salesTable.setData(controller.getDailySales());
                     } else {
+                        currentFreq = Freq.NONE;
+                        salesTable.update(currentFilter, currentFreq);
+
                         showFilterTable(currentFilter);
                     }
                 }
@@ -270,15 +284,18 @@
                     }
     
                 } else {
-                    currentFreq = Freq.NONE;
-                    salesTable.update(currentFilter, currentFreq);
-    
                     hideFilterCombo();
     
                     if(!isFilterSelected()) {
+                        currentFreq = Freq.DAILY;
+                        salesTable.update(currentFilter, currentFreq);
+
                         //Base case - show daily sales (No filter and frequency selected
                         salesTable.setData(controller.getDailySales());
                     } else {
+                        currentFreq = Freq.NONE;
+                        salesTable.update(currentFilter, currentFreq);
+
                         showFilterTable(currentFilter);
                     }
                 }
@@ -299,15 +316,18 @@
                     }
     
                 } else {
-                    currentFreq = Freq.NONE;
-                    salesTable.update(currentFilter, currentFreq);
-    
                     hideFilterCombo();
     
                     if(!isFilterSelected()) {
+                        currentFreq = Freq.DAILY;
+                        salesTable.update(currentFilter, currentFreq);
+
                         //Base case - show daily sales (No filter and frequency selected
                         salesTable.setData(controller.getDailySales());
                     } else {
+                        currentFreq = Freq.NONE;
+                        salesTable.update(currentFilter, currentFreq);
+
                         showFilterTable(currentFilter);
                     }
                 }
@@ -427,6 +447,8 @@
         private void showTable() {
             salesTable = new SalesTableView(currentFilter, currentFreq);
             salesTable.setData(controller.getDailySales());
+            currentFilter = FilterBy.NONE;
+            currentFreq = Freq.DAILY;
     
             displayBox.getChildren().clear();
             displayBox.getChildren().add(salesTable);
@@ -519,31 +541,75 @@
     
             return chart;
         }
+
+        private BarChart<String, Number> buildBarChart(String title, String xLabel, String yLabel) {
+            CategoryAxis xAxis = new CategoryAxis();
+            xAxis.setLabel(xLabel);
+            xAxis.setTickLabelRotation(-45);
+
+            NumberAxis yAxis = new NumberAxis();
+            yAxis.setLabel(yLabel);
+            yAxis.setForceZeroInRange(true);
+
+            xAxis.setTickLabelFont(javafx.scene.text.Font.font("Arial", 12));
+            yAxis.setTickLabelFont(javafx.scene.text.Font.font("Arial", 12));
+
+            BarChart<String, Number> chart = new BarChart<>(xAxis, yAxis);
+            chart.setTitle(title);
+            chart.setLegendVisible(false);
+            chart.setAnimated(false);
+            chart.setPrefHeight(300);
+            chart.getStyleClass().add("sales-chart");
+
+            return chart;
+        }
     
         private void initCharts() {
-            revenueChart = buildLineChart("Revenue (RM)", "Date", "RM");
-            itemsChart   = buildLineChart("Items Sold",   "Date", "Num of Items");
-            ordersChart  = buildLineChart("Orders",       "Date", "Num of Orders");
+            if (chartBox == null) {
+                chartBox = new VBox(20); // create only once
+            }
+
+            System.out.println(currentFilter);
+            System.out.println(currentFreq);
+            if (currentFreq.equals(Freq.NONE)) {
+                String title;
+
+                if (currentFilter.equals(FilterBy.CATEGORY)) {
+                    title = "Category";
+                } else if (currentFilter.equals(FilterBy.GENDER)){
+                    title = "Gender";
+                } else {
+                    title = "Date";
+                }
+
+                revenueChart = buildBarChart("Revenue (RM)", title, "RM");
+                itemsChart   = buildBarChart("Items Sold", title, "Num of Items");
+                ordersChart  = buildBarChart("Orders", title, "Num of Orders");
+            } else {
+                revenueChart = buildLineChart("Revenue (RM)", "Date", "RM");
+                itemsChart   = buildLineChart("Items Sold",   "Date", "Num of Items");
+                ordersChart  = buildLineChart("Orders",       "Date", "Num of Orders");
+            }
     
-            // Style the bars orange
             revenueChart.getStyleClass().add("sales-chart");
             itemsChart.getStyleClass().add("sales-chart");
             ordersChart.getStyleClass().add("sales-chart");
-    
-            chartBox = new VBox(20, revenueChart, itemsChart, ordersChart);
+
+            chartBox.getChildren().setAll(revenueChart, itemsChart, ordersChart);
         }
     
         public VBox getContent() {
             displayBox = new VBox();
-    
-            initCharts(); //
+
             showTable();
-    
-            // Wire chart updates to table data changes
-            salesTable.setOnDataChanged(() -> buildCharts(salesTable.getItems()));
-    
-            // Initial chart load
+            initCharts();
             buildCharts(salesTable.getItems());
+
+            // Wire chart updates to table data changes
+            salesTable.setOnDataChanged(() -> {
+                initCharts();
+                buildCharts(salesTable.getItems());
+            });
     
             Button exportButton = buildExportButton();
     

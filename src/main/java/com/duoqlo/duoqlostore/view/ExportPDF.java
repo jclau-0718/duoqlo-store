@@ -20,6 +20,7 @@ import com.itextpdf.layout.element.Image;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -141,9 +142,9 @@ public class ExportPDF {
     }
 
     public void export(ObservableList<SalesRecord> salesData, String filterLabel, String outputPath,
-                              LineChart<String, Number> revenueChart,
-                              LineChart<String, Number> itemsChart,
-                              LineChart<String, Number> ordersChart) {
+                       XYChart<String, Number> revenueChart,
+                       XYChart<String, Number> itemsChart,
+                       XYChart<String, Number> ordersChart) {
         try {
             PdfWriter writer = new PdfWriter(outputPath);
             PdfDocument pdf = new PdfDocument(writer);
@@ -212,7 +213,7 @@ public class ExportPDF {
         }
     }
 
-    private void addChartImage(Document document, LineChart<String, Number> chart) {
+    private void addChartImage(Document document, XYChart<String, Number> chart) {
         try {
             //Snapshot the JavaFX chart node into a WritableImage
             WritableImage writableImage = chart.snapshot(null, null);
@@ -240,9 +241,9 @@ public class ExportPDF {
 
 
     public void exportPDFWithChooser(Stage stage, ObservableList<SalesRecord> salesData, String filterLabel,
-                                            LineChart<String, Number> revenueChart,
-                                            LineChart<String, Number> itemsChart,
-                                            LineChart<String, Number> ordersChart) {
+                                     XYChart<String, Number> revenueChart,
+                                     XYChart<String, Number> itemsChart,
+                                     XYChart<String, Number> ordersChart) {
         FileChooser fileChooser = new FileChooser();
 
         //Set dialog title
