@@ -428,14 +428,18 @@ public class AdminProductUploader {
         backButton = new Button("Back");
         backButton.setOnAction(e -> goToProductDetailsPane());
 
-        addProductButton = new Button("Add Product");
+        addProductButton = new Button();
+        if(!isUpdateMode) {
+            addProductButton.setText("Add Product");
+        } else {
+            addProductButton.setText("Update");
+        }
+
         addProductButton.setOnAction(e -> {
             if (addProduct()) {
                 resetForm();
 
                 showProductPage.run();
-            } else {
-                return;
             }
         });
 

@@ -5,18 +5,15 @@ import com.duoqlo.duoqlostore.controller.AdminProductUploader;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.controller.ProfileController;
 import com.duoqlo.duoqlostore.model.*;
-import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -98,7 +95,7 @@ class StatCard extends VBox {
 class UserTableView extends TableView<User> {
     private AdminDashController controller;
     private StackPane body;
-    private BorderPane root;
+    private Pane parent;
 
     private TableColumn<User, Integer> idCol = new TableColumn<>("User ID");
     private TableColumn<User, String> usernameCol = new TableColumn<>("Username");
@@ -108,13 +105,17 @@ class UserTableView extends TableView<User> {
     private TableColumn<User, String> statusCol = new TableColumn<>("Status");
     private TableColumn<User, Void> actionsCol = new TableColumn<>("Actions");
 
-    public UserTableView(AdminDashController controller, StackPane body, BorderPane root) {
+    private Runnable showBackButton;
+
+    public UserTableView(AdminDashController controller, StackPane body, Pane parent) {
         this.controller = controller;
         this.body = body;
-        this.root = root;
+        this.parent = parent;
 
         build();
     }
+
+    public void setShowBackButton(Runnable showBackButton) { this.showBackButton = showBackButton; }
 
     private void build() {
         // Set up cell value factories
@@ -196,12 +197,20 @@ class UserTableView extends TableView<User> {
 
                     // Update button action
                     updateButton.setOnAction(e -> {
+                        if(showBackButton != null) showBackButton.run();
+
                         ProfileController profileController = new ProfileController(user);
+                        System.out.println(user.getAddressLine1());
                         ProfilePage profilePage = new ProfilePage(profileController);
 
                         StackPane content = profilePage.getContent();
 
-                        root.setCenter(content);
+                        content.getStylesheets().add(
+                                getClass().getResource("/css/profile-page.css").toExternalForm()
+                        );
+
+                        parent.getChildren().clear();
+                        parent.getChildren().add(content);
                     });
                     updateButton.getStyleClass().add("update-button");
 
@@ -275,11 +284,11 @@ class UserTableView extends TableView<User> {
 class ProductTableView extends TableView<Product> {
     private AdminDashController controller;
     private StackPane body;
-    private BorderPane root;
     private Pane parent;
 
     private Runnable refreshStatCard;
     private Runnable showProductPage;
+    private Runnable showBackButton;
 
     private TableColumn<Product, Integer> idCol = new TableColumn<>("ID");
     private TableColumn<Product, String> skuCol = new TableColumn<>("Product SKU");
@@ -293,16 +302,12 @@ class ProductTableView extends TableView<Product> {
     private TableColumn<Product, String> statusCol = new TableColumn<>("Status");
     private TableColumn<Product, Void> actionsCol = new TableColumn<>("Actions");
 
-    public ProductTableView(AdminDashController controller, StackPane body, BorderPane root) {
+    public ProductTableView(AdminDashController controller, StackPane body, Pane parent) {
         this.controller = controller;
         this.body = body;
-        this.root = root;
+        this.parent = parent;
 
         build();
-    }
-
-    public void setParent(Pane parent) {
-        this.parent = parent;
     }
 
     public void setRefreshStatCard(Runnable refresh) {
@@ -312,6 +317,8 @@ class ProductTableView extends TableView<Product> {
     public void setShowProductPage(Runnable show) {
         this.showProductPage = show;
     }
+
+    public void setShowBackButton(Runnable showBackButton) { this.showBackButton = showBackButton; }
 
     private void build() {
         idCol.setCellValueFactory(data ->
@@ -391,6 +398,8 @@ class ProductTableView extends TableView<Product> {
 
                     viewButton.getStyleClass().add("view-button");
                     viewButton.setOnAction(e -> {
+                        if(showBackButton != null) showBackButton.run();
+
                         AdminProductUploader uploader = new AdminProductUploader(parent);
                         uploader.setUpdateMode();
                         uploader.setShowProductPage(() -> showProductPage.run());
@@ -614,7 +623,7 @@ public class AdminDashboard extends ApplicationPage {
     }
 
     private void removeSalesFilter() {
-        if(buttonPane.getLeft() != null) {
+        if (buttonPane.getLeft() == salesFilterSection) {
             buttonPane.setLeft(null);
         }
     }
@@ -656,7 +665,9 @@ public class AdminDashboard extends ApplicationPage {
     }
 
     private void showCustomerTable() {
-        TableView<User> customerTable = new UserTableView(this.controller, body, root);
+        TableView<User> customerTable = new UserTableView(this.controller, body, mainTableBox);
+
+        controller.refreshCustomerData();
 
         // Get users from database
         ObservableList<User> customers = controller.getCustomers();
@@ -666,6 +677,8 @@ public class AdminDashboard extends ApplicationPage {
         mainTableBox.getChildren().clear();
         mainTableBox.getChildren().add(customerTable);
         VBox.setVgrow(customerTable, Priority.ALWAYS);
+
+        ((UserTableView) customerTable).setShowBackButton(() -> backButton.setVisible(true));
     }
 
     private void buildCustomerPage() {
@@ -691,6 +704,10 @@ public class AdminDashboard extends ApplicationPage {
 
             VBox content = signUpPage.getContentForAdmin();
 
+            content.getStylesheets().add(
+                getClass().getResource("/css/signup-page.css").toExternalForm()
+            );
+
             switchDisplayBox(content);
         });
 
@@ -700,7 +717,9 @@ public class AdminDashboard extends ApplicationPage {
     }
 
     private void showAdminTable() {
-        TableView<User> adminTable = new UserTableView(this.controller, body, root);
+        TableView<User> adminTable = new UserTableView(this.controller, body, mainTableBox);
+
+        controller.refreshAdminData();
 
         ObservableList<User> admins = controller.getAdmins();
 
@@ -709,6 +728,8 @@ public class AdminDashboard extends ApplicationPage {
         mainTableBox.getChildren().clear();
         mainTableBox.getChildren().add(adminTable);
         VBox.setVgrow(adminTable, Priority.ALWAYS);
+
+        ((UserTableView) adminTable).setShowBackButton(() -> backButton.setVisible(true));
     }
 
     private void buildAdminPage() {
@@ -734,6 +755,10 @@ public class AdminDashboard extends ApplicationPage {
 
             VBox content = signUpPage.getContentForAdmin();
 
+            content.getStylesheets().add(
+                    getClass().getResource("/css/signup-page.css").toExternalForm()
+            );
+
             switchDisplayBox(content);
         });
 
@@ -743,10 +768,7 @@ public class AdminDashboard extends ApplicationPage {
     }
 
     private void showProductTable() {
-        TableView<Product> productTable = new ProductTableView(this.controller, body, root);
-        ((ProductTableView) productTable).setRefreshStatCard(() -> {
-            refreshStatCards();
-        });
+        TableView<Product> productTable = new ProductTableView(this.controller, body, mainTableBox);
 
         ObservableList<Product> products = controller.getProducts();
 
@@ -756,14 +778,17 @@ public class AdminDashboard extends ApplicationPage {
         mainTableBox.getChildren().add(productTable);
         VBox.setVgrow(productTable, Priority.ALWAYS);
 
-        ((ProductTableView) productTable).setParent(mainTableBox);
-
         ((ProductTableView) productTable).setShowProductPage(() -> {
             refreshProductPage();
-            controller.refreshProductData();
 
             AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
             successAlert.show(body, "Successfully updated product.", Pos.TOP_CENTER);
+        });
+
+        ((ProductTableView) productTable).setRefreshStatCard(() -> refreshStatCards());
+
+        ((ProductTableView) productTable).setShowBackButton(() -> {
+            backButton.setVisible(true);
         });
     }
 
@@ -1294,6 +1319,7 @@ public class AdminDashboard extends ApplicationPage {
                 AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
                 successAlert.show(body, "Successfully added product.", Pos.TOP_CENTER);
             });
+
             switchDisplayBox(uploader.show());
         });
 
@@ -1733,11 +1759,6 @@ public class AdminDashboard extends ApplicationPage {
         root.setCenter(body);
 
         Scene scene = setScene(root, "admin-dash");
-
-        scene.getStylesheets().addAll(
-                getClass().getResource("/css/profile-page.css").toExternalForm(),
-                getClass().getResource("/css/signup-page.css").toExternalForm()
-        );
 
         return scene;
     }

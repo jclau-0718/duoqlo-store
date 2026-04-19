@@ -86,6 +86,7 @@
 }
 
 .label.email, .label.address, .label.address-value {
+    -fx-text-fill: black;
     -fx-font-size: 17;
 }
 

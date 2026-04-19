@@ -44,32 +44,31 @@ public class CartItem {
 
     public String getSize() { return this.size; }
 
-
     public void setProductName() {
-        String pn = productDAO.getProductName(productSizeId);
+        String productName = productDAO.getProductName(productSizeId);
 
-        if (pn != null) {
-            this.productName = pn;
+        if (productName != null) {
+            this.productName = productName;
         } else {
             this.productName = "NAME";
         }
     }
 
     public void setCategory() {
-        String c = productDAO.getCategory(productSizeId);
+        String category = productDAO.getCategory(productSizeId);
 
-        if (c != null) {
-            this.category = c;
+        if (category != null) {
+            this.category = category;
         } else {
             this.category = "SHIRT";
         }
     }
 
     public void setSize() {
-        String s = productDAO.getSize(productSizeId);
+        String size = productDAO.getSize(productSizeId);
 
-        if (s != null) {
-            this.size = s;
+        if (size != null) {
+            this.size = size;
         } else {
             this.size = "XXX";
         }

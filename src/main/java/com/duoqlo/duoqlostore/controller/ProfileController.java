@@ -54,10 +54,7 @@ public class ProfileController {
         return user != null ? user.getLastName() : "";
     }
 
-    public String getFullName() {
-        System.out.println("In getFullName(): "+user.getFirstName());
-        return user != null ? user.getFirstName() + " " + user.getLastName() : "";
-    }
+    public String getFullName() { return user != null ? user.getFullName() : ""; }
 
     public String getEmail() {
         return user != null ? user.getEmail() : "";
@@ -73,10 +70,6 @@ public class ProfileController {
 
     public String getCity() {
         return user != null ? user.getCity() : "";
-    }
-
-    public int getPostalCode() {
-        return user != null ? user.getPostalCode() : 0;
     }
 
     public String getPostalCodeStr() {

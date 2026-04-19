@@ -34,6 +34,16 @@ public class AdminDashController {
         this.orders.setAll(orderDAO.getAllOrdersObservable());
     }
 
+    public void refreshCustomerData() {
+        this.users.setAll(userDAO.getAllUsersObservable());
+        setCustomers();
+    }
+
+    public void refreshAdminData() {
+        this.users.setAll(userDAO.getAllUsersObservable());
+        setAdmins();
+    }
+
     public void refreshProductData() {
         this.products.setAll(productDAO.getAllProductsObservable());
     }

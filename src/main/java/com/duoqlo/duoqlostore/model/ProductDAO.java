@@ -84,7 +84,9 @@ public class ProductDAO {
 
             int rowsAffected = pstmt.executeUpdate();
 
-            return rowsAffected > 0; // true if update successful
+            boolean statusUpdated = updateProductStatus(conn, productId);
+
+            return rowsAffected > 0 && statusUpdated; // true if update successful
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -560,15 +562,69 @@ public class ProductDAO {
         return null;
     }
 
-    public boolean deductStock(int productSizeId, int quantity) {
+    private int getIdByProductSize(int prodSizeId) {
         String sql = """
-                UPDATE productsize 
-                SET stock_quantity = stock_quantity - ? 
+                SELECT product_id
+                FROM productsize
                 WHERE productsize_id = ?;
                 """;
 
         try (Connection conn = ConnectDB.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, prodSizeId);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("product_id");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    private boolean updateProductStatus(Connection conn, int productId) {
+        String sql = """
+                UPDATE product
+                SET status = CASE
+                  WHEN (
+                      SELECT COALESCE(SUM(stock_quantity), 0)
+                      FROM productsize
+                      WHERE product_id = ?
+                  ) > 0 THEN 'AVAILABLE'
+                  ELSE 'OUT OF STOCK'
+                END
+                WHERE product_id = ?;
+                """;
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, productId);
+            pstmt.setInt(2, productId);
+
+            int affectedRows = pstmt.executeUpdate();
+
+            return affectedRows > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    private boolean deductStock(Connection conn, int productSizeId, int quantity) {
+        String sql1 = """
+                UPDATE productsize 
+                SET stock_quantity = stock_quantity - ? 
+                WHERE productsize_id = ?;
+                """;
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql1)) {
 
             pstmt.setInt(1, quantity);
             pstmt.setInt(2, productSizeId);
@@ -583,6 +639,33 @@ public class ProductDAO {
 
         return false;
     }
+
+    public boolean processOrder(int productSizeId, int quantity) {
+        int productId = getIdByProductSize(productSizeId);
+
+        try (Connection conn = ConnectDB.connect()) {
+
+            conn.setAutoCommit(false);
+
+            boolean stockUpdated = deductStock(conn, productSizeId, quantity);
+            System.out.println(stockUpdated);
+            boolean statusUpdated = updateProductStatus(conn, productId);
+            System.out.println(statusUpdated);
+
+            if (stockUpdated && statusUpdated) {
+                conn.commit();
+                return true;
+            } else {
+                conn.rollback();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
 
     public Product getProduct(int prodSizeId) {
         String sql = """
@@ -688,36 +771,6 @@ public class ProductDAO {
 
         return false;
     }
-
-//    public boolean genderIsReferenced(String id) {
-//        String sql = """
-//                SELECT
-//                    EXISTS (SELECT 1 FROM category WHERE gender_id = ?) AS in_category,
-//                    EXISTS (SELECT 1 FROM product WHERE gender_id = ?) AS in_product;
-//                """;
-//
-//        try (Connection conn = ConnectDB.connect();
-//             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//
-//            pstmt.setString(1, id);
-//
-//            ResultSet rs = pstmt.executeQuery();
-//
-//            if (rs.next()) {
-//                boolean inCategory = rs.getInt("in_category") == 1;
-//                boolean inProduct = rs.getInt("in_product") == 1;
-//
-//                if (inCategory || inProduct) {
-//                    return true;
-//                }
-//            }
-//
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//
-//        return false;
-//    }
 
     public boolean genderIsReferenced(String id) {
 

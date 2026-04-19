@@ -921,6 +921,8 @@ public class UserDashboard extends UserPage {
             }
         }
 
+        Label test = new Label("test");
+
         VBox contentBox = new VBox(5);
         contentBox.getChildren().addAll(
                 imageContainer,

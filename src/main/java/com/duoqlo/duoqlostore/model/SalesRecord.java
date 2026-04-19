@@ -21,4 +21,8 @@ public class SalesRecord {
     public int getTotalItems() { return totalItems; }
 
     public int getOrders() { return orders; }
+
+    public boolean isTotal() {
+        return this.labelValue.toLowerCase().equals("total");
+    }
 }

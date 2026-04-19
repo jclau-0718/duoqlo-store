@@ -247,9 +247,6 @@ public class ProfilePage extends UserPage {
         HBox.setHgrow(addressValue, Priority.ALWAYS);
 
         VBox profileBox = new VBox(5, nameBox, emailLabel, addressBox);
-//        profileBox.setMinHeight(200);
-//        profileBox.setPrefHeight(200);
-//        profileBox.setMaxHeight(300);
         profileBox.setPadding(new Insets(20));
         profileBox.getStyleClass().add("profile-box");
 

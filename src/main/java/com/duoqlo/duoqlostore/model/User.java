@@ -106,7 +106,7 @@ public class User {
         return this.lastName;
     }
 
-    public String getFullName() { return this.lastName + ", " + this.fullName; }
+    public String getFullName() { return this.lastName + ", " + this.firstName; }
 
     public String getEmail() {
         return this.email;

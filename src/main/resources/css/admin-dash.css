@@ -314,3 +314,55 @@
     -fx-border-color: #FE6C01;
     -fx-text-fill: white;
 }
+
+.sales-chart .chart-series-line {
+    -fx-stroke: #FE6C01;
+    -fx-stroke-width: 2px;
+}
+
+.sales-chart .chart-line-symbol {
+    -fx-background-color: #FE6C01, white;
+    -fx-background-radius: 5px;
+    -fx-padding: 4px;
+}
+
+.sales-chart .chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.sales-chart .chart-title {
+    -fx-font-size: 16;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FE6C01;
+}
+
+.sales-chart .axis-label {
+    -fx-font-size: 15;
+    -fx-font-weight: bold;
+    -fx-text-fill: #808080;
+}
+
+.sales-chart .axis:bottom .axis-tick-mark,
+.sales-chart .axis:left .axis-tick-mark {
+    -fx-stroke: #808080;
+}
+
+.sales-chart .chart-vertical-grid-lines {
+    -fx-stroke: #E0E0E0;
+    -fx-stroke-dash-array: 4 4;
+}
+
+.sales-chart .chart-horizontal-grid-lines {
+    -fx-stroke: #E0E0E0;
+    -fx-stroke-dash-array: 4 4;
+}
+
+.sales-chart .axis {
+    -fx-tick-label-fill: #808080;
+}
+
+/*.sales-chart .axis .tick-label {*/
+/*    -fx-fill: #808080 !important;*/
+/*    -fx-font-size: 11px;*/
+/*    -fx-font-family: "Arial";*/
+/*}*/

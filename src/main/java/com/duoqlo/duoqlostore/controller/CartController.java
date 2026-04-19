@@ -130,7 +130,6 @@ public class CartController {
     }
 
     public boolean handleOrder(double totalPrice, int totalItems) {
-        // Order
         Order order = new Order();
         order.setUserId(user.getId());
         order.setTotalItems(totalItems);
@@ -147,6 +146,7 @@ public class CartController {
 
         int orderId = order.getOrderId();
         boolean allSuccessful = true;
+        System.out.println(cartItemList.size());
 
         // Order Item
         for (CartItem cartItem: cartItemList) {
@@ -155,7 +155,7 @@ public class CartController {
                 allSuccessful = false;
             }
 
-            boolean deductSuccessful = productDAO.deductStock(cartItem.getProductSizeId(), cartItem.getProductQuantity());
+            boolean deductSuccessful = productDAO.processOrder(cartItem.getProductSizeId(), cartItem.getProductQuantity());
             if (!deductSuccessful) {
                 allSuccessful = false;
             }

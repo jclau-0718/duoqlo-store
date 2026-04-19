@@ -19,6 +19,7 @@ module com.duoqlo.duoqlostore {
     requires eu.hansolo.tilesfx;
     requires java.desktop;
     requires java.xml.crypto;
+    requires javafx.swing;
 
     exports com.duoqlo.duoqlostore;
     opens com.duoqlo.duoqlostore to javafx.fxml;
