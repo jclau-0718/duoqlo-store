@@ -430,28 +430,27 @@
     -fx-opacity: 0.45;
 }
 
-.primary-button, .secondary-button {
-    -fx-font-family: Arial;
-    -fx-font-size: 14px;
-    -fx-border-radius: 5;
-    -fx-background-radius: 5;
-    -fx-padding: 10 20;
-    /*-fx-font-weight: bold;*/
-}
+/*.primary-button, .secondary-button {*/
+/*    -fx-font-family: Arial;*/
+/*    -fx-font-size: 14px;*/
+/*    -fx-border-radius: 5;*/
+/*    -fx-background-radius: 5;*/
+/*    -fx-padding: 10 20;*/
+/*}*/
 
-.primary-button {
-    -fx-background-color: #FE6C01;          /* orange color */
-    -fx-border-color: #FE6C01;
-    -fx-text-fill: white;
-    -fx-cursor: hand;
-}
+/*.primary-button {*/
+/*    -fx-background-color: #FE6C01;          !* orange color *!*/
+/*    -fx-border-color: #FE6C01;*/
+/*    -fx-text-fill: white;*/
+/*    -fx-cursor: hand;*/
+/*}*/
 
-.secondary-button {
-    -fx-background-color: transparent;
-    -fx-border-color: #FE6C01;
-    -fx-cursor: hand;
-    -fx-text-fill: #FE6C01;
-}
+/*.secondary-button {*/
+/*    -fx-background-color: transparent;*/
+/*    -fx-border-color: #FE6C01;*/
+/*    -fx-cursor: hand;*/
+/*    -fx-text-fill: #FE6C01;*/
+/*}*/
 
 .right-button, .left-button {
     -fx-background-color: #DEDEDE;

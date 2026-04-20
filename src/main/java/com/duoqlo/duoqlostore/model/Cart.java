@@ -25,11 +25,11 @@ public class Cart {
         for (CartItem cartItem: cartDAO.getCartItems(cartId)) {
             cartItemList.add(cartItem);
         }
-
-//        System.out.println(cartItemList);
     }
 
     public int getCartId() { return this.cartId; }
+
+    public String getLastUpdatedDate() { return this.lastUpdatedDate; }
 
     public void addCartItem(CartItem cartItem) { cartItemList.add(cartItem); }
 

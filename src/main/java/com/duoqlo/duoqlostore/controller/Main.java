@@ -13,7 +13,7 @@ public class Main extends Application {
 
         //LogIn Page
         LogInPage logInPage = new LogInPage();
-        UserDashboard userDash = new UserDashboard();
+//        UserDashboard userDash = new UserDashboard();
         SignUpPage signUpPage = new SignUpPage();
         AdminDashboard adminDash = new AdminDashboard(new AdminDashController());
 
@@ -21,7 +21,7 @@ public class Main extends Application {
         TableCreator.createTable();
 
         stage.setTitle("DUOQLO");
-        Navigator.goTo(logInPage.initialize());
+        Navigator.goTo(adminDash.initialize());
         stage.show();
         stage.centerOnScreen();
         stage.setMaximized(true);

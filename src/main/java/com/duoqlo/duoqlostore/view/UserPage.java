@@ -1,7 +1,9 @@
 package com.duoqlo.duoqlostore.view;
 
 import com.duoqlo.duoqlostore.AppConfig;
+import com.duoqlo.duoqlostore.controller.CartController;
 import com.duoqlo.duoqlostore.controller.Navigator;
+import com.duoqlo.duoqlostore.controller.UserDashController;
 import com.duoqlo.duoqlostore.model.User;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -29,6 +31,8 @@ public abstract class UserPage extends ApplicationPage {
     public abstract void openOrdersPage();
     public abstract void openProfilePage();
 
+    protected UserDashController dashController;
+
     protected StackPane header;
     protected TextField searchField;
     protected HBox searchBar;
@@ -40,9 +44,11 @@ public abstract class UserPage extends ApplicationPage {
 
     protected int iconSize = 19;
 
-    public UserPage(){
+    public UserPage(User user){
         this.searchField = createSearchField();
         this.searchBar = createSearchBar();
+
+        dashController = new UserDashController(user);
     }
 
     public void addToolTip(Node node, String text) {
@@ -72,7 +78,7 @@ public abstract class UserPage extends ApplicationPage {
         logoButton.setGraphic(logoView);
         logoButton.getStyleClass().add("logo-button");
         logoButton.setOnAction(e -> {
-            Navigator.openDashboard(getUser());
+            Navigator.openUserDashboard(this.dashController);
         });
 
         middleHBox.setMaxWidth(Region.USE_PREF_SIZE);
@@ -153,13 +159,14 @@ public abstract class UserPage extends ApplicationPage {
 
         label.setStyle("""
             -fx-text-fill: black;
-            -fx-font-size: 12px;
+            -fx-font-size: 13;
             -fx-underline: false;
             """);
 
         label.setOnMouseEntered(e -> {
             label.setStyle(String.format("""
                 -fx-text-fill: %s;
+                -fx-font-weight: bold;
                 -fx-underline: true;
                 -fx-cursor: hand;
                 """, hexColor));
@@ -168,6 +175,7 @@ public abstract class UserPage extends ApplicationPage {
         label.setOnMouseExited(e -> {
             label.setStyle("""
                 -fx-text-fill: black;
+                -fx-font-weight: normal;
                 -fx-underline: false;
                 """);
         });
@@ -209,20 +217,14 @@ public abstract class UserPage extends ApplicationPage {
         deleteAccBox.setAlignment(Pos.CENTER_LEFT);
 
         // Logout button
-        Button logoutButton = new Button("Log Out");
+        Button logoutButton = new PrimaryButton("Log Out");
         logoutButton.setMaxWidth(90);
         logoutButton.setMaxHeight(10);
-        logoutButton.setStyle("""
-                -fx-font-family: Arial;
-                -fx-font-size: 12;
-                -fx-border-radius: 5;
-                -fx-border-width: 2;
-                -fx-background-color: #FE6C01;          /* orange color */
-                -fx-border-color: #FE6C01;
-                -fx-text-fill: white;
-                -fx-cursor: hand;
-                -fx-padding: 5;
-                """);
+//        logoutButton.setStyle("""
+////                -fx-font-size: 12;
+////                -fx-padding: 5;
+////                -fx-border-color: red;
+//                """);
 
         logoutButton.setOnAction(e -> {
             Navigator.goTo(new LogInPage().initialize());

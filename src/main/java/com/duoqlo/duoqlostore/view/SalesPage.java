@@ -4,13 +4,16 @@
     import com.duoqlo.duoqlostore.model.FilterBy;
     import com.duoqlo.duoqlostore.model.Freq;
     import com.duoqlo.duoqlostore.model.SalesRecord;
+    import com.duoqlo.duoqlostore.model.User;
     import javafx.beans.property.SimpleDoubleProperty;
     import javafx.beans.property.SimpleIntegerProperty;
     import javafx.beans.property.SimpleStringProperty;
     import javafx.beans.value.ChangeListener;
     import javafx.collections.FXCollections;
     import javafx.collections.ObservableList;
+    import javafx.geometry.Insets;
     import javafx.geometry.Pos;
+    import javafx.geometry.VPos;
     import javafx.scene.chart.*;
     import javafx.scene.control.*;
     import javafx.scene.layout.*;
@@ -28,10 +31,14 @@
         public SalesTableView(FilterBy filter, Freq frequency) {
             this.filter = filter;
             this.frequency = frequency;
-    
+
             setLabelTitle();
     
             buildColumns();
+        }
+
+        public void setOnDataChanged(Runnable onDataChanged) {
+            this.onDataChanged = onDataChanged;
         }
     
         private void setLabelTitle() {
@@ -62,6 +69,12 @@
             getColumns().clear();
             buildColumns();
         }
+
+        private <T> void setColWidth(TableColumn<SalesRecord, T> column, int width) {
+            column.setMinWidth(width);
+            column.setPrefWidth(width);
+            column.setMaxWidth(width);
+        }
     
         private void buildColumns() {
             TableColumn<SalesRecord, String> labelCol = new TableColumn<>(labelTitle);
@@ -91,6 +104,8 @@
             TableColumn<SalesRecord, Integer> ordersCol = new TableColumn<>("Orders");
             ordersCol.setCellValueFactory(data ->
                     new SimpleIntegerProperty(data.getValue().getOrders()).asObject());
+
+            setColWidth(labelCol, 200);
     
             getColumns().addAll(labelCol, revenueCol, itemsSoldCol, ordersCol);
     
@@ -118,46 +133,57 @@
     
             if (onDataChanged != null) onDataChanged.run();
         }
-    
-        public void setOnDataChanged(Runnable callback) {
-            this.onDataChanged = callback;
-        }
     }
     
     public class SalesPage extends ApplicationPage {
         private AdminDashController controller;
-    
-        private VBox displayBox;
-    
+
+        private GridPane contentGrid;
+
+        private VBox tableDisplayBox = new VBox();
+        private SalesTableView salesTable;
+
         //Filter Group
         private ToggleGroup filterGroup;
         private ToggleButton genderButton;
         private ToggleButton categoryButton;
-    
+
         private FilterBy currentFilter = FilterBy.NONE;
-    
+
         //Frequency Group
         private ToggleGroup freqGroup;
         private ToggleButton dailyButton;
         private ToggleButton weeklyButton;
         private ToggleButton monthlyButton;
-    
-        private Freq currentFreq = Freq.NONE;
-    
-        private ComboBox<String> filterCombo;
-    
-        private SalesTableView salesTable;
 
+        private Freq currentFreq = Freq.NONE;
+
+        private ComboBox<String> filterCombo;
+
+        private VBox chartBox;
         private XYChart<String, Number> revenueChart;
         private XYChart<String, Number> itemsChart;
         private XYChart<String, Number> ordersChart;
-        private VBox chartBox;
-    
+
+        private Runnable updateTitle;
+
+        private String title = "";
+
         public SalesPage(AdminDashController controller) {
             this.controller = controller;
         }
-    
-        public HBox getFilterSection() {
+
+        public void setUpdateTitle(Runnable updateTitle) {
+            this.updateTitle = updateTitle;
+        }
+
+        public void setTitle(String title) { this.title = title; }
+
+        public FilterBy getCurrentFilter() { return this.currentFilter; }
+
+        public Freq getCurrentFreq() { return this.currentFreq; }
+
+        public HBox buildFilterSection() {
             int filterButtonWidth = 120;
             int freqButtonWidth = 80;
     
@@ -197,6 +223,8 @@
                         showFrequencyTable(currentFreq);
                     }
                 }
+
+                updateTitle.run();
             });
     
             categoryButton = new ToggleButton("By Categories");
@@ -231,6 +259,8 @@
                         showFrequencyTable(currentFreq);
                     }
                 }
+
+                updateTitle.run();
             });
     
             genderButton.setToggleGroup(filterGroup);
@@ -267,6 +297,8 @@
                         showFilterTable(currentFilter);
                     }
                 }
+
+                updateTitle.run();
             });
     
             weeklyButton = new ToggleButton("Weekly");
@@ -299,6 +331,8 @@
                         showFilterTable(currentFilter);
                     }
                 }
+
+                updateTitle.run();
             });
     
             monthlyButton = new ToggleButton("Monthly");
@@ -331,6 +365,8 @@
                         showFilterTable(currentFilter);
                     }
                 }
+
+                updateTitle.run();
             });
     
             dailyButton.setToggleGroup(freqGroup);
@@ -351,10 +387,10 @@
     
             HBox frequencyBox = new HBox(10);
             frequencyBox.getChildren().addAll(dailyButton, weeklyButton, monthlyButton);
-    
+
             HBox filterSection = new HBox(40);
             filterSection.getChildren().addAll(filterBox, frequencyBox);
-    
+
             return filterSection;
         }
     
@@ -429,44 +465,67 @@
         };
     
         private void showFilterCombo() {
-            displayBox.getChildren().remove(filterCombo);
+            tableDisplayBox.getChildren().remove(filterCombo);
     
             filterCombo = new ComboBox<>();
     
-            if(!displayBox.getChildren().contains(filterCombo)) {
-                displayBox.getChildren().add(0, filterCombo);
+            if(!tableDisplayBox.getChildren().contains(filterCombo)) {
+                tableDisplayBox.getChildren().add(0, filterCombo);
             }
     
             setupFilerCombo();
         }
     
         private void hideFilterCombo() {
-            displayBox.getChildren().remove(filterCombo);
+            tableDisplayBox.getChildren().remove(filterCombo);
+        }
+
+        private void fitTableHeight(TableView<?> table) {
+            double headerHeight = 42.6;
+            double rowHeight = 41.6;
+            int rowCount = table.getItems().size();
+
+            double totalHeight = headerHeight + (rowHeight * rowCount);
+
+            table.setMinHeight(totalHeight);
+            table.setPrefHeight(totalHeight);
+            table.setMaxHeight(totalHeight);
         }
     
         private void showTable() {
             salesTable = new SalesTableView(currentFilter, currentFreq);
             salesTable.setData(controller.getDailySales());
+            fitTableHeight(salesTable);
+
             currentFilter = FilterBy.NONE;
             currentFreq = Freq.DAILY;
-    
-            displayBox.getChildren().clear();
-            displayBox.getChildren().add(salesTable);
+
+            salesTable.setOnScroll(event -> event.consume());
+
+            tableDisplayBox.getStyleClass().add("display-box");
+            tableDisplayBox.setMaxHeight(Region.USE_PREF_SIZE);
+            tableDisplayBox.setAlignment(Pos.TOP_CENTER);
+            tableDisplayBox.getChildren().clear();
+            tableDisplayBox.getChildren().add(salesTable);
         }
     
-        private Button buildExportButton() {
+        public Button buildExportButton() {
             FontIcon pdfIcon = new FontIcon("far-file-pdf");
             pdfIcon.setIconSize(16);
             pdfIcon.setIconColor(Color.WHITE);
     
-            Button exportButton = new Button("Export as PDF", pdfIcon);
+            Button exportButton = new Button("Export to PDF", pdfIcon);
             exportButton.getStyleClass().add("orange-button");
             exportButton.setOnAction(e -> {
                 Stage stage = (Stage) exportButton.getScene().getWindow();
 
                 ExportPDF pdfExporter = new ExportPDF();
+                pdfExporter.setTitle(this.title);
+                if(tableDisplayBox.getChildren().contains(filterCombo)) {
+                    pdfExporter.setSubTitle(filterCombo.getValue());
+                }
 
-                pdfExporter.exportPDFWithChooser(stage, controller.getSales(), "test",
+                pdfExporter.exportPDFWithChooser(stage, controller.getSales(),
                         revenueChart, itemsChart, ordersChart);
             });
     
@@ -569,8 +628,6 @@
                 chartBox = new VBox(20); // create only once
             }
 
-            System.out.println(currentFilter);
-            System.out.println(currentFreq);
             if (currentFreq.equals(Freq.NONE)) {
                 String title;
 
@@ -595,12 +652,30 @@
             itemsChart.getStyleClass().add("sales-chart");
             ordersChart.getStyleClass().add("sales-chart");
 
+            chartBox.getStyleClass().add("display-box");
             chartBox.getChildren().setAll(revenueChart, itemsChart, ordersChart);
+        }
+
+        private void buildContentGrid() {
+            contentGrid = new GridPane();
+            contentGrid.setHgap(30);
+
+            contentGrid.add(tableDisplayBox, 0, 0);
+            contentGrid.add(chartBox, 1, 0);
+
+            ColumnConstraints col1 = new ColumnConstraints();
+            col1.setPercentWidth(50);
+
+            ColumnConstraints col2 = new ColumnConstraints();
+            col2.setPercentWidth(50);
+
+            contentGrid.getColumnConstraints().addAll(col1, col2);
+            GridPane.setValignment(tableDisplayBox, VPos.TOP);
+            GridPane.setMargin(tableDisplayBox, new Insets(0, 0, 0, 22));
+            GridPane.setMargin(chartBox, new Insets(0, 22, 0, 0));
         }
     
         public VBox getContent() {
-            displayBox = new VBox();
-
             showTable();
             initCharts();
             buildCharts(salesTable.getItems());
@@ -609,12 +684,13 @@
             salesTable.setOnDataChanged(() -> {
                 initCharts();
                 buildCharts(salesTable.getItems());
+                fitTableHeight(salesTable);
             });
-    
-            Button exportButton = buildExportButton();
-    
+
+            buildContentGrid();
+
             VBox bodyVBox = new VBox(10);
-            bodyVBox.getChildren().addAll(displayBox, chartBox, exportButton);
+            bodyVBox.getChildren().addAll(contentGrid);
             bodyVBox.setAlignment(Pos.CENTER);
     
             return bodyVBox;

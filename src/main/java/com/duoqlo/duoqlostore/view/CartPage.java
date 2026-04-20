@@ -143,8 +143,7 @@ class CartRow extends BorderPane {
         Label subTotalValueLabel = new Label(String.format("RM %.2f", subTotal));
         subTotalValueLabel.getStyleClass().add("subtotal-value");
 
-        Button removeButton = new Button("REMOVE");
-        removeButton.getStyleClass().add("remove-button");
+        Button removeButton = new PrimaryButton("Remove");
         removeButton.setOnAction(e -> {
             if(onRemoveCallBack != null) {
                 onRemoveCallBack.run();
@@ -176,7 +175,7 @@ public class CartPage extends UserPage{
     private double total;
 
     public CartPage(CartController controller) {
-        super();
+        super(controller.getUser());
         this.controller = controller;
 
         totalItems = controller.getTotalItems();
@@ -316,8 +315,7 @@ public class CartPage extends UserPage{
     }
 
     public Button buildCheckoutButton() {
-        Button checkoutButton = new Button("CHECKOUT");
-        checkoutButton.getStyleClass().add("checkout-button");
+        Button checkoutButton = new PrimaryButton("Checkout");
         checkoutButton.setOnAction(e -> {
             alert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
 
@@ -346,7 +344,25 @@ public class CartPage extends UserPage{
     }
 
     private HBox buildContentBox() {
+        String dateText = "Last updated: " + controller.getLastUpdatedDate();
+        Label dateLabel = new Label(dateText);
+        dateLabel.setStyle("-fx-font-size: 13");
+
+        Button emptyCartButton = new PrimaryButton("Empty Cart");
+        emptyCartButton.setOnAction(e -> {
+            controller.cleanup();
+
+            refreshPage();
+        });
+
+        BorderPane topPane = new BorderPane();
+        topPane.setLeft(dateLabel);
+        topPane.setRight(emptyCartButton);
+
         ScrollPane itemBox = buildItemBox();
+
+        VBox itemSection = new VBox(15);
+        itemSection.getChildren().addAll(topPane, itemBox);
 
         Button checkoutButton = buildCheckoutButton();
 
@@ -354,10 +370,10 @@ public class CartPage extends UserPage{
         summarySection.setAlignment(Pos.TOP_CENTER);
         VBox.setMargin(checkoutButton, new Insets(10, 0, 0, 0));
 
-        HBox contentBox = new HBox(itemBox, summarySection);
+        HBox contentBox = new HBox(itemSection, summarySection);
         contentBox.setAlignment(Pos.CENTER);
         contentBox.getStyleClass().add("content-box");
-        HBox.setMargin(itemBox, new Insets(0, 10, 0, 30));
+        HBox.setMargin(itemSection, new Insets(0, 10, 0, 30));
         HBox.setMargin(summarySection, new Insets(0, 30, 10, 30));
 
         return contentBox;

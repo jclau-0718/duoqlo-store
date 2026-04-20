@@ -211,8 +211,7 @@ class OrderCard extends VBox {
         HBox footerShipFeeBox = new HBox(shippingFeeLabel, shippingFeeValue);
         HBox footerTotalBox = new HBox(totalLabel, totalValue);
 
-        Button cancelButton = new Button("Cancel");
-        cancelButton.getStyleClass().add("cancel-button");
+        Button cancelButton = new PrimaryButton("Cancel Order");
         cancelButton.setOnAction(e -> cancelOrder.run());
 
         BorderPane bottomPane = new BorderPane();
@@ -260,6 +259,8 @@ public class OrderPage extends UserPage {
     private HBox cardSection;
 
     public OrderPage(OrderController controller) {
+        super(controller.getUser());
+
         this.controller = controller;
     }
 

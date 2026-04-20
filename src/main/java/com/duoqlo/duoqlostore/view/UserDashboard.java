@@ -109,12 +109,8 @@ public class UserDashboard extends UserPage {
     private boolean isSizesSelected = false;
     private boolean[] isDisabled = {false};
 
-    public UserDashboard() {
-        super();
-    }
-
     public UserDashboard(UserDashController controller) {
-        super();
+        super(controller.getUser());
         this.controller = controller;
     }
 
@@ -836,8 +832,8 @@ public class UserDashboard extends UserPage {
         quantityPane.setLeft(quantityBox);
         quantityPane.setRight(qtyErrorLabel);
 
-        Button addToCartButton = new Button("Add to Cart");
-        addToCartButton.getStyleClass().add("primary-button");
+        PrimaryButton addToCartButton = new PrimaryButton("Add to Cart");
+        addToCartButton.setFontSize(16);
         addToCartButton.setOnAction(e -> {
             if(!isSizesSelected) {
                 stockLabel.setText("Size is required.");
@@ -860,8 +856,8 @@ public class UserDashboard extends UserPage {
             closeExpandedCard();
         });
 
-        Button continueButton = new Button("Continue Shopping");
-        continueButton.getStyleClass().add("secondary-button");
+        SecondaryButton continueButton = new SecondaryButton("Continue Shopping");
+        continueButton.setFontSize(16);
         continueButton.setOnAction(e -> closeExpandedCard());
 
         HBox buttonBox = new HBox(15, addToCartButton, continueButton);
@@ -920,8 +916,6 @@ public class UserDashboard extends UserPage {
                 }
             }
         }
-
-        Label test = new Label("test");
 
         VBox contentBox = new VBox(5);
         contentBox.getChildren().addAll(

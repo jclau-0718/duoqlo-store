@@ -845,9 +845,10 @@ public class ProductDAO {
     }
 
     public boolean updateCategory(String categoryId, String categoryName, String genderId) {
+        System.out.println("In product dao:" + categoryName);
         String sql = """
                 UPDATE category
-                SET category_name = ? AND gender_id = ?
+                SET category_name = ?, gender_id = ?
                 WHERE category_id = ?;
                 """;
 

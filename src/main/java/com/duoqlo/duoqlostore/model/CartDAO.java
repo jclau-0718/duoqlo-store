@@ -10,7 +10,7 @@ import java.util.List;
 public class CartDAO {
     public Cart createCart(int userId) {
         String sql = """
-                INSERT INTO cart(user_id) 
+                INSERT INTO cart(user_id)
                 VALUES (?);
                 """;
 
@@ -133,6 +133,57 @@ public class CartDAO {
         return false;
     }
 
+    public boolean prodSizeExist(int prodSizeId) {
+        String sql = """
+                SELECT 1 FROM cartitem
+                WHERE productsize_id = ?
+                LIMIT 1
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, prodSizeId);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            return rs.next();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean updateCartItem(int prodSizeId, int quantity, double subTotal) {
+        String sql = """
+                UPDATE cartitem
+                SET product_quantity = product_quantity + ?, 
+                    sub_total = sub_total+ ?, 
+                    added_date = datetime('now', 'localtime')
+                WHERE productsize_id = ?;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, quantity);
+            pstmt.setDouble(2, subTotal);
+            pstmt.setInt(3, prodSizeId);
+
+            int affectedRows = pstmt.executeUpdate();
+
+            return affectedRows > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
     public boolean insertCartItem(CartItem cartItem) {
         int cartId = cartItem.getCartId();
         int productSizeId = cartItem.getProductSizeId();
@@ -161,6 +212,24 @@ public class CartDAO {
         }
 
         return false;
+    }
+
+    public void updateCartLastUpdated(int cartId) {
+        String sql = """
+            UPDATE cart
+            SET last_updated = datetime('now', 'localtime')
+            WHERE cart_id = ?
+            """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, cartId);
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean removeCartItem(int prodSizeId) {

@@ -6,7 +6,6 @@ import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.layout.*;
 import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.*;
-import com.itextpdf.layout.properties.BorderRadius;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.kernel.font.*;
 import com.itextpdf.io.font.constants.StandardFonts;
@@ -19,7 +18,6 @@ import com.itextpdf.io.image.ImageData;
 import com.itextpdf.layout.element.Image;
 
 import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
@@ -40,6 +38,9 @@ public class ExportPDF {
     private PdfFont bold;
     private PdfFont normal;
 
+    private String titleText = "SALES REPORT";
+    private String subTitleText = "NONE";
+
     public ExportPDF() {
         try {
             bold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
@@ -49,6 +50,22 @@ public class ExportPDF {
         }
     }
 
+    public void setTitle(String text) { this.titleText = text; }
+
+    public void setSubTitle(String text) { this.subTitleText = text; }
+
+    private Table createTitleTable(Cell leftCell, Cell rightCell) {
+        float[] metaWidths = {220f, 1};
+        Table metaTable = new Table(metaWidths).useAllAvailableWidth();
+
+        metaTable.addCell(leftCell);
+
+        metaTable.addCell(rightCell);
+
+        metaTable.setMarginBottom(10);
+
+        return metaTable;
+    }
     private Table createMetaTable(Cell leftCell, Cell rightCell) {
         float[] metaWidths = {1, 1};
         Table metaTable = new Table(metaWidths).useAllAvailableWidth();
@@ -68,15 +85,17 @@ public class ExportPDF {
         ImageData imageData = ImageDataFactory.create(url);
 
         Image image = new Image(imageData);
-        image.setWidth(100);
-        image.setAutoScale(true);
+        image.setWidth(200);
+        image.setMinWidth(200);
+        image.setMaxWidth(200);
+//        image.setAutoScale(true);
 
         Cell imageCell = new Cell().add(image);
         imageCell.setBorder(Border.NO_BORDER);
         imageCell.setPaddingRight(15);
         imageCell.setVerticalAlignment(VerticalAlignment.MIDDLE);
 
-        Paragraph title = new Paragraph("SALES REPORT");
+        Paragraph title = new Paragraph(titleText);
         title.setFont(bold);
         title.setFontSize(20);
         title.setMarginBottom(0);
@@ -84,15 +103,9 @@ public class ExportPDF {
 
         DeviceRgb gray = new DeviceRgb(176, 176, 176);
 
-        Paragraph subTitle = new Paragraph("ROUND-NECK SHIRT");
-        subTitle.setFont(bold);
-        subTitle.setFontSize(18);
-        subTitle.setMarginTop(2);
-        subTitle.setFontColor(gray);
-        subTitle.setTextAlignment(TextAlignment.LEFT);
-
         SolidLine lineDrawer = new SolidLine();
         lineDrawer.setColor(orange);
+        lineDrawer.setLineWidth(2f);
 
         LineSeparator line = new LineSeparator(lineDrawer);
         line.setMarginTop(2);
@@ -100,12 +113,23 @@ public class ExportPDF {
 
         Cell titleCell = new Cell();
         titleCell.add(title);
-        titleCell.add(subTitle);
+
+        if(!subTitleText.equals("NONE")) {
+            Paragraph subTitle = new Paragraph(subTitleText);
+            subTitle.setFont(bold);
+            subTitle.setFontSize(18);
+            subTitle.setMarginTop(2);
+            subTitle.setFontColor(gray);
+            subTitle.setTextAlignment(TextAlignment.LEFT);
+
+            titleCell.add(subTitle);
+        }
+
         titleCell.add(line);
         titleCell.setBorder(Border.NO_BORDER);
         titleCell.setPaddingLeft(15);
 
-        Table header = createMetaTable(imageCell, titleCell);
+        Table header = createTitleTable(imageCell, titleCell);
 
         return header;
     }
@@ -132,7 +156,6 @@ public class ExportPDF {
         return info;
     }
 
-
     private Cell styledCell(String text, PdfFont font, DeviceRgb bgColor) {
         return new Cell()
                 .add(new Paragraph(text).setFont(font))
@@ -141,7 +164,7 @@ public class ExportPDF {
                 .setBorder(Border.NO_BORDER);
     }
 
-    public void export(ObservableList<SalesRecord> salesData, String filterLabel, String outputPath,
+    public void export(ObservableList<SalesRecord> salesData, String outputPath,
                        XYChart<String, Number> revenueChart,
                        XYChart<String, Number> itemsChart,
                        XYChart<String, Number> ordersChart) {
@@ -240,7 +263,7 @@ public class ExportPDF {
 
 
 
-    public void exportPDFWithChooser(Stage stage, ObservableList<SalesRecord> salesData, String filterLabel,
+    public void exportPDFWithChooser(Stage stage, ObservableList<SalesRecord> salesData,
                                      XYChart<String, Number> revenueChart,
                                      XYChart<String, Number> itemsChart,
                                      XYChart<String, Number> ordersChart) {
@@ -269,7 +292,7 @@ public class ExportPDF {
                 path += ".pdf";
             }
 
-            export(salesData, filterLabel, path, revenueChart, itemsChart, ordersChart);
+            export(salesData, path, revenueChart, itemsChart, ordersChart);
         }
     }
 }

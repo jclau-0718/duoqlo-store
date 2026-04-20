@@ -457,7 +457,9 @@ class ProductTableView extends TableView<Product> {
         setColWidth(idCol, 50);
         setColWidth(nameCol, 200);
         setColWidth(priceRangeCol, 150);
+        setColWidth(stockCol, 90);
         setColWidth(statusCol, 110);
+        setColWidth(actionsCol, 200);
     }
 
     private <T> void setColWidth(TableColumn<Product, T> column, int width) {
@@ -484,7 +486,7 @@ public class AdminDashboard extends ApplicationPage {
     private StatCard revenueStatCard;
 
     private BorderPane buttonPane;
-    private Button addButton = new Button();
+    private Button addButton = new PrimaryButton();
     private Button backButton;
     private VBox mainTableBox = new VBox();
 
@@ -493,12 +495,14 @@ public class AdminDashboard extends ApplicationPage {
 
     private GridPane genderCategoryGrid;
     private VBox genderTableBox = new VBox();
+    private Button backGenderButton;
     private TableView<Gender> genderTable;
     private TextField genderIdField;
     private TextField genderField;
 
     private VBox categoryTableBox = new VBox();
     private TableView<Category> categoryTable;
+    private Button backCatButton;
     private TextField categoryIdField;
     private TextField categoryNameField;
     private ComboBox<Gender> categoryGenderCombo;
@@ -507,6 +511,7 @@ public class AdminDashboard extends ApplicationPage {
     private VBox detailBox;
 
     private HBox salesFilterSection;
+    private Button exportButton;
 
     private VBox bodyVBox;
     private StackPane body;
@@ -544,8 +549,10 @@ public class AdminDashboard extends ApplicationPage {
         labelBox.setMaxWidth(Region.USE_PREF_SIZE);
 
         //RIGHT
-        Button logOutButton = new Button("LOG OUT");
-        logOutButton.getStyleClass().add("logout-button");
+        PrimaryButton logOutButton = new PrimaryButton("LOG OUT");
+        logOutButton.setFontSize(18);
+        logOutButton.setRadius(10);
+//        logOutButton.getStyleClass().add("logout-button");
         System.out.println(logOutButton.getStyleClass());
         logOutButton.setOnAction(e -> Navigator.goTo(new LogInPage().initialize()));
 
@@ -606,28 +613,6 @@ public class AdminDashboard extends ApplicationPage {
         return cardGrid;
     }
 
-    private void buildSalesPage() {
-        setTitleLabel("SALES");
-
-        SalesPage salesPage = new SalesPage(this.controller);
-
-        salesFilterSection = salesPage.getFilterSection();
-
-        hideAddButton();
-        buttonPane.setLeft(salesFilterSection);
-
-        mainTableBox.getChildren().clear();
-        mainTableBox.getChildren().add(salesPage.getContent());
-
-        removeGendersCategories();
-    }
-
-    private void removeSalesFilter() {
-        if (buttonPane.getLeft() == salesFilterSection) {
-            buttonPane.setLeft(null);
-        }
-    }
-
     private HBox buildTableTitle(Label titleLabel) {
         titleLabel.getStyleClass().add("title");
 
@@ -653,15 +638,45 @@ public class AdminDashboard extends ApplicationPage {
         titleLabel.setText(title);
     }
 
+    private Button buildBackButton() {
+        FontIcon backIcon = new FontIcon("far-caret-square-left");
+        backIcon.setIconSize(16);
+        backIcon.setIconColor(Color.web("#A1A1A1"));
+        backButton = new Button("Back To Table", backIcon);
+        backButton.getStyleClass().add("back-button");
+        backButton.setVisible(false);
+
+        return backButton;
+    }
+
     private void showButtonBox(String buttonText) {
+        if(buttonPane.getRight() == null) {
+            buttonPane.setRight(addButton);
+        }
+
         addButton.setText(buttonText);
         addButton.setVisible(true);
         addBtnWasVisible = true;
     }
 
     private void hideAddButton() {
+        if(buttonPane.getRight() == exportButton) {
+            buttonPane.setRight(null);
+        }
         addButton.setVisible(false);
         addBtnWasVisible = false;
+    }
+
+    private void fitTableHeight(TableView<?> table) {
+        double headerHeight = 42.6;
+        double rowHeight = 50;
+        int rowCount = table.getItems().size();
+
+        double totalHeight = headerHeight + (rowHeight * rowCount);
+
+        table.setMinHeight(totalHeight);
+        table.setPrefHeight(totalHeight);
+        table.setMaxHeight(totalHeight);
     }
 
     private void showCustomerTable() {
@@ -673,6 +688,7 @@ public class AdminDashboard extends ApplicationPage {
         ObservableList<User> customers = controller.getCustomers();
 
         customerTable.setItems(customers);
+        fitTableHeight(customerTable);
 
         mainTableBox.getChildren().clear();
         mainTableBox.getChildren().add(customerTable);
@@ -686,7 +702,9 @@ public class AdminDashboard extends ApplicationPage {
 
         setTitleLabel("CUSTOMERS");
 
-        removeSalesFilter();
+        switchBodyLastNode(mainTableBox);
+
+        removeSalesAction();
 
         showButtonBox("+ Add Customer");
         addButton.setOnAction(ae -> {
@@ -708,7 +726,7 @@ public class AdminDashboard extends ApplicationPage {
                 getClass().getResource("/css/signup-page.css").toExternalForm()
             );
 
-            switchDisplayBox(content);
+            switchMainTableBox(content);
         });
 
         showCustomerTable();
@@ -724,6 +742,7 @@ public class AdminDashboard extends ApplicationPage {
         ObservableList<User> admins = controller.getAdmins();
 
         adminTable.setItems(admins);
+        fitTableHeight(adminTable);
 
         mainTableBox.getChildren().clear();
         mainTableBox.getChildren().add(adminTable);
@@ -737,7 +756,9 @@ public class AdminDashboard extends ApplicationPage {
 
         setTitleLabel("ADMINS");
 
-        removeSalesFilter();
+        switchBodyLastNode(mainTableBox);
+
+        removeSalesAction();
 
         showButtonBox("+ Add Admin");
         addButton.setOnAction(ae -> {
@@ -759,7 +780,7 @@ public class AdminDashboard extends ApplicationPage {
                     getClass().getResource("/css/signup-page.css").toExternalForm()
             );
 
-            switchDisplayBox(content);
+            switchMainTableBox(content);
         });
 
         showAdminTable();
@@ -773,6 +794,7 @@ public class AdminDashboard extends ApplicationPage {
         ObservableList<Product> products = controller.getProducts();
 
         productTable.setItems(products);
+        fitTableHeight(productTable);
 
         mainTableBox.getChildren().clear();
         mainTableBox.getChildren().add(productTable);
@@ -833,13 +855,14 @@ public class AdminDashboard extends ApplicationPage {
     }
 
     private void showAddGenderForm() {
+        backGenderButton.setVisible(true);
+
         Label titleLabel = new Label("Enter New Gender Details");
         titleLabel.getStyleClass().add("title");
 
         GridPane grid = buildGenderForm();
 
-        Button addButton = new Button("Add");
-        addButton.getStyleClass().add("orange-button");
+        Button addButton = new PrimaryButton("Add");
         addButton.setOnAction(e -> {
             AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
             confirmAlert.show(body, "Confirm to add?", Pos.TOP_CENTER);
@@ -867,14 +890,15 @@ public class AdminDashboard extends ApplicationPage {
     }
 
     private void showUpdateGenderForm() {
+        backGenderButton.setVisible(true);
+
         Label titleLabel = new Label("Enter New Gender Details");
         titleLabel.getStyleClass().add("title");
 
         GridPane grid = buildGenderForm();
         genderIdField.setDisable(true);
 
-        Button updateButton = new Button("Update");
-        updateButton.getStyleClass().add("orange-button");
+        Button updateButton = new PrimaryButton("Update");
         updateButton.setOnAction(e -> {
             AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
             confirmAlert.show(body, "Confirm to update?", Pos.TOP_CENTER);
@@ -905,6 +929,8 @@ public class AdminDashboard extends ApplicationPage {
     }
 
     private void buildGenderTable() {
+        backGenderButton.setVisible(false);
+
         genderTable = new TableView<>();
 
         TableColumn<Gender, String> idCol = new TableColumn<>("ID");
@@ -996,12 +1022,14 @@ public class AdminDashboard extends ApplicationPage {
 
         HBox genderTitleBox = buildTableTitle(genderTitleLabel);
 
-        Button addButton = new Button("+ Add Gender");
-        addButton.setOnAction(e -> showAddGenderForm());
-        addButton.getStyleClass().add("orange-button");
+        backGenderButton = buildBackButton();
 
-        HBox buttonBox = new HBox(addButton);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+        Button addButton = new PrimaryButton("+ Add Gender");
+        addButton.setOnAction(e -> showAddGenderForm());
+
+        BorderPane buttonPane = new BorderPane();
+        buttonPane.setLeft(backGenderButton);
+        buttonPane.setRight(addButton);
 
         buildGenderTable();
 
@@ -1009,11 +1037,19 @@ public class AdminDashboard extends ApplicationPage {
         genderTableBox.setPrefHeight(300);
         genderTableBox.getStyleClass().add("display-box");
 
+        backGenderButton.setOnAction(e -> {
+            genderTableBox.getChildren().clear();
+            genderTableBox.getChildren().add(genderTable);
+
+            backGenderButton.setVisible(false);
+        });
+
         ScrollPane tableScrollPane = new ScrollPane(genderTableBox);
         tableScrollPane.setFitToWidth(true);
 
         VBox genderSection = new VBox(10);
-        genderSection.getChildren().addAll(genderTitleBox, buttonBox, tableScrollPane);
+        genderSection.getChildren().addAll(genderTitleBox, buttonPane, tableScrollPane);
+        VBox.setMargin(buttonPane, new Insets(0, 0, 10, 0));
 
         return genderSection;
     }
@@ -1083,13 +1119,14 @@ public class AdminDashboard extends ApplicationPage {
     }
 
     private void showAddCategoryForm() {
+        backCatButton.setVisible(true);
+
         Label titleLabel = new Label("Enter New Category Details");
         titleLabel.getStyleClass().add("title");
 
         GridPane grid = buildCategoryForm();
 
-        Button addButton = new Button("Add");
-        addButton.getStyleClass().add("orange-button");
+        Button addButton = new PrimaryButton("Add");
         addButton.setOnAction(e -> {
             AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
             confirmAlert.show(body, "Confirm to add?", Pos.TOP_CENTER);
@@ -1119,20 +1156,22 @@ public class AdminDashboard extends ApplicationPage {
 
 
     private void showUpdateCategoryForm() {
+        backCatButton.setVisible(true);
+
         Label titleLabel = new Label("Enter New Category Details");
         titleLabel.getStyleClass().add("title");
 
         GridPane grid = buildCategoryForm();
         categoryIdField.setDisable(true);
 
-        Button updateButton = new Button("Update");
-        updateButton.getStyleClass().add("orange-button");
+        Button updateButton = new PrimaryButton("Update");
         updateButton.setOnAction(e -> {
             AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
             confirmAlert.show(body, "Confirm to update?", Pos.TOP_CENTER);
             confirmAlert.setOnConfirm(() -> {
                 String categoryId = categoryIdField.getText();
                 String newCategoryName = categoryNameField.getText().trim().toUpperCase();
+                System.out.println("In admin dash:" + newCategoryName);
                 String newGenderId = categoryGenderCombo.getValue().getId();
 
                 if (controller.updateCategory(categoryId, newCategoryName, newGenderId)) {
@@ -1159,6 +1198,8 @@ public class AdminDashboard extends ApplicationPage {
     }
 
     private void buildCategoryTable() {
+        backCatButton.setVisible(false);
+
         categoryTable = new TableView<>();
 
         TableColumn<Category, String> idCol = new TableColumn<>("ID");
@@ -1253,12 +1294,14 @@ public class AdminDashboard extends ApplicationPage {
 
         HBox categoryTitleBox = buildTableTitle(categoryTitleLabel);
 
-        Button addButton = new Button("+ Add Category");
-        addButton.getStyleClass().add("orange-button");
+        backCatButton = buildBackButton();
+
+        Button addButton = new PrimaryButton("+ Add Category");
         addButton.setOnAction(e -> showAddCategoryForm());
 
-        HBox buttonBox = new HBox(addButton);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+        BorderPane buttonPane = new BorderPane();
+        buttonPane.setLeft(backCatButton);
+        buttonPane.setRight(addButton);
 
         buildCategoryTable();
 
@@ -1266,11 +1309,19 @@ public class AdminDashboard extends ApplicationPage {
         categoryTableBox.setPrefHeight(300);
         categoryTableBox.getStyleClass().add("display-box");
 
+        backCatButton.setOnAction(e -> {
+            categoryTableBox.getChildren().clear();
+            categoryTableBox.getChildren().add(categoryTable);
+
+            backCatButton.setVisible(false);
+        });
+
         ScrollPane tableScrollPane = new ScrollPane(categoryTableBox);
         tableScrollPane.setFitToWidth(true);
 
         VBox categorySection = new VBox(10);
-        categorySection.getChildren().addAll(categoryTitleBox, buttonBox, tableScrollPane);
+        categorySection.getChildren().addAll(categoryTitleBox, buttonPane, tableScrollPane);
+        VBox.setMargin(buttonPane, new Insets(0, 0, 10, 0));
 
         return categorySection;
     }
@@ -1306,7 +1357,9 @@ public class AdminDashboard extends ApplicationPage {
 
         setTitleLabel("PRODUCTS");
 
-        removeSalesFilter();
+        switchBodyLastNode(mainTableBox);
+
+        removeSalesAction();
 
         showButtonBox("+ Add Product");
         addButton.setOnAction(ae -> {
@@ -1320,7 +1373,7 @@ public class AdminDashboard extends ApplicationPage {
                 successAlert.show(body, "Successfully added product.", Pos.TOP_CENTER);
             });
 
-            switchDisplayBox(uploader.show());
+            switchMainTableBox(uploader.show());
         });
 
         showGendersCategories();
@@ -1395,8 +1448,8 @@ public class AdminDashboard extends ApplicationPage {
         });
 
         actionsCol.setCellFactory(column -> new TableCell<Order, Void>() {
-            private final Button setAsDoneButton = new Button("Set As DONE");
-            private final Button viewDetailsButton = new Button("View Details");
+            private final Button doneButton = new Button("Done");
+            private final Button viewButton = new Button("View");
             private final HBox buttonBox = new HBox(10);
 
             @Override
@@ -1409,18 +1462,18 @@ public class AdminDashboard extends ApplicationPage {
                     Order order = getTableView().getItems().get(getIndex());
 
                     double buttonWidth = 100;
-                    viewDetailsButton.setPrefWidth(buttonWidth);
-                    setAsDoneButton.setPrefWidth(buttonWidth);
+                    viewButton.setPrefWidth(buttonWidth);
+                    doneButton.setPrefWidth(buttonWidth);
 
                     buttonBox.getStyleClass().add("action-box");
                     buttonBox.setAlignment(Pos.CENTER);
                     buttonBox.getChildren().clear();
-                    buttonBox.getChildren().addAll(viewDetailsButton, setAsDoneButton);
+                    buttonBox.getChildren().addAll(viewButton, doneButton);
                     if(order.getStatus().equals("DONE")) {
-                        setAsDoneButton.setDisable(true);
+                        doneButton.setDisable(true);
                     }
 
-                    setAsDoneButton.setOnAction(e -> {
+                    doneButton.setOnAction(e -> {
                         if(controller.setOrderAsDone(order.getOrderId())) {
                             AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
                             successAlert.show(body, "Order set as done.", Pos.TOP_CENTER);
@@ -1433,12 +1486,12 @@ public class AdminDashboard extends ApplicationPage {
                             errorAlert.show(body, "Error! Please try again.", Pos.TOP_CENTER);
                         }
                     });
-                    setAsDoneButton.getStyleClass().add("set-done-button");
+                    doneButton.getStyleClass().add("set-done-button");
 
-                    viewDetailsButton.setOnAction(e -> {
+                    viewButton.setOnAction(e -> {
                         showOrderDetails(order);
                     });
-                    viewDetailsButton.getStyleClass().add("view-button");
+                    viewButton.getStyleClass().add("view-button");
 
                     setGraphic(buttonBox);
                 }
@@ -1446,10 +1499,12 @@ public class AdminDashboard extends ApplicationPage {
         });
 
         setOrderColWidth(orderIdCol, 80);
+        setOrderColWidth(userIdCol, 100);
         setOrderColWidth(fullNameCol, 150);
         setOrderColWidth(shipAddrCol, 200);
         setOrderColWidth(orderDateCol, 110);
         setOrderColWidth(totalPriceCol, 150);
+        setOrderColWidth(actionsCol, 200);
 
         orderTable.getColumns().addAll(orderIdCol, userIdCol, usernameCol,
                 fullNameCol, shipAddrCol, orderDateCol, totalItemsCol,
@@ -1462,6 +1517,7 @@ public class AdminDashboard extends ApplicationPage {
         TableUtils.addColToolTip(orderDateCol);
 
         orderTable.setItems(controller.getOrders());
+        fitTableHeight(orderTable);
 
         orderTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
     }
@@ -1475,7 +1531,9 @@ public class AdminDashboard extends ApplicationPage {
         setTitleLabel("ORDERS");
 
         hideAddButton();
-        removeSalesFilter();
+        removeSalesAction();
+
+        switchBodyLastNode(mainTableBox);
 
         buildOrderTable();
 
@@ -1559,7 +1617,7 @@ public class AdminDashboard extends ApplicationPage {
         HBox.setHgrow(firstSeparator, Priority.ALWAYS);
         firstSepBox.setPrefWidth(Double.MAX_VALUE);
 
-        String userIdText = "User ID: " + String.valueOf(order.getUserId());
+        String userIdText = "User ID: " + order.getUserId();
         Label userIdLabel = new Label(userIdText);
 
         String usernameText = "Username: " + order.getUsername();
@@ -1630,9 +1688,76 @@ public class AdminDashboard extends ApplicationPage {
         StackPane.setAlignment(detailBox, Pos.CENTER);
     }
 
-    private void switchDisplayBox(Pane pane) {
+    private void buildSalesPage() {
+        setTitleLabel("DAILY SALES");
+
+        SalesPage salesPage = new SalesPage(this.controller);
+
+        salesFilterSection = salesPage.buildFilterSection();
+        exportButton = salesPage.buildExportButton();
+        salesPage.setUpdateTitle(() -> {
+            FilterBy filter = salesPage.getCurrentFilter();
+            Freq freq = salesPage.getCurrentFreq();
+
+            String title = "";
+
+            if(filter.equals(FilterBy.NONE)) {
+                switch(freq) {
+                    case Freq.DAILY -> title = "DAILY SALES";
+                    case Freq.WEEKLY ->title = "WEEKLY SALES";
+                    case Freq.MONTHLY -> title = "MONTHLY SALES";
+                }
+            } else {
+                if(freq.equals(Freq.NONE)) {
+                    switch(filter) {
+                        case FilterBy.GENDER -> title = "GENDER SALES";
+                        case FilterBy.CATEGORY -> title = "CATEGORY SALES";
+                    }
+                } else {
+                    switch(freq) {
+                        case Freq.DAILY -> title = "DAILY SALES";
+                        case Freq.WEEKLY ->title = "WEEKLY SALES";
+                        case Freq.MONTHLY -> title = "MONTHLY SALES";
+                    }
+
+                    switch(filter) {
+                        case FilterBy.GENDER -> title += " (GENDER)";
+                        case FilterBy.CATEGORY -> title += " (CATEGORY)";
+                    }
+                }
+            }
+
+            salesPage.setTitle(title);
+
+            setTitleLabel(title);
+        });
+
+        buttonPane.setLeft(salesFilterSection);
+        buttonPane.setRight(exportButton);
+
+        switchBodyLastNode(salesPage.getContent());
+
+        removeGendersCategories();
+    }
+
+    private void removeSalesAction() {
+        if (buttonPane.getLeft() == salesFilterSection) {
+            buttonPane.setLeft(null);
+        }
+
+        if(buttonPane.getRight() == exportButton) {
+            buttonPane.setRight(null);
+        }
+    }
+
+    private void switchMainTableBox(Pane pane) {
         mainTableBox.getChildren().clear();
         mainTableBox.getChildren().add(pane);
+    }
+    
+    private void switchBodyLastNode(Pane pane) {
+        bodyVBox.getChildren().remove(3);
+        bodyVBox.getChildren().add(pane);
     }
 
     private void showEmptyDisplayBox() {
@@ -1688,7 +1813,6 @@ public class AdminDashboard extends ApplicationPage {
 
         backButton.setVisible(false);
     }
-
     public Scene initialize() {
         controller.initializeAllData();
 
@@ -1703,19 +1827,13 @@ public class AdminDashboard extends ApplicationPage {
         titleBox.setVisible(false);
         titleBox.setManaged(false);
 
-        addButton.getStyleClass().add("orange-button");
         if (addBtnWasVisible) {
             addButton.setVisible(true);
         } else {
             addButton.setVisible(false);
         }
 
-        FontIcon backIcon = new FontIcon("far-caret-square-left");
-        backIcon.setIconSize(16);
-        backIcon.setIconColor(Color.web("#A1A1A1"));
-        backButton = new Button("Back To Table", backIcon);
-        backButton.getStyleClass().add("back-button");
-        backButton.setVisible(false);
+        backButton = buildBackButton();
         backButton.setOnAction(e -> backToTable());
 
         buttonPane = new BorderPane();
@@ -1725,20 +1843,15 @@ public class AdminDashboard extends ApplicationPage {
 
         mainTableBox.setAlignment(Pos.TOP_CENTER);
         mainTableBox.getStyleClass().add("display-box");
+        mainTableBox.setMaxHeight(Double.MAX_VALUE);
         showEmptyDisplayBox();
 
-        ScrollPane mainTableScrollPane = new ScrollPane(mainTableBox);
-        mainTableScrollPane.setPadding(new Insets(0));
-        mainTableScrollPane.getStyleClass().add("display-box");
-        mainTableScrollPane.setFitToWidth(true);
-        mainTableScrollPane.setFitToHeight(true);
-        mainTableScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-
-        bodyVBox = new VBox(topStackPane, titleBox, buttonPane, mainTableScrollPane);
+        bodyVBox = new VBox(topStackPane, titleBox, buttonPane, mainTableBox);
         bodyVBox.setAlignment(Pos.CENTER);
         bodyVBox.setPadding(new Insets(0, sidePad, 20, sidePad));
         VBox.setVgrow(mainTableBox, Priority.ALWAYS);
-        VBox.setVgrow(mainTableScrollPane, Priority.ALWAYS);
+        VBox.setMargin(buttonPane, new Insets(0, 0, 20, 0));
+        VBox.setMargin(mainTableBox, new Insets(0, 22, 0, 22));
         VBox.setMargin(titleBox, new Insets(10, 22, 10, 22));
 
         ScrollPane bodyScrollPane = new ScrollPane(bodyVBox);

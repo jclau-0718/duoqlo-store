@@ -53,11 +53,15 @@ public class LogInPage extends AuthPage {
         logoBox.setAlignment(Pos.CENTER);
 
         //Log In Button
-        Button logInButton = primaryButton("LOG IN");
+        PrimaryButton logInButton = new PrimaryButton("Log In");
+        logInButton.setFontSize(18);
+        logInButton.setMaxWidth(Double.MAX_VALUE);
         logInButton.setDefaultButton(true);
 
         //Sign Up Button
-        Button signUpButton = secondaryButton("SIGN UP");
+        SecondaryButton signUpButton = new SecondaryButton("Sign Up");
+        signUpButton.setFontSize(18);
+        signUpButton.setMaxWidth(Double.MAX_VALUE);
 
         //Username Section
         usernameField = createTextField("Username");

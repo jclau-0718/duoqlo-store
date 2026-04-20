@@ -20,6 +20,12 @@ public class CartController {
         this.user = user;
 
         getCart(user);
+
+        System.out.println(cart.getLastUpdatedDate());
+    }
+
+    public void refreshCart() {
+        getCart(this.user);
     }
 
     public User getUser() { return this.user; }
@@ -54,11 +60,21 @@ public class CartController {
     public boolean addCartItem(int productSizeId, int quantity, double subTotal) {
         int cartId = cart.getCartId();
 
-        CartItem cartItem = new CartItem(cartId, productSizeId, quantity, subTotal);
-        if(cartDAO.insertCartItem(cartItem)) {
-            cart.addCartItem(cartItem);
+        if(cartDAO.prodSizeExist(productSizeId)) {
+            if (cartDAO.updateCartItem(productSizeId, quantity, subTotal)) {
+                cartDAO.updateCartLastUpdated(cartId);
 
-            return true;
+                return true;
+            }
+        } else {
+            CartItem cartItem = new CartItem(cartId, productSizeId, quantity, subTotal);
+            if (cartDAO.insertCartItem(cartItem)) {
+                cart.addCartItem(cartItem);
+
+                cartDAO.updateCartLastUpdated(cartId);
+
+                return true;
+            }
         }
 
         return false;
@@ -77,6 +93,11 @@ public class CartController {
 
         return totalItem;
     }
+
+    public String getLastUpdatedDate() {
+        System.out.println(this.cart.getLastUpdatedDate());
+
+        return this.cart.getLastUpdatedDate(); }
 
     public boolean listIsEmpty() {
         return cartItemList.isEmpty();
@@ -166,7 +187,7 @@ public class CartController {
         return allSuccessful;
     }
 
-    private void cleanup() {
+    public void cleanup() {
         cartDAO.clearCart(cart.getCartId());
         cartItemList.clear();
     }

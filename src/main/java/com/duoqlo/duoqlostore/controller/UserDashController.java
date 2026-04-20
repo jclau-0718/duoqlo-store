@@ -39,6 +39,7 @@ public class UserDashController {
     public User getUser() { return this.user; }
 
     public void openCartPage(){
+        this.cartController.refreshCart();
         CartPage cartPage = new CartPage(this.cartController);
 
         Navigator.goTo(cartPage.initialize());

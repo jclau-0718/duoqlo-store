@@ -216,16 +216,16 @@
     -fx-font-size: 16px;
 }
 
-.cancel-button {
-    -fx-background-color: #FE6C01;
-    -fx-background-radius: 8;
-    -fx-border-color: #FE6C01;
-    -fx-border-radius: 8;
-    -fx-font-size: 14;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-cursor: hand;
-}
+/*.cancel-button {*/
+/*    -fx-background-color: #FE6C01;*/
+/*    -fx-background-radius: 8;*/
+/*    -fx-border-color: #FE6C01;*/
+/*    -fx-border-radius: 8;*/
+/*    -fx-font-size: 14;*/
+/*    -fx-text-fill: white;*/
+/*    -fx-font-weight: bold;*/
+/*    -fx-cursor: hand;*/
+/*}*/
 
 .scroll-pane {
     -fx-background: transparent;

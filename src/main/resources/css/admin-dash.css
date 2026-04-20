@@ -20,17 +20,6 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); /* Floating effect */
 }
 
-.header .logout-button {
-    -fx-background-color: #FE6C01 !important;
-    -fx-background-radius: 10 !important;
-    -fx-border-color: #FE6C01 !important;
-    -fx-border-radius: 10 !important;
-    -fx-font-size: 18px !important;
-    -fx-font-weight: bold;
-    -fx-text-fill: white;
-    -fx-cursor: hand;
-}
-
 .stat-card {
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
 }
@@ -245,7 +234,7 @@
 }
 
 .form-header {
-    -fx-background-color: tranpsarent;
+    -fx-background-color: transparent;
     -fx-text-fill: black;
     -fx-font-size: 14;
 }
@@ -360,9 +349,3 @@
 .sales-chart .axis {
     -fx-tick-label-fill: #808080;
 }
-
-/*.sales-chart .axis .tick-label {*/
-/*    -fx-fill: #808080 !important;*/
-/*    -fx-font-size: 11px;*/
-/*    -fx-font-family: "Arial";*/
-/*}*/

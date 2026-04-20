@@ -9,6 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.util.*;
@@ -30,7 +31,7 @@ public class SignUpPage extends AuthPage{
 
     private Map<TextField, Label> fieldErrorMap = new LinkedHashMap<>();
 
-    private Button backButton;
+    private SecondaryButton backButton;
     private Runnable backToAdminDash;
 
     private boolean isAdminMode = false;
@@ -244,8 +245,14 @@ public class SignUpPage extends AuthPage{
     }
 
     public HBox personalInfoButtonBox() {
-        backButton = secondaryButton("BACK");
-        Button nextButton = primaryButton("NEXT");
+        backButton = new SecondaryButton("Back");
+        backButton.setFontSize(18);
+        backButton.setMaxWidth(Double.MAX_VALUE);
+
+        PrimaryButton nextButton = new PrimaryButton("Next");
+        nextButton.setFontSize(18);
+        nextButton.setMaxWidth(Double.MAX_VALUE);
+        nextButton.setDefaultButton(true);
 
         HBox buttonBox = new HBox(backButton, nextButton);
         buttonBox.setAlignment(Pos.CENTER);
@@ -267,8 +274,15 @@ public class SignUpPage extends AuthPage{
     }
 
     public HBox logInDetailsButtonBox() {
-        Button backButton = secondaryButton("BACK");
-        Button signUpButton = primaryButton("SIGN UP");
+        SecondaryButton backButton = new SecondaryButton("BACK");
+        backButton.setFontSize(18);
+        backButton.setMaxWidth(Double.MAX_VALUE);
+
+        PrimaryButton signUpButton = new PrimaryButton("SIGN UP");
+        signUpButton.setFontSize(18);
+        signUpButton.getStyleClass().add("primary-button");
+        signUpButton.setMaxWidth(Double.MAX_VALUE);
+        signUpButton.setDefaultButton(true);
 
         HBox buttonBox = new HBox(backButton, signUpButton);
         buttonBox.setAlignment(Pos.CENTER);

@@ -9,6 +9,11 @@ public class Gender {
         this.gender = gender;
     }
 
+    @Override
+    public String toString() {
+        return getGender();
+    }
+
     public String getId() { return this.id; }
 
     public String getGender() { return this.gender; }

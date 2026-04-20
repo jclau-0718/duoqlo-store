@@ -15,8 +15,6 @@ public class Navigator {
 
     public static void goTo(Scene newScene){
         if(stage != null){
-            Scene currentScene = stage.getScene();
-
             boolean wasMaximized = stage.isMaximized();
 
             stage.setScene(newScene);
@@ -41,5 +39,11 @@ public class Navigator {
 
             goTo(adminDash.initialize());
         }
+    }
+
+    public static void openUserDashboard(UserDashController controller) {
+        UserDashboard userDash = new UserDashboard(controller);
+
+        goTo(userDash.initialize());
     }
 }

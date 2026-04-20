@@ -305,6 +305,7 @@ public class AdminDashController {
     }
 
     public boolean updateCategory(String categoryId, String categoryName, String genderId) {
+        System.out.println("In controller: "+categoryName);
         return productDAO.updateCategory(categoryId, categoryName, genderId);
     }
 

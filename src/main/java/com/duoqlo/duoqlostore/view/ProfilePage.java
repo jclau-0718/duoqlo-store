@@ -55,6 +55,8 @@ public class ProfilePage extends UserPage {
     private int profileBoxWidth = 150;
 
     public ProfilePage(ProfileController controller) {
+        super(controller.getUser());
+
         this.controller = controller;
     }
 
@@ -295,6 +297,8 @@ public class ProfilePage extends UserPage {
         editAddrButton.setToggleGroup(categoryGroup);
         editCredButton.setToggleGroup(categoryGroup);
 
+        editInfoButton.setSelected(true);
+
         VBox optionBox = new VBox(30, editInfoButton, editAddrButton, editCredButton);
         optionBox.getStyleClass().add("option-box");
         optionBox.setFillWidth(true);
@@ -377,8 +381,8 @@ public class ProfilePage extends UserPage {
 
     private VBox buildInfoBox() {
 
-        Button updateInfoButton = new Button("UPDATE");
-        updateInfoButton.getStyleClass().add("primary-button");
+        PrimaryButton updateInfoButton = new PrimaryButton("Update");
+        updateInfoButton.setFontSize(15);
         updateInfoButton.setDefaultButton(true);
         updateInfoButton.setOnAction(e -> {
             getNewInfo();

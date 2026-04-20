@@ -175,19 +175,19 @@ public abstract class AuthPage extends ApplicationPage {
     }
 
 
-    public Button primaryButton(String text) {
-        Button button = new Button(text);
-        button.getStyleClass().add("primary-button");
-        button.setMaxWidth(Double.MAX_VALUE);
+//    public Button primaryButton(String text) {
+//        Button button = new Button(text);
+//        button.getStyleClass().add("primary-button");
+//        button.setMaxWidth(Double.MAX_VALUE);
+//
+//        return button;
+//    }
 
-        return button;
-    }
-
-    public Button secondaryButton(String text) {
-        Button button = new Button(text);
-        button.getStyleClass().add("secondary-button");
-        button.setMaxWidth(Double.MAX_VALUE);
-
-        return button;
-    }
+//    public Button secondaryButton(String text) {
+//        Button button = new Button(text);
+//        button.getStyleClass().add("secondary-button");
+//        button.setMaxWidth(Double.MAX_VALUE);
+//
+//        return button;
+//    }
 }

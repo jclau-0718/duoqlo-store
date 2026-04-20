@@ -17,7 +17,7 @@ public class Category {
 
     public Gender getGender() { return this.gender; }
 
-    public String getGenderId() { return gender.getId(); }
+    public String getGenderId() { return this.gender.getId(); }
 
-    public String getGenderName() { return gender.getGender(); }
+    public String getGenderName() { return this.gender.getGender(); }
 }

@@ -62,22 +62,3 @@
     -fx-font-size: 14;
 }
 
-.primary-button, .secondary-button {
-    -fx-font-family: Arial;
-    -fx-font-size: 18;
-    -fx-border-radius: 5;
-    -fx-border-width: 2;
-}
-
-.primary-button {
-    -fx-background-color: #FE6C01;          /* orange color */
-    -fx-border-color: #FE6C01;
-    -fx-text-fill: white;
-    -fx-cursor: hand;
-}
-
-.secondary-button {
-    -fx-background-color: transparent;
-    -fx-border-color: #EBEBEB;
-    -fx-cursor: hand;
-}
