@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.WeekFields;
 
 public class SalesDAO {
-    public static ObservableList<SalesRecord> getDailySales() {
+    public ObservableList<SalesRecord> getDailySales() {
         ObservableList<SalesRecord> sales = FXCollections.observableArrayList();
 
         String sql = """
@@ -60,13 +60,13 @@ public class SalesDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return sales;
     }
 
-    public static ObservableList<SalesRecord> getWeeklySales() {
+    public  ObservableList<SalesRecord> getWeeklySales() {
         ObservableList<SalesRecord> sales = FXCollections.observableArrayList();
 
         String sql = """
@@ -101,13 +101,13 @@ public class SalesDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return sales;
     }
 
-    public static ObservableList<SalesRecord> getMonthlySales() {
+    public  ObservableList<SalesRecord> getMonthlySales() {
         ObservableList<SalesRecord> sales = FXCollections.observableArrayList();
 
         String sql = """
@@ -156,13 +156,13 @@ public class SalesDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return sales;
     }
 
-    public static ObservableList<SalesRecord> getSalesByGenders() {
+    public  ObservableList<SalesRecord> getSalesByGenders() {
         ObservableList<SalesRecord> sales = FXCollections.observableArrayList();
 
         String sql = """
@@ -196,13 +196,13 @@ public class SalesDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return sales;
     }
 
-    public static ObservableList<SalesRecord> getSalesByCategories() {
+    public  ObservableList<SalesRecord> getSalesByCategories() {
         ObservableList<SalesRecord> sales = FXCollections.observableArrayList();
 
         String sql = """
@@ -236,13 +236,13 @@ public class SalesDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return sales;
     }
 
-    public static ObservableList<SalesRecord> getSalesByFilterAndFrequency(FilterBy filter, Freq frequency, String value) {
+    public  ObservableList<SalesRecord> getSalesByFilterAndFrequency(FilterBy filter, Freq frequency, String value) {
         ObservableList<SalesRecord> list = FXCollections.observableArrayList();
 
         String dateExpr;
@@ -303,20 +303,20 @@ public class SalesDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return list;
     }
 
-    private static String formatAsDaily(String rawLabel) {
+    private  String formatAsDaily(String rawLabel) {
         String formattedLabel = LocalDate.parse(rawLabel)
                 .format(AppConfig.DATE_FORMATTER);
 
         return formattedLabel;
     }
 
-    private static String formatAsWeekly(String rawLabel) {
+    private  String formatAsWeekly(String rawLabel) {
         String[] parts = rawLabel.split("-");
         int year = Integer.parseInt(parts[0]);
         int week = Integer.parseInt(parts[1]) + 1;
@@ -332,7 +332,7 @@ public class SalesDAO {
         return formattedLabel;
     }
 
-    private static String formatAsMonthly(String rawLabel) {
+    private  String formatAsMonthly(String rawLabel) {
         int year = Integer.parseInt(rawLabel.substring(0, 4));
         int month = Integer.parseInt(rawLabel.substring(5));
 

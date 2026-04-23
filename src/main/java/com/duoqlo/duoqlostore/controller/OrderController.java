@@ -17,26 +17,21 @@ public class OrderController {
 
     public OrderController(User user) {
         this.user = user;
-
-        orderList = orderDAO.getAllOrders(user.getId());
-        orderList.sort(Comparator
-                //Sort PENDING order first then DONE
-                .comparing((Order o) ->
-                        o.getStatus().equals("PENDING") ? 0 : 1
-                )
-
-                //Sort by order date ASC
-                .thenComparing(Order::getOrderDateTime)
-        );
     }
 
     public User getUser() { return this.user; }
 
-    public void openCartPage() {
-        CartController cartController = new CartController(this.user);
-        CartPage cartPage = new CartPage(cartController);
+    public boolean openCartPage() {
+        try {
+            CartController cartController = new CartController(this.user);
+            CartPage cartPage = new CartPage(cartController);
 
-        Navigator.goTo(cartPage.initialize());
+            Navigator.goTo(cartPage.initialize());
+
+            return true;
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     public void openProfilePage() {
@@ -47,6 +42,16 @@ public class OrderController {
     }
 
     public List<Order> getOrders() {
+        orderList = orderDAO.getAllOrders(user.getId());
+        orderList.sort(Comparator
+                //Sort PENDING order first then DONE
+                .comparing((Order o) ->
+                        o.getStatus().equals("PENDING") ? 0 : 1
+                )
+
+                //Sort by order date ASC
+                .thenComparing(Order::getOrderDateTime)
+        );
         return this.orderList;
     }
 
@@ -62,5 +67,10 @@ public class OrderController {
         }
 
         return false;
+    }
+
+    public void cleanup() {
+        orderList.clear();
+        user = null;
     }
 }

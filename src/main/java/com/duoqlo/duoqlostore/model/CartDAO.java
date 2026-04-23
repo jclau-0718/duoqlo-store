@@ -32,7 +32,7 @@ public class CartDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return null;
@@ -55,7 +55,7 @@ public class CartDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return null;
@@ -78,7 +78,7 @@ public class CartDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return null;
@@ -107,7 +107,7 @@ public class CartDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return cartItemList;
@@ -127,7 +127,7 @@ public class CartDAO {
 
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -150,7 +150,7 @@ public class CartDAO {
             return rs.next();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -177,7 +177,7 @@ public class CartDAO {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -208,7 +208,7 @@ public class CartDAO {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -228,7 +228,7 @@ public class CartDAO {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
 
@@ -244,7 +244,7 @@ public class CartDAO {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
             return false;
         }
     }
@@ -263,7 +263,7 @@ public class CartDAO {
             pstmt.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
 }

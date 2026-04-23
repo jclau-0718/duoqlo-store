@@ -89,7 +89,7 @@ public class ProductDAO {
             return rowsAffected > 0 && statusUpdated; // true if update successful
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -108,7 +108,7 @@ public class ProductDAO {
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -127,7 +127,7 @@ public class ProductDAO {
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -156,7 +156,7 @@ public class ProductDAO {
             }
 
         } catch (SQLException e){
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return categoryList;
@@ -179,7 +179,7 @@ public class ProductDAO {
             return genderMap;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return new HashMap<>(); // Return empty map instead of null
@@ -202,7 +202,7 @@ public class ProductDAO {
             return categoryMap;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return new HashMap<>();
@@ -227,7 +227,7 @@ public class ProductDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -266,7 +266,7 @@ public class ProductDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return products;
@@ -306,7 +306,7 @@ public class ProductDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return products;
@@ -321,6 +321,7 @@ public class ProductDAO {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, productId);
+
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
@@ -336,7 +337,7 @@ public class ProductDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return productSizeList;
@@ -359,7 +360,7 @@ public class ProductDAO {
             return sizeList;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return null;
@@ -382,7 +383,7 @@ public class ProductDAO {
             return rs.getInt("productsize_id");
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return 0;
@@ -406,7 +407,7 @@ public class ProductDAO {
             return rs.getString("product_name");
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return null;
@@ -432,7 +433,7 @@ public class ProductDAO {
             return null;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return null;
@@ -455,7 +456,7 @@ public class ProductDAO {
             return genders;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return null;
@@ -480,7 +481,7 @@ public class ProductDAO {
             return rs.getString("category_name");
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return null;
@@ -510,7 +511,7 @@ public class ProductDAO {
             return categories;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return null;
@@ -532,7 +533,7 @@ public class ProductDAO {
             return rs.getString("size");
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return null;
@@ -556,7 +557,7 @@ public class ProductDAO {
             return rs.getString("image_path");
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return null;
@@ -581,7 +582,7 @@ public class ProductDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return 0;
@@ -611,7 +612,7 @@ public class ProductDAO {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -634,7 +635,7 @@ public class ProductDAO {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -648,9 +649,7 @@ public class ProductDAO {
             conn.setAutoCommit(false);
 
             boolean stockUpdated = deductStock(conn, productSizeId, quantity);
-            System.out.println(stockUpdated);
             boolean statusUpdated = updateProductStatus(conn, productId);
-            System.out.println(statusUpdated);
 
             if (stockUpdated && statusUpdated) {
                 conn.commit();
@@ -660,7 +659,7 @@ public class ProductDAO {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -696,13 +695,13 @@ public class ProductDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return null;
     }
 
-    private int getNextOrder() {
+    private int getNextDisplayOrder() {
         String sql = "SELECT MAX(display_order) FROM gender;";
 
         try (Connection conn = ConnectDB.connect();
@@ -716,14 +715,14 @@ public class ProductDAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return -1;
     }
 
     public boolean insertGender(String id, String gender) {
-        int nextOrder = getNextOrder();
+        int next = getNextDisplayOrder();
 
         String sql = """
                 INSERT INTO gender (gender_id, gender, display_order)
@@ -735,14 +734,14 @@ public class ProductDAO {
 
             pstmt.setString(1, id);
             pstmt.setString(2, gender);
-            pstmt.setInt(3, nextOrder);
+            pstmt.setInt(3, next);
 
             int affectedRows = pstmt.executeUpdate();
 
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -766,7 +765,7 @@ public class ProductDAO {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -792,7 +791,7 @@ public class ProductDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -814,7 +813,7 @@ public class ProductDAO {
            return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -838,14 +837,13 @@ public class ProductDAO {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
     }
 
     public boolean updateCategory(String categoryId, String categoryName, String genderId) {
-        System.out.println("In product dao:" + categoryName);
         String sql = """
                 UPDATE category
                 SET category_name = ?, gender_id = ?
@@ -864,7 +862,7 @@ public class ProductDAO {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -892,7 +890,7 @@ public class ProductDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -914,7 +912,7 @@ public class ProductDAO {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;

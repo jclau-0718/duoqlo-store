@@ -30,6 +30,8 @@ public class OrderItem {
         return this.subTotal;
     }
 
+    public Product getProduct() { return this.product; }
+
     public int getProductId() { return this.product.getId(); }
 
     public String getProductName() { return this.product.getName(); }

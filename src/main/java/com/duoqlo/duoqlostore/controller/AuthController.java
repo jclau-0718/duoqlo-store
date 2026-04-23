@@ -42,33 +42,27 @@ public class AuthController {
 
     public boolean handleLogIn(String username, String enteredPassword) {
         try {
-
             if (userDAO.usernameExists(username)) {
 
                 String storedPassword = userDAO.getPasswordByUsername(username);
 
                 boolean passwordValid = verifyPassword(enteredPassword, storedPassword);
 
-                if(passwordValid) {
-                    User loggedInUser = userDAO.getUserByUsername(username);
-
-                    if (loggedInUser != null) {
-                        Navigator.openDashboard(loggedInUser);
-                        return true;
-                    }
-                }
+                return passwordValid;
             }
-
-            return false;
-
-        } catch (Exception ex){
-            ex.printStackTrace();
-            return false;
+        } catch (Exception e){
+            System.err.println(e.getMessage());
         }
+
+        return false;
     }
 
     private boolean verifyPassword(String enteredPassword, String storedPassword) {
         return BCrypt.checkpw(enteredPassword, storedPassword);
+    }
+
+    public User getUser(String username) {
+        return userDAO.getUserByUsername(username);
     }
 
     public void updateUsernameFieldStyle(TextField usernameField, Label errorLabel) {
@@ -200,7 +194,7 @@ public class AuthController {
             return true;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
             registered = false;
             return false;
         }

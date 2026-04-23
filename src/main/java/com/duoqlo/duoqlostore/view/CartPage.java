@@ -6,6 +6,7 @@ import com.duoqlo.duoqlostore.model.CartItem;
 import com.duoqlo.duoqlostore.model.ProductDAO;
 import com.duoqlo.duoqlostore.model.User;
 import javafx.animation.PauseTransition;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -19,6 +20,9 @@ import javafx.scene.layout.*;
 import javafx.util.Duration;
 
 import java.io.File;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 class CartRow extends BorderPane {
     private ProductDAO productDAO = new ProductDAO();
@@ -168,6 +172,8 @@ public class CartPage extends UserPage{
     private CartController controller;
     private AlertMsg alert;
 
+    private final ExecutorService executor = Executors.newFixedThreadPool(2);
+
     private StackPane body;
     private BorderPane root;
 
@@ -175,7 +181,6 @@ public class CartPage extends UserPage{
     private double total;
 
     public CartPage(CartController controller) {
-        super(controller.getUser());
         this.controller = controller;
 
         totalItems = controller.getTotalItems();
@@ -183,6 +188,7 @@ public class CartPage extends UserPage{
 
     @Override
     public User getUser() { return controller.getUser(); }
+
     @Override
     public void openCartPage() {
         Navigator.goTo(this.initialize());
@@ -317,8 +323,8 @@ public class CartPage extends UserPage{
     public Button buildCheckoutButton() {
         Button checkoutButton = new PrimaryButton("Checkout");
         checkoutButton.setOnAction(e -> {
-            alert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
-
+            alert = new AlertMsg(AlertType.CONFIRMATION);
+            alert.show(body, "Confirm to checkout?", Pos.CENTER);
             alert.setOnConfirm(() -> {
 
                 body.getChildren().add(createLoadingPane(new Label("Processing checkout...")));
@@ -332,12 +338,6 @@ public class CartPage extends UserPage{
                 });
                 pause.play();
             });
-
-            alert.setOnCancel(() -> {
-                System.out.println("Checkout cancelled");
-            });
-
-            alert.show(body, "Confirm to checkout?", Pos.CENTER);
         });
 
         return checkoutButton;
@@ -350,7 +350,7 @@ public class CartPage extends UserPage{
 
         Button emptyCartButton = new PrimaryButton("Empty Cart");
         emptyCartButton.setOnAction(e -> {
-            controller.cleanup();
+            controller.clearCart();
 
             refreshPage();
         });
@@ -379,7 +379,7 @@ public class CartPage extends UserPage{
         return contentBox;
     }
 
-    public HBox buildCartEmptyBox() {
+    public HBox buildEmptyCartBox() {
         Label emptyLabel = new Label("Cart is empty");
         emptyLabel.getStyleClass().add("empty-cart");
 
@@ -390,37 +390,58 @@ public class CartPage extends UserPage{
         return emptyLabelBox;
     }
 
-    private void refreshPage() {
-        // Rebuild the content box
-        HBox contentBox;
-        if (controller.listIsEmpty()) {
-            contentBox = buildCartEmptyBox();
-        } else {
-            contentBox = buildContentBox();
-        }
+    private void loadCartAsync() {
+        Task<List<CartItem>> task = new Task<>() {
+            @Override
+            protected List<CartItem> call() {
+                controller.refreshCart();
+                return controller.getCartItemList();
+            }
+        };
 
+        task.setOnSucceeded(e -> {
+            List<CartItem> cartItems = task.getValue();
+
+            body.getChildren().clear();
+
+            if (cartItems == null || cartItems.isEmpty()) {
+                body.getChildren().add(buildEmptyCartBox());
+            } else {
+                totalItems = controller.getTotalItems();
+                body.getChildren().add(buildContentBox());
+            }
+        });
+
+        task.setOnFailed(e -> {
+            body.getChildren().clear();
+            body.getChildren().add(buildEmptyCartBox());
+        });
+
+        executor.submit(task);
+    }
+
+    private void refreshPage() {
         // Update the UI
         StackPane body = (StackPane) root.getCenter();
         body.getChildren().clear();
-        body.getChildren().add(contentBox);
+        loadCartAsync();
+    }
+
+    public void exit() {
+        executor.shutdownNow();
+        controller.cleanup();
+        controller = null;
     }
 
     public Scene initialize(){
-        HBox contentBox;
-
-        if (controller.listIsEmpty()) {
-            contentBox = buildCartEmptyBox();
-        } else {
-            contentBox = buildContentBox();
-        }
-
         body = new StackPane();
-        body.getChildren().add(contentBox);
 
         root = new BorderPane();
         root.setTop(buildHeader());
         root.setCenter(body);
         root.setOnMouseClicked(e -> root.requestFocus()); //Allow unfocus on TextField
+
+        loadCartAsync();
 
         Scene scene = setScene(root, "cart-page");
 

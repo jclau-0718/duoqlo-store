@@ -26,6 +26,10 @@
 }
 
 .header .button:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
+}
+
+.header .button:hover {
     -fx-text-fill: black;
 }
 
@@ -96,11 +100,10 @@
     -fx-font-family: Arial;
     -fx-font-size: 14;
     -fx-text-fill: black;
-    -fx-background-color: transparent;
-    -fx-background-radius: 5;
-    -fx-border-radius: 5;
-    -fx-border-color: #DADADA;
-    -fx-border-width: 1.5;
+    -fx-background-color: #DADADA;
+    -fx-background-radius: 15;
+    -fx-border-color: transparent;
+    -fx-border-radius: 15;
     -fx-cursor: hand;
 }
 
@@ -108,12 +111,16 @@
     -fx-shape: "M26.297 12.625l-11.594 11.578c-0.391 0.391-1.016 0.391-1.406 0l-11.594-11.578c-0.391-0.391-0.391-1.031 0-1.422l2.594-2.578c0.391-0.391 1.016-0.391 1.406 0l8.297 8.297 8.297-8.297c0.391-0.391 1.016-0.391 1.406 0l2.594 2.578c0.391 0.391 0.391 1.031 0 1.422z";
 }
 
+.filter-combo:showing .arrow {
+    -fx-rotate: 180;
+}
+
 .filter-combo.selected { /* Style field after selected */
-    -fx-border-color: #FE6C01;
+    -fx-background-color: #FEA05D;
 }
 
 .filter-combo.selected .list-cell { /* Style field text after selected */
-    -fx-text-fill: #FE6C01;
+    -fx-text-fill: black;
 }
 
 .combo-box .list-cell {
@@ -223,7 +230,7 @@
     -fx-border-radius: 8px;
     -fx-background-color: white;
     -fx-background-radius: 8px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 5);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 15, 0, 0, 5);
     -fx-transition: all 0.2s ease-in-out;
 }
 
@@ -429,28 +436,6 @@
     -fx-text-fill: #ddd;
     -fx-opacity: 0.45;
 }
-
-/*.primary-button, .secondary-button {*/
-/*    -fx-font-family: Arial;*/
-/*    -fx-font-size: 14px;*/
-/*    -fx-border-radius: 5;*/
-/*    -fx-background-radius: 5;*/
-/*    -fx-padding: 10 20;*/
-/*}*/
-
-/*.primary-button {*/
-/*    -fx-background-color: #FE6C01;          !* orange color *!*/
-/*    -fx-border-color: #FE6C01;*/
-/*    -fx-text-fill: white;*/
-/*    -fx-cursor: hand;*/
-/*}*/
-
-/*.secondary-button {*/
-/*    -fx-background-color: transparent;*/
-/*    -fx-border-color: #FE6C01;*/
-/*    -fx-cursor: hand;*/
-/*    -fx-text-fill: #FE6C01;*/
-/*}*/
 
 .right-button, .left-button {
     -fx-background-color: #DEDEDE;

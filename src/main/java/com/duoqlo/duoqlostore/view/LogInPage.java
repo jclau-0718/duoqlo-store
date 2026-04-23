@@ -1,7 +1,8 @@
 package com.duoqlo.duoqlostore.view;
 
 import com.duoqlo.duoqlostore.controller.AuthController;
-import javafx.application.Platform;
+import com.duoqlo.duoqlostore.controller.Navigator;
+import com.duoqlo.duoqlostore.model.User;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -12,14 +13,16 @@ import javafx.geometry.*;
 
 import java.util.Objects;
 
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class LogInPage extends AuthPage {
     private AuthController controller;
-    private AlertMsg alert = new AlertMsg();
 
-    private TextField usernameField;
+    private AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
+
+    private StackPane root;
+
+    private InputField usernameField;
 
     private final int usernameTopPad = 50;
     private final int passwordTopPad = 35;
@@ -52,19 +55,8 @@ public class LogInPage extends AuthPage {
         HBox logoBox = new HBox(createLogo());
         logoBox.setAlignment(Pos.CENTER);
 
-        //Log In Button
-        PrimaryButton logInButton = new PrimaryButton("Log In");
-        logInButton.setFontSize(18);
-        logInButton.setMaxWidth(Double.MAX_VALUE);
-        logInButton.setDefaultButton(true);
-
-        //Sign Up Button
-        SecondaryButton signUpButton = new SecondaryButton("Sign Up");
-        signUpButton.setFontSize(18);
-        signUpButton.setMaxWidth(Double.MAX_VALUE);
-
         //Username Section
-        usernameField = createTextField("Username");
+        usernameField = createInputField("Username");
         usernameField.getStyleClass().add("username-field");
         Label usernameErrorLabel = createErrorLabel();
         VBox usernameBox = createTextFieldBox(usernameField, usernameErrorLabel);
@@ -89,6 +81,39 @@ public class LogInPage extends AuthPage {
             }
         });
 
+        //Log In Button
+        PrimaryButton logInButton = new PrimaryButton("Log In");
+        logInButton.setFontSize(18);
+        logInButton.setMaxWidth(Double.MAX_VALUE);
+        logInButton.setDefaultButton(true);
+
+        logInButton.setOnAction(e -> {
+            String username = usernameField.getText().trim();
+            String password = passwordField.getText().trim();
+
+            if(!controller.handleLogIn(username, password)) {
+
+                errorAlert.show(root, "Invalid username or password.", Pos.TOP_CENTER);
+
+                controller.setUserFieldError(true);
+                controller.setPassFieldError(true);
+                controller.updateUsernameFieldStyle(usernameField, usernameErrorLabel);
+                controller.updatePassFieldStyle(passwordHBox, passwordField, passwordErrorLabel);
+            } else if (!controller.isUserActive(username)) {
+                errorAlert.show(root, "Account has been deactivated.", Pos.TOP_CENTER);
+            } else {
+                User loggedInUser = controller.getUser(username);
+
+                if (loggedInUser != null) {
+                    Navigator.openDashboard(loggedInUser);
+                } else {
+                    errorAlert.show(root, "User not found. Please try again.", Pos.TOP_CENTER);
+                }
+            }
+
+        });
+
+
         controller.setupPasswordValidation(passwordHBox, passwordField, passwordErrorLabel);
 
         passwordField.setOnKeyPressed(e -> {
@@ -97,30 +122,10 @@ public class LogInPage extends AuthPage {
             }
         });
 
-        logInButton.setOnAction(e -> {
-            StackPane root = (StackPane) ((Node) e.getSource()).getScene().getRoot();
-
-            String username = usernameField.getText().trim();
-            String password = passwordField.getText().trim();
-
-            if (!controller.isUserActive(username)) {
-                alert.setAlertType(AlertMsg.AlertMsgType.ERROR);
-                alert.show(root, "Account has been deactivated.", Pos.TOP_CENTER);
-            } else {
-                if (controller.handleLogIn(username, password)) {
-                    return;
-                } else {
-                    controller.setUserFieldError(true);
-                    controller.setPassFieldError(true);
-                    controller.updateUsernameFieldStyle(usernameField, usernameErrorLabel);
-                    controller.updatePassFieldStyle(passwordHBox, passwordField, passwordErrorLabel);
-
-
-                    alert.setAlertType(AlertMsg.AlertMsgType.ERROR);
-                    alert.show(root, "Invalid username or password.", Pos.TOP_CENTER);
-                }
-            }
-        });
+        //Sign Up Button
+        SecondaryButton signUpButton = new SecondaryButton("Sign Up");
+        signUpButton.setFontSize(18);
+        signUpButton.setMaxWidth(Double.MAX_VALUE);
 
         signUpButton.setOnAction(e -> {
             Stage stage = (Stage) ((Node) e.getSource()).getScene().getWindow();
@@ -159,11 +164,11 @@ public class LogInPage extends AuthPage {
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(createLogInForm());
 
-        StackPane root = new StackPane(borderPane);
+        root = new StackPane(borderPane);
 
         if(controller.getRegistered()) {
-            alert.setAlertType(AlertMsg.AlertMsgType.SUCCESS);
-            alert.show(root, "Account created!", Pos.TOP_CENTER);
+            AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
+            successAlert.show(root, "Account created!", Pos.TOP_CENTER);
         }
 
         Scene logInScene = setScene(root, "login-page");

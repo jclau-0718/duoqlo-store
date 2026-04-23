@@ -18,11 +18,6 @@ public class SecondaryButton extends Button {
         applyStyle();
     }
 
-    public SecondaryButton(String text, FontIcon icon) {
-        super(text, icon);
-        applyStyle();
-    }
-
     public void setFontSize(int size) {
         this.fontSize = size;
         applyStyle();
@@ -31,7 +26,7 @@ public class SecondaryButton extends Button {
     private void applyStyle() {
         this.setStyle(String.format("""
                 -fx-font-family: Arial;
-                -fx-font-size: %dpx;
+                -fx-font-size: %d;
                 -fx-font-weight: bold;
                 -fx-border-color: #FE6C01;
                 -fx-border-radius: 5;

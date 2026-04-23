@@ -21,7 +21,8 @@ public class Order {
     public Order(){}
 
     public Order(int orderId, int userId, LocalDateTime orderDateTime,
-                 double totalPrice, String status, String shippingAddress) {
+                 double totalPrice, String status, String shippingAddress,
+                 List<OrderItem> orderItemList) {
         this.orderId = orderId;
         this.userId = userId;
         this.orderDateTime = orderDateTime;
@@ -29,6 +30,7 @@ public class Order {
         this.totalPrice = totalPrice;
         this.status = status;
         this.shippingAddress = shippingAddress;
+        this.orderItemList = orderItemList;
 
     }
 

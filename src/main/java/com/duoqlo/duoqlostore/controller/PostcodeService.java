@@ -29,7 +29,7 @@ public class PostcodeService {
                 postcodeMap.put(postcode, new Address(postcode, city, state));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
 

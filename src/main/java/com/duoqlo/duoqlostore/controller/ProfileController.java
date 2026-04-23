@@ -28,11 +28,17 @@ public class ProfileController {
 
     public User getUser() { return this.user; }
 
-    public void openCartPage() {
-        CartController cartController = new CartController(this.user);
-        CartPage cartPage = new CartPage(cartController);
+    public boolean openCartPage() {
+        try {
+            CartController cartController = new CartController(this.user);
+            CartPage cartPage = new CartPage(cartController);
 
-        Navigator.goTo(cartPage.initialize());
+            Navigator.goTo(cartPage.initialize());
+
+            return true;
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     public void openOrdersPage() {
@@ -154,9 +160,7 @@ public class ProfileController {
 
     public void setNewUser() {
         User newUser = userDAO.getUserById(user.getId());
-        System.out.println("newUser firstname: "+newUser.getFirstName());
         if (newUser != null) {
-            System.out.println(newUser.getFirstName());
             this.user = newUser;
         }
 
@@ -167,5 +171,15 @@ public class ProfileController {
         infoList.clear();
         addressList.clear();
         credentialsList.clear();
+    }
+
+    public void cleanup() {
+        menuOpened = null;
+
+        infoList.clear();
+        addressList.clear();
+        credentialsList.clear();
+
+        user = null;
     }
 }

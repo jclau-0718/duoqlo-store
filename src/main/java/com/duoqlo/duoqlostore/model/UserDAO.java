@@ -2,14 +2,13 @@ package com.duoqlo.duoqlostore.model;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.mindrot.jbcrypt.BCrypt;
 
-import javax.xml.crypto.Data;
 import java.sql.*;
 import java.util.List;
 
-public class UserDAO extends DataAccessObject<User> {
-    @Override
-    public void insert(User user){
+public class UserDAO {
+    public void insert(User user) {
         String sql = """
                 INSERT INTO users
                 (username, password, first_name, last_name, email, address_line1, address_line2, city, postal_code, state, role)
@@ -40,48 +39,8 @@ public class UserDAO extends DataAccessObject<User> {
                 user.setId(generatedId); // if you allow setter
             }
 
-            System.out.println("User added!");
-
         } catch (SQLException e){
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void delete(User user){
-        String sql = "UPDATE users SET is_active = 0 WHERE user_id = ?";
-
-        try(Connection conn = ConnectDB.connect();
-            PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            pstmt.setInt(1, user.getId());
-            pstmt.executeUpdate();
-
-        } catch (SQLException e){
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public int getID(User user) {
-
-        String sql = "SELECT user_id FROM users WHERE username = ?";
-
-        try (Connection conn = ConnectDB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, user.getUsername());
-            ResultSet rs = pstmt.executeQuery();
-
-            if(rs.next()){
-                int userID = rs.getInt("user_id");
-                return userID;
-            }
-
-            return -1; //user_id not found
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return -1; //user_id not found
+            System.err.println(e.getMessage());
         }
     }
 
@@ -110,7 +69,7 @@ public class UserDAO extends DataAccessObject<User> {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -147,7 +106,7 @@ public class UserDAO extends DataAccessObject<User> {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -174,7 +133,7 @@ public class UserDAO extends DataAccessObject<User> {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -183,10 +142,10 @@ public class UserDAO extends DataAccessObject<User> {
     public User getUserById(int userId) {
         String sql = "SELECT * FROM users WHERE user_id = ?";
 
+        User user = new User();
+
         try (Connection conn = ConnectDB.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            User user = new User();
 
             pstmt.setInt(1, userId);
 
@@ -208,12 +167,11 @@ public class UserDAO extends DataAccessObject<User> {
                 user.setIs_active(rs.getInt("is_active"));
             }
 
-            return user;
-
         } catch (SQLException e){
-            e.printStackTrace();
-            return null;
+            System.err.println(e.getMessage());
         }
+
+        return user;
     }
 
     public User getUserByUsername(String username){
@@ -250,22 +208,17 @@ public class UserDAO extends DataAccessObject<User> {
             return user;
 
         } catch (SQLException e){
-            e.printStackTrace();
-            return null;
+            System.err.println(e.getMessage());
         }
+
+        return null;
     }
 
     public String getPasswordByUsername(String username) {
-        if(!usernameExists(username)) {
-            return null;
-        }
-
         String sql = "SELECT password FROM users WHERE username = ?";
 
         try (Connection conn = ConnectDB.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            User user = new User(username);
 
             pstmt.setString(1, username);
 
@@ -278,9 +231,10 @@ public class UserDAO extends DataAccessObject<User> {
             return null;
 
         } catch (SQLException e){
-            e.printStackTrace();
-            return null;
+            System.err.println(e.getMessage());
         }
+
+        return null;
     }
 
     public ObservableList<User> getAllUsersObservable() {
@@ -316,7 +270,7 @@ public class UserDAO extends DataAccessObject<User> {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return users;
@@ -344,10 +298,56 @@ public class UserDAO extends DataAccessObject<User> {
             }
 
         } catch (SQLException e){
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
+    }
+
+    public boolean adminExists() {
+        String sql = "SELECT 1 FROM users WHERE role = 'ADMIN';";
+
+        try(Connection conn = ConnectDB.connect();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql)) {
+
+            return rs.next();
+
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+
+        return false;
+    }
+
+    public void initAdmin() {
+        String sql = """
+                INSERT INTO 
+                users(user_id, username, password, first_name, 
+                last_name, email, address_line1, city, postal_code, state, role)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+
+        try(Connection conn = ConnectDB.connect();
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, 1000); //user id
+            pstmt.setString(2, "admin123"); //username
+            pstmt.setString(3, BCrypt.hashpw("Admin@123", BCrypt.gensalt())); //password
+            pstmt.setString(4, "Admin"); //first_name
+            pstmt.setString(5, "Admin"); //last_name
+            pstmt.setString(6, "admin123@gmail.com"); //email
+            pstmt.setString(7, "address"); //address line 1
+            pstmt.setString(8, "Iskandar Puteri"); //city
+            pstmt.setString(9, "79100"); //postal_code
+            pstmt.setString(10, "Johor"); //state
+            pstmt.setString(11, "ADMIN"); //role
+
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
     }
 
     public boolean usernameExists(String username){
@@ -363,7 +363,7 @@ public class UserDAO extends DataAccessObject<User> {
             return rs.next();
 
         } catch (SQLException e){
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -381,7 +381,7 @@ public class UserDAO extends DataAccessObject<User> {
             return rs.next();
 
         } catch (SQLException e){
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -403,7 +403,7 @@ public class UserDAO extends DataAccessObject<User> {
             return rs.next();
 
         } catch (SQLException e){
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -424,7 +424,7 @@ public class UserDAO extends DataAccessObject<User> {
             return affectedRows > 0;
 
         } catch (SQLException e){
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -445,7 +445,7 @@ public class UserDAO extends DataAccessObject<User> {
             return affectedRows > 0;
 
         } catch (SQLException e){
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;

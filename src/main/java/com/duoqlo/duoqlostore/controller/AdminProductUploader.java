@@ -3,6 +3,7 @@ package com.duoqlo.duoqlostore.controller;
 import com.duoqlo.duoqlostore.model.Product;
 import com.duoqlo.duoqlostore.model.ProductDAO;
 import com.duoqlo.duoqlostore.model.ProductSize;
+import com.duoqlo.duoqlostore.view.InputField;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
@@ -39,9 +40,10 @@ public class AdminProductUploader {
     private static final String LAST_IMAGE_PATH_KEY = "last.image.path";
 
     // Product Details
-    private TextField nameField = new TextField();
+    private TextField nameField = new InputField();
     private Label autoSkuLabel = new Label("Select gender and category to generate SKU");
     private TextArea descArea = new TextArea();
+    private Label wordCountLabel = new Label();
     private ComboBox<String> genderCombo = new ComboBox<>();
     private ComboBox<String> categoryCombo = new ComboBox<>();
     private List<File> selectedImageFiles;
@@ -143,6 +145,7 @@ public class AdminProductUploader {
 
         loadExistingImages(originalImagePath);
 
+        sizeRows.clear();
         initSizeRowContainer();
         for (ProductSize productSize : product.getSizes()) {
             String size = productSize.getSize();
@@ -189,55 +192,50 @@ public class AdminProductUploader {
         productDetailsPane.setPadding(new Insets(20));
         productDetailsPane.setAlignment(Pos.TOP_CENTER);
 
-        // Title
         Label titleLabel = new Label("Enter Product Details");
         titleLabel.getStyleClass().add("title");
 
-        // Form Grid
-        GridPane grid = new GridPane();
-        grid.setHgap(15);
-        grid.setVgap(30);
-        grid.setAlignment(Pos.CENTER);
-
-        // Row 0: Product Name
+        //Product Name
         Label nameLabel = new Label("Product Name:*");
         nameLabel.getStyleClass().add("name");
         nameField.setPrefWidth(400);
-        grid.add(nameLabel, 0, 0);
-        grid.add(nameField, 1, 0);
 
-        // Row 1: Auto-generated SKU
+        //Auto-generated SKU
         Label skuLabel = new Label("SKU (Auto):");
         skuLabel.getStyleClass().add("sku");
         autoSkuLabel.getStyleClass().addAll("auto-sku");
         autoSkuLabel.setWrapText(true);
-        grid.add(skuLabel, 0, 1);
-        grid.add(autoSkuLabel, 1, 1);
 
-        // Row 2: Gender
+        //Gender
         Label genderLabel = new Label("Gender:*");
         genderLabel.getStyleClass().add("gender");
         genderCombo.getItems().addAll(genderIdMap.keySet());
         genderCombo.setPrefWidth(400);
-        grid.add(genderLabel, 0, 2);
-        grid.add(genderCombo, 1, 2);
 
-        // Row 3: Category
+        //Category
         Label categoryLabel = new Label("Category:*");
         categoryLabel.getStyleClass().add("category");
         categoryCombo.setPrefWidth(400);
-        grid.add(categoryLabel, 0, 3);
-        grid.add(categoryCombo, 1, 3);
 
-        // Row 4: Description
+        //Description
         Label descLabel = new Label("Description:");
         descLabel.getStyleClass().add("description");
         descArea.setPrefRowCount(4);
+        descArea.setWrapText(true);
         descArea.setPrefWidth(400);
-        grid.add(descLabel, 0, 4);
-        grid.add(descArea, 1, 4);
 
-        // Row 5 Product Images
+        //Description Word Count
+        int length = descArea.getText().length();
+        wordCountLabel.setText(length + "/180 left");
+        wordCountLabel.getStyleClass().add("word-count");
+
+        VBox descBox = new VBox(0);
+        descBox.getChildren().addAll(descArea, wordCountLabel);
+        descBox.setAlignment(Pos.CENTER_LEFT);
+
+        setupDescWordCount();
+
+        //Product Images
         Label imagesLabel = new Label("Product Images:*");
         imagesLabel.getStyleClass().add("images");
         Button browseButton = new Button("Browse Images");
@@ -245,6 +243,21 @@ public class AdminProductUploader {
         VBox imageSection = new VBox(10);
         imageSection.getChildren().addAll(browseButton, imageBox);
 
+        //Form Grid
+        GridPane grid = new GridPane();
+        grid.setHgap(15);
+        grid.setVgap(30);
+        grid.setAlignment(Pos.CENTER);
+        grid.add(nameLabel, 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(skuLabel, 0, 1);
+        grid.add(autoSkuLabel, 1, 1);
+        grid.add(genderLabel, 0, 2);
+        grid.add(genderCombo, 1, 2);
+        grid.add(categoryLabel, 0, 3);
+        grid.add(categoryCombo, 1, 3);
+        grid.add(descLabel, 0, 4);
+        grid.add(descBox, 1, 4);
         grid.add(imagesLabel, 0, 5);
         grid.add(imageSection, 1, 5);
 
@@ -318,6 +331,20 @@ public class AdminProductUploader {
 
         productDetailsPane.getChildren().addAll(titleLabel, grid, nextButton);
         productDetailsPane.getStylesheets().add(getClass().getResource("/css/uploader.css").toExternalForm());
+    }
+
+    private void setupDescWordCount() {
+        int max = 180;
+
+        descArea.textProperty().addListener((obs, oldVal, newVal) -> {
+            int length = newVal.length();
+
+            if(length > max) {
+                descArea.setText(oldVal);
+            } else {
+                wordCountLabel.setText(length + "/180 left");
+            }
+        });
     }
 
     private void setupCategoryCascade() {
@@ -411,10 +438,8 @@ public class AdminProductUploader {
 
         if (!isUpdateMode) {
             initSizeRowContainer();
+            addNewSizeRow(); // Add initial row
         }
-
-        // Add initial row
-        addNewSizeRow();
 
         // ScrollPane for size rows
         sizeScrollPane = new ScrollPane(sizeRowsContainer);
@@ -443,7 +468,6 @@ public class AdminProductUploader {
             }
         });
 
-
         buttonBox.getChildren().addAll(backButton, addProductButton);
 
         productSizePane.setSpacing(20);
@@ -452,6 +476,8 @@ public class AdminProductUploader {
     }
 
     private void initSizeRowContainer() {
+        sizeRowsContainer.getChildren().clear();
+
         Label sizeHeader = new Label("Size");
         sizeHeader.setPrefWidth(150);
         sizeHeader.getStyleClass().add("header");
@@ -487,11 +513,13 @@ public class AdminProductUploader {
         row.setAlignment(Pos.CENTER);
         row.setPadding(new Insets(5));
 
-        TextField sizeField = new TextField(size);
+        TextField sizeField = new InputField();
+        sizeField.setText(size);
         sizeField.setPromptText("e.g., S, M, L, XL");
         sizeField.setPrefWidth(150);
 
-        TextField stockField = new TextField(stock);
+        TextField stockField = new InputField();
+        stockField.setText(stock);
         stockField.setPromptText("Quantity");
         stockField.setPrefWidth(150);
         stockField.textProperty().addListener((obs, oldVal, newVal) -> {
@@ -500,7 +528,8 @@ public class AdminProductUploader {
             }
         });
 
-        TextField priceField = new TextField(price);
+        TextField priceField = new InputField();
+        priceField.setText(price);
         priceField.setPromptText("0.00");
         priceField.setPrefWidth(150);
         priceField.textProperty().addListener((obs, oldVal, newVal) -> {
@@ -550,11 +579,11 @@ public class AdminProductUploader {
         row.setAlignment(Pos.CENTER);
         row.setPadding(new Insets(5));
 
-        TextField sizeField = new TextField();
+        TextField sizeField = new InputField();
         sizeField.setPromptText("e.g., S, M, L, XL");
         sizeField.setPrefWidth(150);
 
-        TextField stockField = new TextField();
+        TextField stockField = new InputField();
         stockField.setPromptText("Quantity");
         stockField.setPrefWidth(150);
         stockField.textProperty().addListener((obs, oldVal, newVal) -> {
@@ -563,7 +592,7 @@ public class AdminProductUploader {
             }
         });
 
-        TextField priceField = new TextField();
+        TextField priceField = new InputField();
         priceField.setPromptText("0.00");
         priceField.setPrefWidth(150);
         priceField.textProperty().addListener((obs, oldVal, newVal) -> {
@@ -609,6 +638,15 @@ public class AdminProductUploader {
         return sizeRowsContainer.getChildren().indexOf(row) == sizeRowsContainer.getChildren().size() - 1;
     }
 
+    private Path buildRelativePath(String sku) {
+        return Paths.get("products", sku);
+    }
+
+    private Path buildAbsolutePath(String sku) {
+        String projectPath = System.getProperty("user.dir");
+        return Paths.get(projectPath, "products", sku);
+    }
+
     private boolean addProduct() {
         // Validate size rows
         List<SizeRow> validRows = new ArrayList<>();
@@ -646,8 +684,10 @@ public class AdminProductUploader {
             String description = descArea.getText().trim();
 
             // Build product folder path using stored values
-            Path productPath = buildProductPath(currentCategory, name, productSKU);
-            String imagePath = productPath.toString();
+            Path relativePath = buildRelativePath(productSKU);
+            Path absolutePath = buildAbsolutePath(productSKU);
+
+            String imagePath = relativePath.toString().replace("\\", "/");
 
             // Save to database
             if (!isUpdateMode) {
@@ -666,12 +706,20 @@ public class AdminProductUploader {
                 }
             } else {
                 if (!originalImagePath.equals(imagePath)) {
-                    Path oldPath = Paths.get(originalImagePath);
+                    Path oldPath = Paths.get(System.getProperty("user.dir")).resolve(originalImagePath);
 
                     try {
-                        Files.move(oldPath, productPath, StandardCopyOption.REPLACE_EXISTING);
+                        if (Files.exists(absolutePath)) {
+                            Files.walk(absolutePath)
+                                    .sorted(Comparator.reverseOrder())
+                                    .forEach(p -> {
+                                        try { Files.delete(p); } catch (IOException e) { e.printStackTrace(); }
+                                    });
+                        }
+
+                        Files.move(oldPath, absolutePath);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        System.err.println(e.getMessage());
                         showAlert(Alert.AlertType.ERROR, "Failed to rename product directory.");
                         return false;
                     }
@@ -691,16 +739,16 @@ public class AdminProductUploader {
                 }
             }
 
-            // Create directories and save images
-            if (!Files.exists(productPath)) {
-                Files.createDirectories(productPath);
+            //Create directories and save images
+            if (!Files.exists(absolutePath)) {
+                Files.createDirectories(absolutePath);
             }
 
             //Insert images into product path
             for (int i = 0; i < selectedImageFiles.size(); i++) {
                 File imgFile = selectedImageFiles.get(i);
                 String ext = getFileExtension(imgFile.getName());
-                Path target = productPath.resolve("image" + (i + 1) + "." + ext);
+                Path target = absolutePath.resolve("image" + (i + 1) + "." + ext);
                 Files.copy(imgFile.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
             }
 
@@ -717,13 +765,6 @@ public class AdminProductUploader {
         }
 
         return false;
-    }
-
-    private Path buildProductPath(String category, String productName, String sku) {
-        String productFolder = sku;
-        String projectPath = System.getProperty("user.dir");
-
-        return Paths.get(projectPath, "products", productFolder);
     }
 
     private void loadExistingImages(String imagePath) {

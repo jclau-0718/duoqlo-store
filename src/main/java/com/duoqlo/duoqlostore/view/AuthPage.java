@@ -1,37 +1,35 @@
 package com.duoqlo.duoqlostore.view;
 
-import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 public abstract class AuthPage extends ApplicationPage {
 
     public abstract Scene initialize();
 
-    public TextField createTextField(String promptText) {
-        TextField textField = new TextField();
-        textField.setPromptText(promptText);
-        textField.setMaxWidth(Double.MAX_VALUE);
-        textField.setPadding(new Insets(6,8,8,8));
+    public InputField createInputField(String promptText) {
+        InputField inputField = new InputField();
+        inputField.setFontSize(17);
+        inputField.setPromptText(promptText);
+        inputField.setMaxWidth(Double.MAX_VALUE);
+        inputField.setPadding(new Insets(6,8,8,8));
 
-        textField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+        inputField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if(!newVal) {
-                textField.setStyle("-fx-prompt-text-fill: gray");
+                inputField.setStyle("-fx-prompt-text-fill: gray");
             } else {
-                textField.setStyle("-fx-prompt-text-fill: transparent");
+                inputField.setStyle("-fx-prompt-text-fill: transparent");
             }
         });
 
-        return textField;
+        return inputField;
     }
 
     public Label createErrorLabel() {

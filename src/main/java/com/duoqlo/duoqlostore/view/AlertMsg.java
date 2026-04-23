@@ -14,17 +14,9 @@ import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 public class AlertMsg {
-    public enum AlertMsgType {
-        INFORMATION,
-        CONFIRMATION,
-        WARNING,
-        ERROR,
-        SUCCESS
-        }
 
-    private AlertMsgType type;
+    private AlertType type;
 
-    private String text;
     private FontIcon icon;
     private Color color;
 
@@ -35,7 +27,7 @@ public class AlertMsg {
 
     public AlertMsg() {};
 
-    public AlertMsg(AlertMsgType type) {
+    public AlertMsg(AlertType type) {
         this.type = type;
         setupInfo();
     }
@@ -81,7 +73,7 @@ public class AlertMsg {
         icon.setIconColor(color);
     }
 
-    public void setAlertType(AlertMsgType type) {
+    public void setAlertType(AlertType type) {
         this.type = type;
         setupInfo();
     }
@@ -140,7 +132,7 @@ public class AlertMsg {
                 -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 0);
                 """);
 
-        if (type == AlertMsgType.CONFIRMATION) {
+        if (type == AlertType.CONFIRMATION) {
             Button confirmButton = new Button("Confirm");
             confirmButton.setStyle("""
                     -fx-background-color: #FE6C01;
@@ -213,7 +205,7 @@ public class AlertMsg {
 
         ParallelTransition enterAnimation = new ParallelTransition(fadeIn, moveDown);
 
-        if(type == AlertMsgType.CONFIRMATION) {
+        if(type == AlertType.CONFIRMATION) {
             enterAnimation.play();
             return;
         } else {

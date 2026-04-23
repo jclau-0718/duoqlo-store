@@ -1,0 +1,26 @@
+.text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: #EBEBEB;
+    -fx-border-width: 3;
+    -fx-border-radius: 5;
+    -fx-prompt-text-fill: gray;
+    -fx-font-family: Arial;
+    -fx-font-size: 15;
+    -fx-text-fill: black;
+}
+
+.text-field:focused, .text-field.valid:focused {
+    -fx-border-color: #D4D4D4 #D4D4D4 #FE6C01 #D4D4D4;  /* grey grey orange grey */
+}
+
+.text-field.valid {
+    -fx-border-color: #EBEBEB #EBEBEB #FE6C01 #EBEBEB;
+}
+
+.text-field.error {
+    -fx-border-color: #D22F20 #D22F20 #D22F20 #D22F20;
+}
+
+.text-field.error:focused {
+    -fx-border-color: #D4D4D4 #D4D4D4 #D22F20 #D4D4D4; /* red red red red */
+}

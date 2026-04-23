@@ -200,7 +200,6 @@ class UserTableView extends TableView<User> {
                         if(showBackButton != null) showBackButton.run();
 
                         ProfileController profileController = new ProfileController(user);
-                        System.out.println(user.getAddressLine1());
                         ProfilePage profilePage = new ProfilePage(profileController);
 
                         StackPane content = profilePage.getContent();
@@ -217,12 +216,12 @@ class UserTableView extends TableView<User> {
                     // Deactivate button action
                     deactivateButton.setOnAction(e -> {
                         if (isAdmin[0] && controller.getTotalAdmins() == 1) {
-                            AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                            AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
                             errorAlert.show(body, "Minimum one admin must remain active.", Pos.TOP_CENTER);
                             return;
                         }
 
-                        AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
+                        AlertMsg confirmAlert = new AlertMsg(AlertType.CONFIRMATION);
                         confirmAlert.show(body, "Confirm to deactivate?", Pos.TOP_CENTER);
                         confirmAlert.setOnConfirm(() -> {
                             boolean success = isAdmin[0]
@@ -231,10 +230,10 @@ class UserTableView extends TableView<User> {
 
                             if (success) {
                                 refresh();
-                                AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                                AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
                                 successAlert.show(body, "Deactivated successfully", Pos.TOP_CENTER);
                             } else {
-                                AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                                AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
                                 errorAlert.show(body, "Error. Failed to deactivate.", Pos.TOP_CENTER);
                             }
                         });
@@ -242,7 +241,7 @@ class UserTableView extends TableView<User> {
                     deactivateButton.getStyleClass().add("deactivate-button");
 
                     reactivateButton.setOnAction(e -> {
-                        AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
+                        AlertMsg confirmAlert = new AlertMsg(AlertType.CONFIRMATION);
                         confirmAlert.show(body, "Confirm to reactivate?", Pos.TOP_CENTER);
                         confirmAlert.setOnConfirm(() -> {
                             if (controller.reactivateUser(user.getId())) {
@@ -250,7 +249,7 @@ class UserTableView extends TableView<User> {
                                 refresh();
 
                                 //Show success alert
-                                AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                                AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
                                 successAlert.show(body, "Reactivated successfully", Pos.TOP_CENTER);
                             }
                         });
@@ -409,7 +408,7 @@ class ProductTableView extends TableView<Product> {
                     });
 
                     removeButton.setOnAction(e -> {
-                        AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
+                        AlertMsg confirmAlert = new AlertMsg(AlertType.CONFIRMATION);
                         confirmAlert.show(body, "Confirm to remove product?", Pos.TOP_CENTER);
                         confirmAlert.setOnConfirm(() -> {
                             getTableView().setItems(FXCollections.observableArrayList());
@@ -421,7 +420,7 @@ class ProductTableView extends TableView<Product> {
                                 getTableView().setItems(controller.getProducts());
                                 refresh();
 
-                                AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                                AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
                                 successAlert.show(body, "Successfully removed product", Pos.TOP_CENTER);
                             }
                         });
@@ -552,8 +551,6 @@ public class AdminDashboard extends ApplicationPage {
         PrimaryButton logOutButton = new PrimaryButton("LOG OUT");
         logOutButton.setFontSize(18);
         logOutButton.setRadius(10);
-//        logOutButton.getStyleClass().add("logout-button");
-        System.out.println(logOutButton.getStyleClass());
         logOutButton.setOnAction(e -> Navigator.goTo(new LogInPage().initialize()));
 
         StackPane header = new StackPane(); //Button-to-Button space
@@ -714,17 +711,13 @@ public class AdminDashboard extends ApplicationPage {
             signUpPage.setIsAdminMode();
 
             signUpPage.setBackToAdminDash(() -> {
-                Navigator.goTo(this.initialize());
+                refreshCustomerPage();
 
-                alert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                alert = new AlertMsg(AlertType.SUCCESS);
                 alert.show(body, "New user added.", Pos.TOP_CENTER);
             });
 
-            VBox content = signUpPage.getContentForAdmin();
-
-            content.getStylesheets().add(
-                getClass().getResource("/css/signup-page.css").toExternalForm()
-            );
+            VBox content = signUpPage.getContentForAdmin(mainTableBox);
 
             switchMainTableBox(content);
         });
@@ -732,6 +725,14 @@ public class AdminDashboard extends ApplicationPage {
         showCustomerTable();
 
         removeGendersCategories();
+    }
+
+    private void refreshCustomerPage() {
+        controller.refreshCustomerData();
+        mainTableBox.getChildren().clear();
+        showCustomerTable();
+
+        refreshStatCards();
     }
 
     private void showAdminTable() {
@@ -768,13 +769,13 @@ public class AdminDashboard extends ApplicationPage {
             signUpPage.setIsAdminMode();
 
             signUpPage.setBackToAdminDash(() -> {
-                Navigator.goTo(this.initialize());
+                refreshAdminPage();
 
-                alert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                alert = new AlertMsg(AlertType.SUCCESS);
                 alert.show(body, "New admin added.", Pos.TOP_CENTER);
             });
 
-            VBox content = signUpPage.getContentForAdmin();
+            VBox content = signUpPage.getContentForAdmin(mainTableBox);
 
             content.getStylesheets().add(
                     getClass().getResource("/css/signup-page.css").toExternalForm()
@@ -786,6 +787,14 @@ public class AdminDashboard extends ApplicationPage {
         showAdminTable();
 
         removeGendersCategories();
+    }
+
+    private void refreshAdminPage() {
+        controller.refreshAdminData();
+        mainTableBox.getChildren().clear();
+        showAdminTable();
+
+        refreshStatCards();
     }
 
     private void showProductTable() {
@@ -803,7 +812,7 @@ public class AdminDashboard extends ApplicationPage {
         ((ProductTableView) productTable).setShowProductPage(() -> {
             refreshProductPage();
 
-            AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+            AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
             successAlert.show(body, "Successfully updated product.", Pos.TOP_CENTER);
         });
 
@@ -821,7 +830,7 @@ public class AdminDashboard extends ApplicationPage {
         Label genderLabel = new Label("Gender");
         genderLabel.getStyleClass().add("form-header");
 
-        genderIdField = new TextField();
+        genderIdField = new InputField();
         genderIdField.textProperty().addListener((obs, oldval, newVal) -> {
             if (newVal.isEmpty()) {
                 return;
@@ -831,7 +840,7 @@ public class AdminDashboard extends ApplicationPage {
                 genderIdField.setText(oldval);
             }
         });
-        genderField = new TextField();
+        genderField = new InputField();
         genderField.textProperty().addListener((obs, oldval, newVal) -> {
             if (newVal.isEmpty()) {
                 return;
@@ -864,19 +873,19 @@ public class AdminDashboard extends ApplicationPage {
 
         Button addButton = new PrimaryButton("Add");
         addButton.setOnAction(e -> {
-            AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
+            AlertMsg confirmAlert = new AlertMsg(AlertType.CONFIRMATION);
             confirmAlert.show(body, "Confirm to add?", Pos.TOP_CENTER);
             confirmAlert.setOnConfirm(() -> {
                 String id = genderIdField.getText().trim().toUpperCase();
                 String gender = genderField.getText().trim().toUpperCase();
 
                 if (controller.addGender(id, gender)) {
-                    AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                    AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
                     successAlert.show(body, "Successfully add new gender", Pos.TOP_CENTER);
 
                     refreshProductPage();
                 } else {
-                    AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                    AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
                     errorAlert.show(body, "Error adding gender. Try again.", Pos.TOP_CENTER);
                 }
             });
@@ -900,14 +909,14 @@ public class AdminDashboard extends ApplicationPage {
 
         Button updateButton = new PrimaryButton("Update");
         updateButton.setOnAction(e -> {
-            AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
+            AlertMsg confirmAlert = new AlertMsg(AlertType.CONFIRMATION);
             confirmAlert.show(body, "Confirm to update?", Pos.TOP_CENTER);
             confirmAlert.setOnConfirm(() -> {
                 String currentId = genderIdField.getText().trim().toUpperCase();
                 String currentGender = genderField.getText().trim().toUpperCase();
 
                 if (controller.updateGender(currentId, currentGender)) {
-                    AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                    AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
                     successAlert.show(body, "Successfully updated gender", Pos.TOP_CENTER);
 
                     genderIdField.setText("");
@@ -915,7 +924,7 @@ public class AdminDashboard extends ApplicationPage {
 
                     refreshProductPage();
                 } else {
-                    AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                    AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
                     errorAlert.show(body, "Error updating gender. Try again.", Pos.TOP_CENTER);
                 }
             });
@@ -978,16 +987,16 @@ public class AdminDashboard extends ApplicationPage {
                         String id = getTableView().getItems().get(getIndex()).getId();
 
                         if(controller.genderInUse(id)) {
-                            AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                            AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
                             errorAlert.show(body, "Gender is in use!", Pos.TOP_CENTER);
                             return;
                         }
 
-                        AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
+                        AlertMsg confirmAlert = new AlertMsg(AlertType.CONFIRMATION);
                         confirmAlert.show(body, "Confirm to remove?", Pos.TOP_CENTER);
                         confirmAlert.setOnConfirm(() -> {
                             if (controller.removeGender(id)) {
-                                AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                                AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
                                 successAlert.show(body, "Successfully removed gender.", Pos.TOP_CENTER);
 
                                 //Refresh table content
@@ -995,7 +1004,7 @@ public class AdminDashboard extends ApplicationPage {
                                 genderTable.setItems(controller.getGenders());
 
                             } else {
-                                AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                                AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
                                 errorAlert.show(body, "Error removing gender. Try again.", Pos.TOP_CENTER);
                                 return;
                             }
@@ -1064,7 +1073,7 @@ public class AdminDashboard extends ApplicationPage {
         Label genderLabel = new Label("Gender");
         genderLabel.getStyleClass().add("form-header");
 
-        categoryIdField = new TextField();
+        categoryIdField = new InputField();
         categoryIdField.textProperty().addListener((obs, oldval, newVal) -> {
             if (newVal.isEmpty()) {
                 return;
@@ -1075,7 +1084,7 @@ public class AdminDashboard extends ApplicationPage {
             }
         });
 
-        categoryNameField = new TextField();
+        categoryNameField = new InputField();
         categoryNameField.textProperty().addListener((obs, oldval, newVal) -> {
             if (newVal.isEmpty()) {
                 return;
@@ -1128,7 +1137,7 @@ public class AdminDashboard extends ApplicationPage {
 
         Button addButton = new PrimaryButton("Add");
         addButton.setOnAction(e -> {
-            AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
+            AlertMsg confirmAlert = new AlertMsg(AlertType.CONFIRMATION);
             confirmAlert.show(body, "Confirm to add?", Pos.TOP_CENTER);
             confirmAlert.setOnConfirm(() -> {
                 String categoryId = categoryIdField.getText().trim().toUpperCase();
@@ -1136,12 +1145,12 @@ public class AdminDashboard extends ApplicationPage {
                 String genderId = categoryGenderCombo.getValue().getId();
 
                 if (controller.addCategory(categoryId, categoryName, genderId)) {
-                    AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                    AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
                     successAlert.show(body, "Successfully add new category", Pos.TOP_CENTER);
 
                     refreshProductPage();
                 } else {
-                    AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                    AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
                     errorAlert.show(body, "Error adding category. Try again.", Pos.TOP_CENTER);
                 }
             });
@@ -1166,16 +1175,15 @@ public class AdminDashboard extends ApplicationPage {
 
         Button updateButton = new PrimaryButton("Update");
         updateButton.setOnAction(e -> {
-            AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
+            AlertMsg confirmAlert = new AlertMsg(AlertType.CONFIRMATION);
             confirmAlert.show(body, "Confirm to update?", Pos.TOP_CENTER);
             confirmAlert.setOnConfirm(() -> {
                 String categoryId = categoryIdField.getText();
                 String newCategoryName = categoryNameField.getText().trim().toUpperCase();
-                System.out.println("In admin dash:" + newCategoryName);
                 String newGenderId = categoryGenderCombo.getValue().getId();
 
                 if (controller.updateCategory(categoryId, newCategoryName, newGenderId)) {
-                    AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                    AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
                     successAlert.show(body, "Successfully updated category", Pos.TOP_CENTER);
 
                     categoryIdField.setText("");
@@ -1184,7 +1192,7 @@ public class AdminDashboard extends ApplicationPage {
 
                     refreshProductPage();
                 } else {
-                    AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                    AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
                     errorAlert.show(body, "Error updating category. Try again.", Pos.TOP_CENTER);
                 }
             });
@@ -1251,23 +1259,23 @@ public class AdminDashboard extends ApplicationPage {
                         String id = getTableView().getItems().get(getIndex()).getId();
 
                         if (controller.categoryInUse(id)) {
-                            AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                            AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
                             errorAlert.show(body, "Category is in use!", Pos.TOP_CENTER);
                             return;
                         }
 
-                        AlertMsg confirmAlert = new AlertMsg(AlertMsg.AlertMsgType.CONFIRMATION);
+                        AlertMsg confirmAlert = new AlertMsg(AlertType.CONFIRMATION);
                         confirmAlert.show(body, "Confirm to remove?", Pos.TOP_CENTER);
                         confirmAlert.setOnConfirm(() -> {
                              if (controller.removeCategory(id)) {
-                                AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                                AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
                                 successAlert.show(body, "Successfully removed category.", Pos.TOP_CENTER);
 
                                 //Refresh table content
                                 controller.refreshCategoryData();
                                 categoryTable.setItems(controller.getCategories());
                             } else {
-                                AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                                AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
                                 errorAlert.show(body, "Error removing category. Try again.", Pos.TOP_CENTER);
                             }
                         });
@@ -1369,7 +1377,7 @@ public class AdminDashboard extends ApplicationPage {
             uploader.setShowProductPage(() -> {
                 refreshProductPage();
 
-                AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
                 successAlert.show(body, "Successfully added product.", Pos.TOP_CENTER);
             });
 
@@ -1475,14 +1483,14 @@ public class AdminDashboard extends ApplicationPage {
 
                     doneButton.setOnAction(e -> {
                         if(controller.setOrderAsDone(order.getOrderId())) {
-                            AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+                            AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
                             successAlert.show(body, "Order set as done.", Pos.TOP_CENTER);
 
                             refreshStatCards();
 
                             refreshOrderPage();
                         } else {
-                            AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+                            AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
                             errorAlert.show(body, "Error! Please try again.", Pos.TOP_CENTER);
                         }
                     });
@@ -1813,6 +1821,7 @@ public class AdminDashboard extends ApplicationPage {
 
         backButton.setVisible(false);
     }
+
     public Scene initialize() {
         controller.initializeAllData();
 
@@ -1827,11 +1836,14 @@ public class AdminDashboard extends ApplicationPage {
         titleBox.setVisible(false);
         titleBox.setManaged(false);
 
-        if (addBtnWasVisible) {
-            addButton.setVisible(true);
-        } else {
-            addButton.setVisible(false);
-        }
+        addButton.setVisible(false);
+
+//        addBtnWasVisible = false;
+//        if (addBtnWasVisible) {
+//            addButton.setVisible(true);
+//        } else {
+//            addButton.setVisible(false);
+//        }
 
         backButton = buildBackButton();
         backButton.setOnAction(e -> backToTable());

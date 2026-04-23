@@ -14,6 +14,9 @@ public class AdminDashController {
     private UserDAO userDAO = new UserDAO();
     private ProductDAO productDAO = new ProductDAO();
     private OrderDAO orderDAO = new OrderDAO();
+    private SalesDAO salesDAO = new SalesDAO();
+
+    private User loggedInAdmin;
 
     private ObservableList<User> users = FXCollections.observableArrayList();
     private ObservableList<User> customers = FXCollections.observableArrayList();
@@ -23,6 +26,10 @@ public class AdminDashController {
     private ObservableList<Category> categories = FXCollections.observableArrayList();
     private ObservableList<Order> orders = FXCollections.observableArrayList();
     private ObservableList<SalesRecord> sales = FXCollections.observableArrayList();
+
+    public AdminDashController(User admin) {
+        this.loggedInAdmin = admin;
+    }
 
     public void initializeAllData() {
         this.users.setAll(userDAO.getAllUsersObservable());
@@ -57,6 +64,10 @@ public class AdminDashController {
     }
 
     public void refreshOrderData() { this.orders.setAll(orderDAO.getAllOrdersObservable()); }
+
+    public String getAdminName() { return this.loggedInAdmin.getFullName(); }
+
+    public int getAdminId() { return this.loggedInAdmin.getId(); }
 
     public ObservableList<User> getCustomers() {
         return this.customers;
@@ -97,32 +108,32 @@ public class AdminDashController {
     public ObservableList<SalesRecord> getSales() { return this.sales; }
 
     public ObservableList<SalesRecord> getDailySales() {
-        this.sales.setAll(SalesDAO.getDailySales());
+        this.sales.setAll(salesDAO.getDailySales());
         return this.sales;
     }
 
     public ObservableList<SalesRecord> getWeeklySales() {
-        this.sales.setAll(SalesDAO.getWeeklySales());
+        this.sales.setAll(salesDAO.getWeeklySales());
         return this.sales;
     }
 
     public ObservableList<SalesRecord> getMonthlySales() {
-        this.sales.setAll(SalesDAO.getMonthlySales());
+        this.sales.setAll(salesDAO.getMonthlySales());
         return this.sales;
     }
 
     public ObservableList<SalesRecord> getSalesByGenders() {
-        this.sales.setAll(SalesDAO.getSalesByGenders());
+        this.sales.setAll(salesDAO.getSalesByGenders());
         return this.sales;
     }
 
     public ObservableList<SalesRecord> getSalesByCategories() {
-        this.sales.setAll(SalesDAO.getSalesByCategories());
+        this.sales.setAll(salesDAO.getSalesByCategories());
         return this.sales;
     }
 
     public ObservableList<SalesRecord> getSalesByFilterAndFreq(FilterBy filter, Freq freq, String value) {
-        this.sales.setAll(SalesDAO.getSalesByFilterAndFrequency(filter, freq, value));
+        this.sales.setAll(salesDAO.getSalesByFilterAndFrequency(filter, freq, value));
         return this.sales;
     }
 
@@ -178,7 +189,7 @@ public class AdminDashController {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -204,7 +215,7 @@ public class AdminDashController {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -231,7 +242,7 @@ public class AdminDashController {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -257,13 +268,12 @@ public class AdminDashController {
         try {
             Path path = Paths.get(imagePath);
 
-            // If relative path, resolve against working directory
             if (!path.isAbsolute()) {
                 path = Paths.get(System.getProperty("user.dir")).resolve(path);
             }
 
             if (!Files.exists(path)) {
-                System.out.println("Path does not exist: " + path);
+                System.err.println("Path does not exist: " + path);
                 return;
             }
 
@@ -276,8 +286,6 @@ public class AdminDashController {
                             System.err.println("Failed to delete: " + p + " — " + e.getMessage());
                         }
                     });
-
-            System.out.println("Deleted product directory: " + path);
 
         } catch (IOException e) {
             System.err.println("Error deleting product directory: " + e.getMessage());
@@ -305,7 +313,6 @@ public class AdminDashController {
     }
 
     public boolean updateCategory(String categoryId, String categoryName, String genderId) {
-        System.out.println("In controller: "+categoryName);
         return productDAO.updateCategory(categoryId, categoryName, genderId);
     }
 

@@ -5,15 +5,12 @@ import com.duoqlo.duoqlostore.controller.InfoValidation;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.controller.ProfileController;
 import com.duoqlo.duoqlostore.model.User;
-import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.LinkedHashMap;
@@ -23,8 +20,8 @@ public class ProfilePage extends UserPage {
     private ProfileController controller;
     private InfoValidation validator = new InfoValidation();
 
-    private AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
-    private AlertMsg errorAlert = new AlertMsg(AlertMsg.AlertMsgType.ERROR);
+    private AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
+    private AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
 
     private StackPane body;
     private VBox profileBox;
@@ -55,8 +52,6 @@ public class ProfilePage extends UserPage {
     private int profileBoxWidth = 150;
 
     public ProfilePage(ProfileController controller) {
-        super(controller.getUser());
-
         this.controller = controller;
     }
 
@@ -64,7 +59,12 @@ public class ProfilePage extends UserPage {
     public User getUser() { return controller.getUser(); }
 
     @Override
-    public void openCartPage() { controller.openCartPage(); }
+    public void openCartPage() {
+        if(!controller.openCartPage()){
+            AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
+            errorAlert.show(body, "Unable to fetch cart. Please try again.", Pos.TOP_CENTER);
+        }
+    }
 
     @Override
     public void openOrdersPage() { controller.openOrdersPage(); }
@@ -88,55 +88,55 @@ public class ProfilePage extends UserPage {
 
     private void initFieldBoxes() {
         // First Name
-        firstNameField = createTextField("First Name");
+        firstNameField = createInputField("First Name");
         firstNameField.getStyleClass().add("valid");
         firstNameError = createErrorLabel();
         firstNameBox = createTextFieldBox(firstNameField, firstNameError);
 
         // Last Name
-        lastNameField = createTextField("Last Name");
+        lastNameField = createInputField("Last Name");
         lastNameField.getStyleClass().add("valid");
         lastNameError = createErrorLabel();
         lastNameBox = createTextFieldBox(lastNameField, lastNameError);
 
         // Email
-        emailField = createTextField("Email (hello@example.com)");
+        emailField = createInputField("Email (hello@example.com)");
         emailField.getStyleClass().add("valid");
         emailError = createErrorLabel();
         emailBox = createTextFieldBox(emailField, emailError);
 
         // Address 1
-        address1Field = createTextField("Address Line 1");
+        address1Field = createInputField("Address Line 1");
         address1Field.getStyleClass().add("valid");
         address1Error = createErrorLabel();
         address1Box = createTextFieldBox(address1Field, address1Error);
 
         // Address 2 (optional)
-        address2Field = createTextField("Address Line 2 (Optional)");
+        address2Field = createInputField("Address Line 2 (Optional)");
         address2Field.getStyleClass().add("valid");
         address2Error = createErrorLabel();
         address2Box = createTextFieldBox(address2Field, address2Error);
 
         // City
-        cityField = createTextField("City");
+        cityField = createInputField("City");
         cityField.getStyleClass().add("valid");
         cityError = createErrorLabel();
         cityBox = createTextFieldBox(cityField, cityError);
 
         // Postcode
-        postcodeField = createTextField("Postcode");
+        postcodeField = createInputField("Postcode");
         postcodeField.getStyleClass().add("valid");
         postcodeError = createErrorLabel();
         postcodeBox = createTextFieldBox(postcodeField, postcodeError);
 
         // State
-        stateField = createTextField("State");
+        stateField = createInputField("State");
         stateField.getStyleClass().add("valid");
         stateError = createErrorLabel();
         stateBox = createTextFieldBox(stateField, stateError);
 
         // Username
-        usernameField = createTextField("Username");
+        usernameField = createInputField("Username");
         usernameField.getStyleClass().add("valid");
         usernameError = createErrorLabel();
         usernameBox = createTextFieldBox(usernameField, usernameError);
@@ -326,25 +326,28 @@ public class ProfilePage extends UserPage {
     }
 
     private void handleUpdate() {
-        if (controller.updateData()) {
-            controller.setNewUser();
-            successAlert.show(body, "Successfully updated.", Pos.TOP_CENTER);
+        try {
+            if (controller.updateData()) {
+                controller.setNewUser();
+                successAlert.show(body, "Successfully updated.", Pos.TOP_CENTER);
 
-            updateProfileBox();
-            if (controller.getMenuOpened().equals("credentials")) {
-                resetPasswordFields();
-            }
-
-            // Request focus on body to remove focus from any field
-            Platform.runLater(() -> {
-                body.requestFocus();
-                // Also clear focus from any text field
-                if (editBox != null) {
-                    editBox.getParent().requestFocus();
+                updateProfileBox();
+                if (controller.getMenuOpened().equals("credentials")) {
+                    resetPasswordFields();
                 }
-            });
 
-        } else {
+                // Request focus on body to remove focus from any field
+                Platform.runLater(() -> {
+                    body.requestFocus();
+                    // Also clear focus from any text field
+                    if (editBox != null) {
+                        editBox.getParent().requestFocus();
+                    }
+                });
+
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
             errorAlert.show(body, "Error. Please try again.", Pos.TOP_CENTER);
         }
     }
@@ -497,6 +500,11 @@ public class ProfilePage extends UserPage {
          body = buildBody();
 
         return body;
+    }
+
+    public void exit() {
+        controller.cleanup();
+        controller = null;
     }
 
     public Scene initialize() {

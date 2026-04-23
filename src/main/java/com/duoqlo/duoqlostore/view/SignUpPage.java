@@ -9,7 +9,6 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.util.*;
@@ -17,6 +16,8 @@ import java.util.*;
 public class SignUpPage extends AuthPage{
     private AuthController controller = new AuthController();
     private InfoValidation validator = new InfoValidation();
+
+    private StackPane body;
 
     private TextField firstNameField, lastNameField, emailField, address1Field, address2Field,
     cityField, postcodeField, stateField, usernameField, visiblePassField, visibleConfirmPassField;
@@ -33,6 +34,7 @@ public class SignUpPage extends AuthPage{
 
     private SecondaryButton backButton;
     private Runnable backToAdminDash;
+    private Pane adminParentPane;
 
     private boolean isAdminMode = false;
 
@@ -42,7 +44,7 @@ public class SignUpPage extends AuthPage{
 
     public Region createLine(){
         Region line = new Region();
-        line.setStyle("-fx-background-color: #EBEBEB");
+        line.setStyle("-fx-background-color: #ADADAD");
         line.setMaxHeight(3);
 
         return line;
@@ -70,47 +72,47 @@ public class SignUpPage extends AuthPage{
 
     private void initFieldBoxes() {
         // First Name
-        firstNameField = createTextField("First Name");
+        firstNameField = createInputField("First Name");
         firstNameError = createErrorLabel();
         firstNameBox = createTextFieldBox(firstNameField, firstNameError);
 
         // Last Name
-        lastNameField = createTextField("Last Name");
+        lastNameField = createInputField("Last Name");
         lastNameError = createErrorLabel();
         lastNameBox = createTextFieldBox(lastNameField, lastNameError);
 
         // Email
-        emailField = createTextField("Email (hello@example.com)");
+        emailField = createInputField("Email (hello@example.com)");
         emailError = createErrorLabel();
         emailBox = createTextFieldBox(emailField, emailError);
 
         // Address 1
-        address1Field = createTextField("Address Line 1");
+        address1Field = createInputField("Address Line 1");
         address1Error = createErrorLabel();
         address1Box = createTextFieldBox(address1Field, address1Error);
 
         // Address 2 (optional)
-        address2Field = createTextField("Address Line 2 (Optional)");
+        address2Field = createInputField("Address Line 2 (Optional)");
         address2Error = createErrorLabel();
         address2Box = createTextFieldBox(address2Field, address2Error);
 
         // City
-        cityField = createTextField("City");
+        cityField = createInputField("City");
         cityError = createErrorLabel();
         cityBox = createTextFieldBox(cityField, cityError);
 
         // Postcode
-        postcodeField = createTextField("Postcode");
+        postcodeField = createInputField("Postcode");
         postcodeError = createErrorLabel();
         postcodeBox = createTextFieldBox(postcodeField, postcodeError);
 
         // State
-        stateField = createTextField("State");
+        stateField = createInputField("State");
         stateError = createErrorLabel();
         stateBox = createTextFieldBox(stateField, stateError);
 
         //Country
-        TextField countryField = createTextField("Country");
+        TextField countryField = createInputField("Country");
         countryField.setText("Malaysia");
         countryField.setEditable(false);
         countryField.getStyleClass().add("valid");
@@ -118,7 +120,7 @@ public class SignUpPage extends AuthPage{
         countryBox = createTextFieldBox(countryField, countryError);
 
         // Username
-        usernameField = createTextField("Username");
+        usernameField = createInputField("Username");
         usernameError = createErrorLabel();
         usernameBox = createTextFieldBox(usernameField, usernameError);
 
@@ -186,7 +188,7 @@ public class SignUpPage extends AuthPage{
         fieldErrorMap.put(stateField, stateError);
     }
 
-    private GridPane personalInfoBox() {
+    private GridPane buildPersonalInfoBox() {
         HBox titleSection = createSectionTitle("Personal Info");
 
         GridPane grid = new GridPane();
@@ -227,24 +229,7 @@ public class SignUpPage extends AuthPage{
         return grid;
     }
 
-    public VBox loginDetailsBox() {
-        HBox titleSection = createSectionTitle("Login Details");
-
-        Label description = new Label("Use these details to log in to your account.");
-        description.getStyleClass().add("description");
-
-        VBox loginDetailsBox = new VBox();
-        loginDetailsBox.getChildren().addAll(titleSection, description, usernameBox, passwordBox, confirmPassBox);
-        VBox.setMargin(titleSection, new Insets(0,0,5,0));
-        VBox.setMargin(description, new Insets(0,0,0,0));
-        VBox.setMargin(usernameBox,new Insets(5,0,5,0));
-        VBox.setMargin(passwordBox,new Insets(5,0,5,0));
-        VBox.setMargin(confirmPassBox,new Insets(5,0,5,0));
-
-        return loginDetailsBox;
-    }
-
-    public HBox personalInfoButtonBox() {
+    public HBox buildPersonalInfoButtonBox() {
         backButton = new SecondaryButton("Back");
         backButton.setFontSize(18);
         backButton.setMaxWidth(Double.MAX_VALUE);
@@ -265,15 +250,37 @@ public class SignUpPage extends AuthPage{
             if (validator.personalInfoInvalid(fieldErrorMap)) {
                 return;
             } else {
-                BorderPane root = (BorderPane) ((Node) e.getSource()).getScene().getRoot();
-                root.setCenter(loginDetailsForm());
+                if(backToAdminDash == null) {
+                    BorderPane root = (BorderPane) ((Node) e.getSource()).getScene().getRoot();
+                    root.setCenter(buildLoginDetailsForm());
+                } else {
+                    adminParentPane.getChildren().clear();
+                    adminParentPane.getChildren().add(buildLoginDetailsForm());
+                }
             }
         });
 
         return buttonBox;
     }
 
-    public HBox logInDetailsButtonBox() {
+    public VBox buildLoginDetailsBox() {
+        HBox titleSection = createSectionTitle("Login Details");
+
+        Label description = new Label("Use these details to log in to your account.");
+        description.getStyleClass().add("description");
+
+        VBox loginDetailsBox = new VBox();
+        loginDetailsBox.getChildren().addAll(titleSection, description, usernameBox, passwordBox, confirmPassBox);
+        VBox.setMargin(titleSection, new Insets(0,0,5,0));
+        VBox.setMargin(description, new Insets(0,0,0,0));
+        VBox.setMargin(usernameBox,new Insets(5,0,5,0));
+        VBox.setMargin(passwordBox,new Insets(5,0,5,0));
+        VBox.setMargin(confirmPassBox,new Insets(5,0,5,0));
+
+        return loginDetailsBox;
+    }
+
+    public HBox buildLoginDetailsButtonBox() {
         SecondaryButton backButton = new SecondaryButton("BACK");
         backButton.setFontSize(18);
         backButton.setMaxWidth(Double.MAX_VALUE);
@@ -291,17 +298,26 @@ public class SignUpPage extends AuthPage{
         HBox.setMargin(backButton, new Insets(0, 10, 0, 0));
 
         backButton.setOnAction(e -> {
-            BorderPane root = (BorderPane) ((Node) e.getSource()).getScene().getRoot();
-            Platform.runLater(() -> {root.requestFocus();}); //Remove initial focus on Username TextField
+            if (backToAdminDash == null) {
+                BorderPane root = (BorderPane) ((Node) e.getSource()).getScene().getRoot();
+                Platform.runLater(() -> {
+                    root.requestFocus();
+                }); //Remove initial focus on Username TextField
 
-            //Revalidate all fields
-            for (Map.Entry<TextField, Label> entry : fieldErrorMap.entrySet()) {
-                validator.revalidateField(entry.getKey(), entry.getValue());
+                //Revalidate all fields
+                for (Map.Entry<TextField, Label> entry : fieldErrorMap.entrySet()) {
+                    validator.revalidateField(entry.getKey(), entry.getValue());
+                }
+
+                root.setCenter(buildPersonalInfoForm());
+            } else {
+                for (Map.Entry<TextField, Label> entry : fieldErrorMap.entrySet()) {
+                    validator.revalidateField(entry.getKey(), entry.getValue());
+                }
+
+                adminParentPane.getChildren().clear();
+                adminParentPane.getChildren().add(buildPersonalInfoForm());
             }
-
-            root.setCenter(personalInfoForm());
-
-            root.setCenter(personalInfoForm());
         });
 
         signUpButton.setOnAction(e -> {
@@ -338,6 +354,9 @@ public class SignUpPage extends AuthPage{
                             backToAdminDash.run();
                         }
 
+                    } else {
+                        AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
+                        errorAlert.show(body, "Unable to sign up. Please try again.", Pos.TOP_CENTER);
                     }
                 }
             } catch (Exception ex) {
@@ -349,14 +368,22 @@ public class SignUpPage extends AuthPage{
     }
 
     public VBox createForm(Node bodyBox, Node buttonBox) {
+        int formHeight = 280;
+        int formWidth = 630;
+
         Label title = new Label("SIGN UP");
         title.getStyleClass().add("signup-title");
 
         VBox form = new VBox();
         form.getChildren().addAll(title, bodyBox, buttonBox);
         form.getStyleClass().add("signup-form");
-        form.setMaxHeight(167);
-        form.setMaxWidth(500);
+
+
+        form.setPrefHeight(formHeight);
+        form.setMaxHeight(formHeight);
+        form.setPrefWidth(formWidth);
+        form.setMaxWidth(formWidth);
+
         form.setAlignment(Pos.CENTER);
         form.setPadding(new Insets(20,20,20,20));
 
@@ -367,9 +394,9 @@ public class SignUpPage extends AuthPage{
         return form;
     }
 
-    public VBox personalInfoForm() {
-        GridPane personalInfoBox = personalInfoBox();
-        HBox buttonBox = personalInfoButtonBox();
+    public VBox buildPersonalInfoForm() {
+        GridPane personalInfoBox = buildPersonalInfoBox();
+        HBox buttonBox = buildPersonalInfoButtonBox();
 
         if(isAdminMode) {
             backButton.setDisable(true);
@@ -377,23 +404,37 @@ public class SignUpPage extends AuthPage{
 
         VBox form = createForm(personalInfoBox, buttonBox);
 
+        if(!form.getStylesheets().contains("/css/signup-page.css")) {
+            form.getStylesheets().add(
+                    getClass().getResource("/css/signup-page.css").toExternalForm()
+            );
+        }
+
         return form;
     }
 
-    public VBox loginDetailsForm() {
-        VBox loginDetailsBox = loginDetailsBox();
-        HBox buttonBox = logInDetailsButtonBox();
+    public VBox buildLoginDetailsForm() {
+        VBox loginDetailsBox = buildLoginDetailsBox();
+        HBox buttonBox = buildLoginDetailsButtonBox();
 
         VBox form = createForm(loginDetailsBox, buttonBox);
 
+        if(!form.getStylesheets().contains("/css/signup-page.css")) {
+            form.getStylesheets().add(
+                    getClass().getResource("/css/signup-page.css").toExternalForm()
+            );
+        }
+
         return form;
     }
 
-    public VBox getContentForAdmin() {
+    public VBox getContentForAdmin(Pane parent) {
+        this.adminParentPane = parent;
+
         initFieldBoxes();
         packFieldError();
 
-        return personalInfoForm();
+        return buildPersonalInfoForm();
     }
 
     public void setBackToAdminDash(Runnable backToAdminDash) {
@@ -404,8 +445,11 @@ public class SignUpPage extends AuthPage{
         initFieldBoxes();
         packFieldError();
 
+        body = new StackPane();
+        body.getChildren().add(buildPersonalInfoForm());
+
         BorderPane root = new BorderPane();
-        root.setCenter(personalInfoForm());
+        root.setCenter(body);
 
         Scene signUpScene = setScene(root, "signup-page");
 

@@ -31,17 +31,27 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDate;
 
-public class ExportPDF {
+public class SalesReportExporter {
 
-    private DeviceRgb orange = new DeviceRgb(254, 108, 1);
+    private DeviceRgb ORANGE = new DeviceRgb(254, 108, 1);
 
     private PdfFont bold;
     private PdfFont normal;
 
-    private String titleText = "SALES REPORT";
+    private String titleText;
     private String subTitleText = "NONE";
 
-    public ExportPDF() {
+    private String adminName = "";
+    private int adminId;
+
+    private final int logoWidth = 150;
+
+    private ObservableList<SalesRecord> salesData;
+    private XYChart<String, Number> revenueChart;
+    private XYChart<String, Number> itemsChart;
+    private XYChart<String, Number> ordersChart;
+
+    public SalesReportExporter() {
         try {
             bold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
             normal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
@@ -54,8 +64,18 @@ public class ExportPDF {
 
     public void setSubTitle(String text) { this.subTitleText = text; }
 
+    public void setSalesData(ObservableList<SalesRecord> salesData) { this.salesData = salesData; }
+
+    public void setCharts(XYChart<String, Number> revenueChart,
+                          XYChart<String, Number> itemsChart,
+                          XYChart<String, Number> ordersChart) {
+        this.revenueChart = revenueChart;
+        this.itemsChart = itemsChart;
+        this.ordersChart = ordersChart;
+    }
+
     private Table createTitleTable(Cell leftCell, Cell rightCell) {
-        float[] metaWidths = {220f, 1};
+        float[] metaWidths = {170f, 1};
         Table metaTable = new Table(metaWidths).useAllAvailableWidth();
 
         metaTable.addCell(leftCell);
@@ -66,6 +86,7 @@ public class ExportPDF {
 
         return metaTable;
     }
+
     private Table createMetaTable(Cell leftCell, Cell rightCell) {
         float[] metaWidths = {1, 1};
         Table metaTable = new Table(metaWidths).useAllAvailableWidth();
@@ -82,18 +103,17 @@ public class ExportPDF {
     private Table buildHeader() {
         URL url = getClass().getResource("/logo.png");
 
-        ImageData imageData = ImageDataFactory.create(url);
+        ImageData logoData = ImageDataFactory.create(url);
 
-        Image image = new Image(imageData);
-        image.setWidth(200);
-        image.setMinWidth(200);
-        image.setMaxWidth(200);
-//        image.setAutoScale(true);
+        Image logo = new Image(logoData);
+        logo.setWidth(logoWidth);
+        logo.setMinWidth(logoWidth);
+        logo.setMaxWidth(logoWidth);
 
-        Cell imageCell = new Cell().add(image);
-        imageCell.setBorder(Border.NO_BORDER);
-        imageCell.setPaddingRight(15);
-        imageCell.setVerticalAlignment(VerticalAlignment.MIDDLE);
+        Cell logoCell = new Cell().add(logo);
+        logoCell.setBorder(Border.NO_BORDER);
+        logoCell.setPaddingRight(15);
+        logoCell.setVerticalAlignment(VerticalAlignment.MIDDLE);
 
         Paragraph title = new Paragraph(titleText);
         title.setFont(bold);
@@ -104,7 +124,7 @@ public class ExportPDF {
         DeviceRgb gray = new DeviceRgb(176, 176, 176);
 
         SolidLine lineDrawer = new SolidLine();
-        lineDrawer.setColor(orange);
+        lineDrawer.setColor(ORANGE);
         lineDrawer.setLineWidth(2f);
 
         LineSeparator line = new LineSeparator(lineDrawer);
@@ -129,22 +149,34 @@ public class ExportPDF {
         titleCell.setBorder(Border.NO_BORDER);
         titleCell.setPaddingLeft(15);
 
-        Table header = createTitleTable(imageCell, titleCell);
+        Table header = createTitleTable(logoCell, titleCell);
 
         return header;
     }
 
+    public void setAdminInfo(String name, int id) {
+        this.adminName = name;
+        this.adminId = id;
+    }
+
     private Table buildReportInfo() {
-        Paragraph preparedParagraph = new Paragraph("Prepared by: \nJonathan Lau (5101)");
-        preparedParagraph.setFont(normal);
+        String preparedText = "Prepared by: \n";
+        Paragraph preparedParagraph = new Paragraph(preparedText);
+        preparedParagraph.setFont(bold);
         preparedParagraph.setTextAlignment(TextAlignment.LEFT);
+
+        String adminInfoText = adminName + " (" + adminId + ")";
+        Paragraph adminInfoParagraph = new Paragraph(adminInfoText);
+        adminInfoParagraph.setFont(normal);
+        adminInfoParagraph.setTextAlignment(TextAlignment.LEFT);
 
         Cell preparedCell = new Cell();
         preparedCell.add(preparedParagraph);
+        preparedCell.add(adminInfoParagraph);
         preparedCell.setBorder(Border.NO_BORDER);
 
         Paragraph dateParagraph = new Paragraph("Date: " + LocalDate.now());
-        dateParagraph.setFont(normal);
+        dateParagraph.setFont(bold);
         dateParagraph.setTextAlignment(TextAlignment.RIGHT);
 
         Cell dateCell = new Cell();
@@ -164,10 +196,7 @@ public class ExportPDF {
                 .setBorder(Border.NO_BORDER);
     }
 
-    public void export(ObservableList<SalesRecord> salesData, String outputPath,
-                       XYChart<String, Number> revenueChart,
-                       XYChart<String, Number> itemsChart,
-                       XYChart<String, Number> ordersChart) {
+    public void generate(String outputPath) {
         try {
             PdfWriter writer = new PdfWriter(outputPath);
             PdfDocument pdf = new PdfDocument(writer);
@@ -181,7 +210,8 @@ public class ExportPDF {
 
             //Sales table
             float[] columnWidths = {120F, 100F, 80F, 80F};
-            Table table = new Table(columnWidths).useAllAvailableWidth();
+            Table table = new Table(columnWidths);
+            table.useAllAvailableWidth();
 
             DeviceRgb headerColor = new DeviceRgb(254, 108, 1); // #FE6C01 from your CSS
             DeviceRgb rowEven    = new DeviceRgb(255, 213, 184);  // rgba(254,108,1,0.2) approximated
@@ -189,13 +219,18 @@ public class ExportPDF {
 
             //Table Header
             String[] headers = {"Date / Label", "Revenue (RM)", "Units Sold", "Orders"};
-            for (String h : headers) {
-                table.addHeaderCell(
-                        new Cell().add(new Paragraph(h).setFont(bold).setFontColor(ColorConstants.WHITE))
-                                .setBackgroundColor(headerColor)
-                                .setTextAlignment(TextAlignment.CENTER)
-                                .setBorder(Border.NO_BORDER)
-                );
+            for (String headerText : headers) {
+                Paragraph headerParagraph = new Paragraph(headerText);
+                headerParagraph.setFont(bold);
+                headerParagraph.setFontColor(ColorConstants.WHITE);
+
+                Cell headerCell = new Cell();
+                headerCell.add(headerParagraph);
+                headerCell.setBackgroundColor(headerColor);
+                headerCell.setTextAlignment(TextAlignment.CENTER);
+                headerCell.setBorder(Border.NO_BORDER);
+
+                table.addHeaderCell(headerCell);
             }
 
             //Table Data
@@ -224,7 +259,7 @@ public class ExportPDF {
             addChartImage(document, ordersChart);
 
             //Footer
-            document.add(new Paragraph("END")
+            document.add(new Paragraph("-- END --")
                     .setFont(normal)
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginTop(10));
@@ -232,7 +267,7 @@ public class ExportPDF {
             document.close();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
 
@@ -257,23 +292,14 @@ public class ExportPDF {
             document.add(pdfImage);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     }
 
-
-
-    public void exportPDFWithChooser(Stage stage, ObservableList<SalesRecord> salesData,
-                                     XYChart<String, Number> revenueChart,
-                                     XYChart<String, Number> itemsChart,
-                                     XYChart<String, Number> ordersChart) {
+    public void export(Stage stage) {
         FileChooser fileChooser = new FileChooser();
-
-        //Set dialog title
-        fileChooser.setTitle("Save Sales Report");
-
-        //Default filename
-        fileChooser.setInitialFileName("sales-report.pdf");
+        fileChooser.setTitle("Save Sales Report");          //Set dialog title
+        fileChooser.setInitialFileName("sales-report.pdf"); //Default filename
 
         //Filter only pdf
         fileChooser.getExtensionFilters().add(
@@ -292,7 +318,7 @@ public class ExportPDF {
                 path += ".pdf";
             }
 
-            export(salesData, path, revenueChart, itemsChart, ordersChart);
+            generate(path);
         }
     }
 }

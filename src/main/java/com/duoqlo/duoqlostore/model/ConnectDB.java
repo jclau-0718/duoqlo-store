@@ -1,5 +1,7 @@
 package com.duoqlo.duoqlostore.model;
 
+import javafx.scene.control.Alert;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -10,19 +12,19 @@ public class ConnectDB {
     private static final String URL = "jdbc:sqlite:database.db";
 
     public static Connection connect(){
-        Connection conn = null;
-
         try {
-            conn = DriverManager.getConnection(URL);
+            connection = DriverManager.getConnection(URL);
+
+            return connection;
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Database Connection Error");
+            alert.setHeaderText(null);
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
         }
 
-        return conn;
-    }
-
-    public static Connection getConnection() {
-        return connection;
+        return null;
     }
 
     public static void closeConnection() {
@@ -32,7 +34,11 @@ public class ConnectDB {
                 connection.close();
             }
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Database Connection Error");
+            alert.setHeaderText(null);
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
         }
     }
 }

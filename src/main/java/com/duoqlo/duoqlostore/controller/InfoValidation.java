@@ -172,10 +172,10 @@ public class InfoValidation {
             case "username":
 
                 // Username Constraints
-                // 1. Must contain >=5 characters (done)
-                // 2. Acceptable: Alphabets, numbers, _ and - (done)
-                // 3. Restriction: spaces and special symbols (done)
-                // 4. Cannot start with _ or - (done)
+                // 1. Must contain >=5 characters
+                // 2. Acceptable: Alphabets, numbers, _ and -
+                // 3. Restriction: spaces and special symbols
+                // 4. Cannot start with _ or -
                 // 5. Prevent consecutive special characters
 
                 if (isUsernameTaken(value)) {

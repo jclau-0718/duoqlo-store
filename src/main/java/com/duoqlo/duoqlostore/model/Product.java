@@ -115,8 +115,8 @@ public class Product {
 
             return sizeRange;
         } else {
-            System.out.println("sizes is null");
-            return "Hello";
+            System.err.println("sizes is null");
+            return "";
         }
 
     }

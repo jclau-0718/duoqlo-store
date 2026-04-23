@@ -4,7 +4,6 @@
     import com.duoqlo.duoqlostore.model.FilterBy;
     import com.duoqlo.duoqlostore.model.Freq;
     import com.duoqlo.duoqlostore.model.SalesRecord;
-    import com.duoqlo.duoqlostore.model.User;
     import javafx.beans.property.SimpleDoubleProperty;
     import javafx.beans.property.SimpleIntegerProperty;
     import javafx.beans.property.SimpleStringProperty;
@@ -42,9 +41,6 @@
         }
     
         private void setLabelTitle() {
-            System.out.println("In setLabelTitle: "+ filter);
-            System.out.println("In setLabelTitle: "+ frequency);
-
             if(frequency.equals(Freq.NONE)) {
                 switch(filter) {
                     case FilterBy.GENDER -> labelTitle = "Genders";
@@ -56,8 +52,6 @@
             } else {
                 labelTitle = "Date Range";
             }
-
-            System.out.println(labelTitle);
         }
     
         public void update(FilterBy filter, Freq frequency) {
@@ -167,7 +161,7 @@
 
         private Runnable updateTitle;
 
-        private String title = "";
+        private String title = "DAILY SALES";
 
         public SalesPage(AdminDashController controller) {
             this.controller = controller;
@@ -519,14 +513,16 @@
             exportButton.setOnAction(e -> {
                 Stage stage = (Stage) exportButton.getScene().getWindow();
 
-                ExportPDF pdfExporter = new ExportPDF();
-                pdfExporter.setTitle(this.title);
+                SalesReportExporter exporter = new SalesReportExporter();
+                exporter.setTitle(this.title);
                 if(tableDisplayBox.getChildren().contains(filterCombo)) {
-                    pdfExporter.setSubTitle(filterCombo.getValue());
+                    exporter.setSubTitle(filterCombo.getValue());
                 }
+                exporter.setAdminInfo(controller.getAdminName(), controller.getAdminId());
+                exporter.setSalesData(controller.getSales());
+                exporter.setCharts(revenueChart, itemsChart, ordersChart);
 
-                pdfExporter.exportPDFWithChooser(stage, controller.getSales(),
-                        revenueChart, itemsChart, ordersChart);
+                exporter.export(stage);
             });
     
             return exportButton;
@@ -539,7 +535,7 @@
                 }
             });
         }
-    
+
         private void buildCharts(ObservableList<SalesRecord> data) {
             //Filter out the TOTAL row
             ObservableList<SalesRecord> chartData = data.filtered(r -> !r.isTotal());
@@ -577,7 +573,7 @@
             itemsChart.getData().add(itemsSeries);
             ordersChart.getData().add(ordersSeries);
         }
-    
+
         private LineChart<String, Number> buildLineChart(String title, String xLabel, String yLabel) {
             CategoryAxis xAxis = new CategoryAxis();
             xAxis.setLabel(xLabel);
@@ -590,7 +586,7 @@
 
             xAxis.setTickLabelFont(javafx.scene.text.Font.font("Arial", 12));
             yAxis.setTickLabelFont(javafx.scene.text.Font.font("Arial", 12));
-    
+
             LineChart<String, Number> chart = new LineChart<>(xAxis, yAxis);
             chart.setTitle(title);
             chart.setLegendVisible(false);
@@ -674,7 +670,7 @@
             GridPane.setMargin(tableDisplayBox, new Insets(0, 0, 0, 22));
             GridPane.setMargin(chartBox, new Insets(0, 22, 0, 0));
         }
-    
+
         public VBox getContent() {
             showTable();
             initCharts();
@@ -689,7 +685,7 @@
 
             buildContentGrid();
 
-            VBox bodyVBox = new VBox(10);
+            VBox bodyVBox = new VBox(20);
             bodyVBox.getChildren().addAll(contentGrid);
             bodyVBox.setAlignment(Pos.CENTER);
     

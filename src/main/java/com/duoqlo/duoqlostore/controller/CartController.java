@@ -12,6 +12,7 @@ public class CartController {
     private ProductDAO productDAO = new ProductDAO();
     private CartDAO cartDAO = new CartDAO();
     private OrderDAO orderDAO = new OrderDAO();
+
     private User user;
     private Cart cart;
     private List<CartItem> cartItemList;
@@ -20,8 +21,6 @@ public class CartController {
         this.user = user;
 
         getCart(user);
-
-        System.out.println(cart.getLastUpdatedDate());
     }
 
     public void refreshCart() {
@@ -54,7 +53,12 @@ public class CartController {
             this.cart = cartDAO.getUserCart(userId);
         }
 
+        if(this.cart == null) {
+            throw new RuntimeException("Failed to fetch cart");
+        }
+
         cartItemList = cart.getCartItemList();
+
     }
 
     public boolean addCartItem(int productSizeId, int quantity, double subTotal) {
@@ -95,13 +99,7 @@ public class CartController {
     }
 
     public String getLastUpdatedDate() {
-        System.out.println(this.cart.getLastUpdatedDate());
-
         return this.cart.getLastUpdatedDate(); }
-
-    public boolean listIsEmpty() {
-        return cartItemList.isEmpty();
-    }
 
     public double getSubTotal() {
         double subtotal = 0;
@@ -144,7 +142,7 @@ public class CartController {
 
         PauseTransition delay = new PauseTransition(Duration.millis(100));
         delay.setOnFinished(delayEvent -> {
-            AlertMsg successAlert = new AlertMsg(AlertMsg.AlertMsgType.SUCCESS);
+            AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
             successAlert.show(userDash.getBody(), "Order Confirmed!", Pos.TOP_CENTER);
         });
         delay.play();
@@ -167,7 +165,6 @@ public class CartController {
 
         int orderId = order.getOrderId();
         boolean allSuccessful = true;
-        System.out.println(cartItemList.size());
 
         // Order Item
         for (CartItem cartItem: cartItemList) {
@@ -182,13 +179,19 @@ public class CartController {
             }
         }
 
-        cleanup();
+        clearCart();
 
         return allSuccessful;
     }
 
-    public void cleanup() {
+    public void clearCart() {
         cartDAO.clearCart(cart.getCartId());
         cartItemList.clear();
+    }
+
+    public void cleanup() {
+        cartItemList.clear();
+        cart = null;
+        user = null;
     }
 }

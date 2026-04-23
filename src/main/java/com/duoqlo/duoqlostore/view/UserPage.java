@@ -1,10 +1,12 @@
 package com.duoqlo.duoqlostore.view;
 
 import com.duoqlo.duoqlostore.AppConfig;
-import com.duoqlo.duoqlostore.controller.CartController;
+import com.duoqlo.duoqlostore.controller.ImageCacheService;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.controller.UserDashController;
+import com.duoqlo.duoqlostore.model.ConnectDB;
 import com.duoqlo.duoqlostore.model.User;
+import com.duoqlo.duoqlostore.model.UserDAO;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -31,8 +33,6 @@ public abstract class UserPage extends ApplicationPage {
     public abstract void openOrdersPage();
     public abstract void openProfilePage();
 
-    protected UserDashController dashController;
-
     protected StackPane header;
     protected TextField searchField;
     protected HBox searchBar;
@@ -42,13 +42,13 @@ public abstract class UserPage extends ApplicationPage {
     protected VBox popupContainer;
     protected Popup popup;
 
+    protected Button logoutButton;
+
     protected int iconSize = 19;
 
-    public UserPage(User user){
+    public UserPage(){
         this.searchField = createSearchField();
         this.searchBar = createSearchBar();
-
-        dashController = new UserDashController(user);
     }
 
     public void addToolTip(Node node, String text) {
@@ -78,7 +78,9 @@ public abstract class UserPage extends ApplicationPage {
         logoButton.setGraphic(logoView);
         logoButton.getStyleClass().add("logo-button");
         logoButton.setOnAction(e -> {
-            Navigator.openUserDashboard(this.dashController);
+            UserDashController dashController = new UserDashController(getUser());
+
+            Navigator.openUserDashboard(dashController);
         });
 
         middleHBox.setMaxWidth(Region.USE_PREF_SIZE);
@@ -151,7 +153,6 @@ public abstract class UserPage extends ApplicationPage {
     }
 
     private void setupOptionStyle(Label label, Color hoverColor) {
-        // Convert Color to hex string for CSS
         String hexColor = String.format("#%02X%02X%02X",
                 (int) (hoverColor.getRed() * 255),
                 (int) (hoverColor.getGreen() * 255),
@@ -166,9 +167,9 @@ public abstract class UserPage extends ApplicationPage {
         label.setOnMouseEntered(e -> {
             label.setStyle(String.format("""
                 -fx-text-fill: %s;
-                -fx-font-weight: bold;
-                -fx-underline: true;
+                -fx-font-size: 13;
                 -fx-cursor: hand;
+                -fx-underline: true;
                 """, hexColor));
         });
 
@@ -176,6 +177,7 @@ public abstract class UserPage extends ApplicationPage {
             label.setStyle("""
                 -fx-text-fill: black;
                 -fx-font-weight: normal;
+                -fx-font-size: 13;
                 -fx-underline: false;
                 """);
         });
@@ -190,11 +192,19 @@ public abstract class UserPage extends ApplicationPage {
         return viewProfile;
     }
 
-    private Label createDeleteAccountLabel() {
-        Label deleteAcc = new Label("Delete Account");
-        setupOptionStyle(deleteAcc, Color.RED);
+    private Label createDeactivateAccountLabel() {
+        Label deactivateAcc = new Label("Deactivate Account");
+        setupOptionStyle(deactivateAcc, Color.RED);
+        deactivateAcc.setOnMouseClicked(_ -> {
+            UserDAO userDAO = new UserDAO();
+            User currentUser = getUser();
 
-        return deleteAcc;
+            if(userDAO.deactivateUser(currentUser.getId())) {
+                logoutButton.fire();
+            }
+        });
+
+        return deactivateAcc;
     }
 
     private VBox createPopUpContainer() {
@@ -208,29 +218,32 @@ public abstract class UserPage extends ApplicationPage {
         // Edit Profile
         Label viewProfile = createViewProfileLabel();
 
-        Label deleteAcc = createDeleteAccountLabel();
+        Label deactivateAcc = createDeactivateAccountLabel();
 
         HBox viewProfileBox = new HBox(viewProfile);
         viewProfileBox.setAlignment(Pos.CENTER_LEFT);
 
-        HBox deleteAccBox = new HBox(deleteAcc);
-        deleteAccBox.setAlignment(Pos.CENTER_LEFT);
+        HBox deactivateAccBox = new HBox(deactivateAcc);
+        deactivateAccBox.setAlignment(Pos.CENTER_LEFT);
 
         // Logout button
-        Button logoutButton = new PrimaryButton("Log Out");
+        logoutButton = new PrimaryButton("Log Out");
         logoutButton.setMaxWidth(90);
         logoutButton.setMaxHeight(10);
-//        logoutButton.setStyle("""
-////                -fx-font-size: 12;
-////                -fx-padding: 5;
-////                -fx-border-color: red;
-//                """);
-
         logoutButton.setOnAction(e -> {
+            if(this instanceof UserDashboard dashboard) dashboard.exit();
+            else if(this instanceof CartPage cartPage) cartPage.exit();
+            else if(this instanceof OrderPage orderPage) orderPage.exit();
+            else if(this instanceof ProfilePage profilePage) profilePage.exit();
+
+            ConnectDB.closeConnection();
+
+            ImageCacheService.getInstance().clear();
+
             Navigator.goTo(new LogInPage().initialize());
         });
 
-        popupBox.getChildren().addAll(viewProfileBox, deleteAccBox, logoutButton);
+        popupBox.getChildren().addAll(viewProfileBox, deactivateAccBox, logoutButton);
         popupBox.setAlignment(Pos.CENTER);
 
         Polygon arrow = new Polygon();
@@ -299,6 +312,10 @@ public abstract class UserPage extends ApplicationPage {
 
         enterButton = new Button("", rightIcon);
         enterButton.setPadding(Insets.EMPTY);
+        enterButton.setStyle("""
+                -fx-background-radius: 20;
+                -fx-border-radius: 20;
+                """);
 
         HBox searchBar = new HBox();
         searchBar.setAlignment(Pos.CENTER_LEFT);
@@ -312,13 +329,9 @@ public abstract class UserPage extends ApplicationPage {
         searchBar.getChildren().addAll(searchIcon, searchField, enterButton);
         HBox.setHgrow(searchField, Priority.ALWAYS);
 
-        HBox.setMargin(searchIcon, new Insets(0, 3, 0, 5));
-        HBox.setMargin(enterButton, new Insets(0, 5, 0, 3));
+        HBox.setMargin(searchIcon, new Insets(0, 3, 0, 8));
+        HBox.setMargin(enterButton, new Insets(0, 5, 0, 0));
         ListView<String> suggestionList = new ListView<>();
-
-        ObservableList<String> products = FXCollections.observableArrayList(
-                "Phone", "Laptop", "Tablet", "Headphones", "Camera", "Charger"
-        );
 
         VBox searchVBox = new VBox();
         searchVBox.getChildren().addAll(searchBar, suggestionList);
@@ -401,21 +414,21 @@ public abstract class UserPage extends ApplicationPage {
        return sortBox;
    }
 
-    public TextField createTextField(String promptText) {
-        TextField textField = new TextField();
-        textField.setPromptText(promptText);
-        textField.setMaxWidth(Double.MAX_VALUE);
-        textField.setPadding(new Insets(6,8,8,8));
+    public InputField createInputField(String promptText) {
+        InputField inputField = new InputField();
+        inputField.setPromptText(promptText);
+        inputField.setMaxWidth(Double.MAX_VALUE);
+        inputField.setPadding(new Insets(6,8,8,8));
 
-        textField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+        inputField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if(!newVal) {
-                textField.setStyle("-fx-prompt-text-fill: gray");
+                inputField.setStyle("-fx-prompt-text-fill: gray");
             } else {
-                textField.setStyle("-fx-prompt-text-fill: transparent");
+                inputField.setStyle("-fx-prompt-text-fill: transparent");
             }
         });
 
-        return textField;
+        return inputField;
     }
 
     public Label createErrorLabel() {

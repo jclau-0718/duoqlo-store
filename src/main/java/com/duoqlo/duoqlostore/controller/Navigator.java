@@ -23,7 +23,7 @@ public class Navigator {
                 stage.setMaximized(true);
             }
         } else {
-            System.out.println("Stage not set!");
+            System.err.println("Stage not set!");
         }
     }
 
@@ -34,7 +34,7 @@ public class Navigator {
 
             goTo(userDash.initialize());
         } else {
-            AdminDashController controller = new AdminDashController();
+            AdminDashController controller = new AdminDashController(user);
             AdminDashboard adminDash = new AdminDashboard(controller);
 
             goTo(adminDash.initialize());

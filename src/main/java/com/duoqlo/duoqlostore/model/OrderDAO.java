@@ -37,7 +37,7 @@ public class OrderDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return null;
@@ -62,7 +62,7 @@ public class OrderDAO {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -92,7 +92,7 @@ public class OrderDAO {
             return affectedRows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;
@@ -118,7 +118,7 @@ public class OrderDAO {
                 return order;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
         return null;
     }
@@ -151,19 +151,10 @@ public class OrderDAO {
                 orderItemList.add(orderItem);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return orderItemList;
-    }
-
-    public Order getFullOrder(int orderId) {
-        Order order = getOrderById(orderId);
-
-        order.setOrderItemList(getOrderItems(orderId));
-
-        return order;
-
     }
 
     public List<Order> getAllOrders(int userId) {
@@ -188,7 +179,8 @@ public class OrderDAO {
                         rs.getTimestamp("order_date").toLocalDateTime(),
                         rs.getDouble("total_price"),
                         rs.getString("status"),
-                        rs.getString("shipping_add")
+                        rs.getString("shipping_add"),
+                        getOrderItems(rs.getInt("order_id"))
                 );
 
                 orders.add(order);
@@ -196,7 +188,7 @@ public class OrderDAO {
 
             return orders;
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return new ArrayList<>();
@@ -232,7 +224,7 @@ public class OrderDAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return orders;
@@ -255,7 +247,7 @@ public class OrderDAO {
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return false;

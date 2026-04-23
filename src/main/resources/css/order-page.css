@@ -178,7 +178,7 @@
 .label.total,
 .label.total-value {
     -fx-text-fill: black;
-    -fx-font-size: 17;
+    -fx-font-size: 19;
 }
 
 .label.orderdate-value,
@@ -189,10 +189,14 @@
 }
 
 .label.name,
-.label.quantity,
-.label.subtotal-value {
+.label.quantity{
     -fx-text-fill: black;
     -fx-font-size: 15;
+}
+
+.label.subtotal-value {
+    -fx-text-fill: #FE6C01;
+    -fx-font-size: 17;
 }
 
 .label.name {
@@ -215,17 +219,6 @@
     -fx-text-fill: #808080;
     -fx-font-size: 16px;
 }
-
-/*.cancel-button {*/
-/*    -fx-background-color: #FE6C01;*/
-/*    -fx-background-radius: 8;*/
-/*    -fx-border-color: #FE6C01;*/
-/*    -fx-border-radius: 8;*/
-/*    -fx-font-size: 14;*/
-/*    -fx-text-fill: white;*/
-/*    -fx-font-weight: bold;*/
-/*    -fx-cursor: hand;*/
-/*}*/
 
 .scroll-pane {
     -fx-background: transparent;

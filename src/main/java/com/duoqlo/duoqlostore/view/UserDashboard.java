@@ -1,6 +1,7 @@
 package com.duoqlo.duoqlostore.view;
 
 import com.duoqlo.duoqlostore.AppConfig;
+import com.duoqlo.duoqlostore.controller.ImageCacheService;
 import com.duoqlo.duoqlostore.controller.UserDashController;
 import com.duoqlo.duoqlostore.model.*;
 
@@ -11,7 +12,6 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -24,6 +24,8 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 class ImageCarousel {
     private int currentIndex = 0;
@@ -63,9 +65,9 @@ class ImageCarousel {
 }
 
 public class UserDashboard extends UserPage {
-    private UserDashController controller;
-    private AlertMsg alert = new AlertMsg();
+    private final ExecutorService executor = Executors.newFixedThreadPool(2);
 
+    private UserDashController controller;
     private StackPane body;
     private Rectangle overlay;
 
@@ -110,7 +112,6 @@ public class UserDashboard extends UserPage {
     private boolean[] isDisabled = {false};
 
     public UserDashboard(UserDashController controller) {
-        super(controller.getUser());
         this.controller = controller;
     }
 
@@ -132,7 +133,7 @@ public class UserDashboard extends UserPage {
         controller.openProfilePage();
     }
 
-    public StackPane getBody() { return this.body; };
+    public StackPane getBody() { return this.body; }
 
     public StackPane buildHeader() {
         //Category Buttons
@@ -172,8 +173,6 @@ public class UserDashboard extends UserPage {
 
         searchField.textProperty().addListener((obs, oldVal, newVal) -> {
             if(newVal.isEmpty()) {
-                System.out.println("Search bar is empty");
-                System.out.println(currentFilter);
                 if(currentFilter.equals("ALL")) {
                     loadAllProducts();
                 } else {
@@ -182,9 +181,7 @@ public class UserDashboard extends UserPage {
             }
         });
 
-        searchField.setOnAction(e -> {
-            enterButton.fire();
-        });
+        searchField.setOnAction(e -> enterButton.fire());
 
         enterButton.setOnAction(e -> {
             String text = searchField.getText();
@@ -218,7 +215,6 @@ public class UserDashboard extends UserPage {
         sortIcon.setIconSize(16);
         sortIcon.setIconColor(AppConfig.themeColor);
         sortCombo = createSortCombo();
-
         sortBox = createSortBox(sortCombo);
 
         HBox filterBox = new HBox(10, sizeCombo, categoryCombo, priceCombo);
@@ -269,7 +265,7 @@ public class UserDashboard extends UserPage {
 
         loadingLabel.textProperty().bind(preloadTask.messageProperty());
 
-        new Thread(preloadTask).start();
+        executor.submit(preloadTask);
     }
 
     private void setupSizeMenu() {
@@ -311,8 +307,6 @@ public class UserDashboard extends UserPage {
                 }
             }
             applyFilters();
-
-            System.out.println(categoryCombo.getStyleClass());
         });
 
 
@@ -349,8 +343,6 @@ public class UserDashboard extends UserPage {
 
         sortComboListener = (obs, oldVal, newVal) -> {
             if (newVal != null && !newVal.isEmpty()) {
-                controller.setSorted(true);
-
                 boolean hasResetButton = sortBox.getChildren().stream()
                         .anyMatch(node -> node.getStyleClass().contains("reset-button"));
 
@@ -386,7 +378,6 @@ public class UserDashboard extends UserPage {
             sortCombo.getStyleClass().remove("selected");
 
             controller.setSortingSelected(null);
-            controller.setSorted(false);
 
             sortBox.getChildren().remove(resetButton);
 
@@ -508,7 +499,7 @@ public class UserDashboard extends UserPage {
         ImageCarousel carousel = new ImageCarousel();
 
         String imagePath = product.getImagePath();
-        List<Image> cachedImages = controller.getCachedImages(imagePath);
+        List<Image> cachedImages = ImageCacheService.getInstance().getImages(imagePath);
         if (imagePath != null && !imagePath.isEmpty() && cachedImages != null) {
             carousel.setImages(cachedImages);
             Image firstImage = carousel.getCurrentImage();
@@ -586,19 +577,20 @@ public class UserDashboard extends UserPage {
             protected List<Image> call() throws Exception {
                 List<Image> images = new ArrayList<>();
 
+
                 if (imagePath != null && !imagePath.isEmpty()) {
                     File folder = new File(imagePath);
 
                     if (folder.exists() && folder.isDirectory()) {
                         File[] files = folder.listFiles((dir, name) ->
                                 name.toLowerCase().endsWith(".jpg") ||
-                                        name.toLowerCase().endsWith(".png") ||
-                                        name.toLowerCase().endsWith(".jpeg")
+                                name.toLowerCase().endsWith(".png") ||
+                                name.toLowerCase().endsWith(".jpeg")
                         );
 
                         if (files != null) {
                             for (File file : files) {
-                                Image img = new Image(file.toURI().toString(), true);
+                                Image img = new Image(file.toURI().toString(), false);
                                 images.add(img);
                             }
                         }
@@ -615,15 +607,20 @@ public class UserDashboard extends UserPage {
             }
         };
 
-        loadTask.setOnSucceeded(e -> {
-            carousel.setImages(loadTask.getValue());
+        loadTask.setOnSucceeded(_ -> {
+            List<Image> images = loadTask.getValue();
+
+            ImageCacheService.getInstance().putImages(imagePath, images);
+
+            carousel.setImages(images);
+
             Image firstImage = carousel.getCurrentImage();
             if (firstImage != null) {
                 imageView.setImage(firstImage);
             }
         });
 
-        new Thread(loadTask).start();
+        executor.submit(loadTask);
     }
 
     private HBox getSizeButtons(List<ProductSize> productSizes) {
@@ -695,7 +692,7 @@ public class UserDashboard extends UserPage {
         productImage.setSmooth(true);
 
         String imagePath = product.getImagePath();
-        List<Image> cachedImages = controller.getCachedImages(imagePath);
+        List<Image> cachedImages = ImageCacheService.getInstance().getImages(imagePath);
         if (imagePath != null && !imagePath.isEmpty() && cachedImages != null) {
             carousel.setImages(cachedImages);
             Image firstImage = carousel.getCurrentImage();
@@ -847,9 +844,12 @@ public class UserDashboard extends UserPage {
                 double subTotal = Double.parseDouble(priceLabel.getText().substring(3));
 
                 if (controller.addToCart(productSizeId, productQuantity, subTotal)) {
-                    alert.setAlertType(AlertMsg.AlertMsgType.SUCCESS);
-                    alert.show(body, "Added to cart!", Pos.CENTER);
+                    AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
+                    successAlert.show(body, "Added to cart!", Pos.CENTER);
                     closeExpandedCard();
+                } else {
+                    AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
+                    errorAlert.show(body, "", Pos.CENTER);
                 }
             }
 
@@ -887,7 +887,6 @@ public class UserDashboard extends UserPage {
                             });
 
                             sizeButton.setOnAction(e -> {
-                                System.out.println("Size: "+sizeButton.getText());
                                 qtyActionBox.setDisable(false);
 
                                 qtyErrorLabel.setText("");
@@ -1022,53 +1021,11 @@ public class UserDashboard extends UserPage {
         }
     }
 
-    private void showProductDetails(Product product) {
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.setTitle("Product Details");
-        dialog.setHeaderText(product.getName());
+    public void exit() {
+        executor.shutdownNow();
 
-        VBox content = new VBox(10);
-        content.setPadding(new Insets(20));
-        content.setPrefWidth(400);
-
-        Label descriptionLabel = new Label("Description: " + (product.getDescription() != null ? product.getDescription() : "No description available"));
-        descriptionLabel.setWrapText(true);
-
-        Label categoryLabel = new Label("Category: " + product.getCategory());
-
-        List<ProductSize> sizes = controller.getCachedProductSizes(product.getId());
-
-        Label sizesLabel = new Label("Available Sizes:");
-        sizesLabel.setStyle("-fx-font-weight: bold; -fx-margin-top: 10;");
-
-        GridPane sizeGrid = new GridPane();
-        sizeGrid.setHgap(10);
-        sizeGrid.setVgap(5);
-
-        int row = 0;
-        Label sizeHeader = new Label("Size");
-        sizeHeader.setStyle("-fx-font-weight: bold;");
-        Label priceHeader = new Label("Price (RM)");
-        priceHeader.setStyle("-fx-font-weight: bold;");
-        Label stockHeader = new Label("Stock");
-        stockHeader.setStyle("-fx-font-weight: bold;");
-
-        sizeGrid.add(sizeHeader, 0, row);
-        sizeGrid.add(priceHeader, 1, row);
-        sizeGrid.add(stockHeader, 2, row);
-
-        for (ProductSize size : sizes) {
-            row++;
-            sizeGrid.add(new Label(size.getSize()), 0, row);
-            sizeGrid.add(new Label(showPrice(size.getPrice())), 1, row);
-            sizeGrid.add(new Label(String.valueOf(size.getStockQuantity())), 2, row);
-        }
-
-        content.getChildren().addAll(descriptionLabel, categoryLabel, sizesLabel, sizeGrid);
-
-        dialog.getDialogPane().setContent(content);
-        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-        dialog.showAndWait();
+        controller.cleanup();
+        controller = null;
     }
 
     public Scene initialize() {
@@ -1091,7 +1048,7 @@ public class UserDashboard extends UserPage {
         root.setTop(buildHeader());
         root.setCenter(body);
 
-        Scene scene = setScene(root, "home-page");
+        Scene scene = setScene(root, "user-dash");
 
         loadAllDataOnce();
 

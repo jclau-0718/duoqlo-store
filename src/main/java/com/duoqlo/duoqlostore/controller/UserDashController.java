@@ -13,12 +13,9 @@ import java.util.stream.Collectors;
 public class UserDashController {
     private User user;
     private CartController cartController;
-    private OrderController orderController;
-    private ProfileController profileController;
     private ProductDAO productDAO = new ProductDAO();
 
     private Map<Integer, List<ProductSize>> sizesCache = new HashMap<>();
-    private Map<String, List<Image>> imageCache = new ConcurrentHashMap<>();
     private List<Product> allProducts;
     private List<Product> displayedProducts = new ArrayList<>();
     private List<Product> filteredProducts = new ArrayList<>();
@@ -27,13 +24,10 @@ public class UserDashController {
     private String categorySelected = null;
     private String priceSelected = null;
     private String sortingSelected = null;
-    private boolean isSorted = false;
 
     public UserDashController(User user) {
         this.user = user;
         cartController = new CartController(this.user);
-        orderController = new OrderController(this.user);
-        profileController = new ProfileController(this.user);
     }
 
     public User getUser() { return this.user; }
@@ -46,19 +40,19 @@ public class UserDashController {
     }
 
     public void openOrdersPage() {
-        OrderPage orderPage = new OrderPage(this.orderController);
+        OrderController orderController = new OrderController(this.user);
+
+        OrderPage orderPage = new OrderPage(orderController);
 
         Navigator.goTo(orderPage.initialize());
     }
 
     public void openProfilePage() {
-        ProfilePage profilePage = new ProfilePage(this.profileController);
+        ProfileController profileController = new ProfileController(this.user);
+
+        ProfilePage profilePage = new ProfilePage(profileController);
 
         Navigator.goTo(profilePage.initialize());
-    }
-
-    public void deleteAccount() {
-        // Code to delete account
     }
 
     public Task<Void> createPreloadTask(Runnable onSuccess) {
@@ -74,9 +68,6 @@ public class UserDashController {
                     getCachedProductSizes(product.getId());
                 }
 
-                updateMessage("Loading product images...");
-                preloadAllImages();
-
                 updateMessage("Preparing UI...");
                 return null;
             }
@@ -91,62 +82,12 @@ public class UserDashController {
         return preloadTask;
     }
 
-    private void preloadAllImages() {
-        for (Product product : allProducts) {
-            String imagePath = product.getImagePath();
-            if (imagePath != null && !imagePath.isEmpty() && !imageCache.containsKey(imagePath)) {
-                List<Image> images = loadImagesFromPath(imagePath);
-                if (!images.isEmpty()) {
-                    imageCache.put(imagePath, images);
-                }
-            }
-        }
-    }
-
-    private List<Image> loadImagesFromPath(String imagePath) {
-        List<Image> images = new ArrayList<>();
-
-        try {
-            File folder = new File(imagePath);
-            if (folder.exists() && folder.isDirectory()) {
-                File[] files = folder.listFiles((dir, name) ->
-                        name.toLowerCase().endsWith(".jpg") ||
-                                name.toLowerCase().endsWith(".png") ||
-                                name.toLowerCase().endsWith(".jpeg")
-                );
-
-                if (files != null) {
-                    for (File file : files) {
-                        Image img = new Image(file.toURI().toString(), true);
-                        images.add(img);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Error loading images from path: " + imagePath);
-            e.printStackTrace();
-        }
-
-        if (images.isEmpty()) {
-            try {
-                images.add(new Image(getClass().getResourceAsStream("/images/placeholder.png")));
-            } catch (Exception e) {
-                System.err.println("Could not load placeholder image");
-            }
-        }
-
-        return images;
-    }
 
     public List<ProductSize> getCachedProductSizes(int productId) {
         if (!sizesCache.containsKey(productId)) {
             sizesCache.put(productId, productDAO.getProductSizes(productId));
         }
         return sizesCache.get(productId);
-    }
-
-    public List<Image> getCachedImages(String imagePath) {
-        return imageCache.get(imagePath);
     }
 
     public void loadAllProducts() {
@@ -179,8 +120,6 @@ public class UserDashController {
                 break;
         }
     }
-
-
 
     private List<Product> filterAndSortByGender(List<Product> productList, String gender) {
         List<Product> sortedList = productList.stream()
@@ -331,10 +270,6 @@ public class UserDashController {
         this.sortingSelected = sortingSelected;
     }
 
-    public void setSorted(boolean sorted) {
-        isSorted = sorted;
-    }
-
     public List<String> getDistinctSizes() {
         return productDAO.getDistinctSizes();
     }
@@ -391,11 +326,19 @@ public class UserDashController {
     }
 
     public void cleanup() {
-        imageCache.clear();
         sizesCache.clear();
-        if (allProducts != null) {
-            allProducts.clear();
-        }
+
+        if (allProducts != null) allProducts.clear();
+
+        if (displayedProducts != null) displayedProducts.clear();
+
+        if (filteredProducts != null) filteredProducts.clear();
+
+        user = null;
+        sizeSelected = null;
+        categorySelected = null;
+        priceSelected = null;
+        sortingSelected = null;
     }
 
     public int getMaxStock(int productId) {
