@@ -2,8 +2,8 @@
 ## User Guide
 - [Sign Up Account](#sign-up-account)
 - [Log In](#log-in)
-- [Purchase Products (Add to Cart)])(#purchase-products-add-to-cart)
-- [Purchase Products (Buy Now)])(#purchase-products-buy-now)
+- [Purchase Products (Add to Cart)](#purchase-products-add-to-cart)
+- [Purchase Products (Buy Now)](#purchase-products-buy-now)
 - [View Orders](#view-orders)
 - [View Profile](#view-profile)
 - [Back To Dashboard](#back-to-dashboard)
