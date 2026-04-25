@@ -26,7 +26,7 @@ class OrderCard extends VBox {
     private ExecutorService executor;
 
     private int cardWidth = 350;
-    private int cardHeight = 800;
+    private int cardHeight = 750    ;
 
     private Runnable cancelOrder;
 
@@ -58,8 +58,7 @@ class OrderCard extends VBox {
             String lower = name.toLowerCase();
             return lower.endsWith(".jpg") ||
                     lower.endsWith(".jpeg") ||
-                    lower.endsWith(".png") ||
-                    lower.endsWith(".gif");
+                    lower.endsWith(".png");
         });
 
         if (imageFiles == null || imageFiles.length == 0) {
@@ -273,6 +272,7 @@ class OrderCard extends VBox {
 
         VBox.setVgrow(contentPane, Priority.ALWAYS);
         VBox.setMargin(contentPane, new Insets(15, 0, 8, 0));
+        VBox.setVgrow(this, Priority.ALWAYS);
     }
 }
 
@@ -310,9 +310,9 @@ public class OrderPage extends UserPage {
         controller.openProfilePage();
     }
 
-    private StackPane buildHeader() {
+    private HBox buildHeader() {
         Label label = new Label("ORDERS");
-        label.getStyleClass().add("order-label");
+        label.getStyleClass().add("page-label");
         HBox labelBox = new HBox(label);
         labelBox.setAlignment(Pos.CENTER);
 
@@ -322,7 +322,7 @@ public class OrderPage extends UserPage {
         actionBox.setMaxWidth(300);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
 
-        StackPane header = createHeaderBox(labelBox, false);
+        header = createHeaderBox(labelBox, false);
 
         return header;
     }
@@ -401,12 +401,11 @@ public class OrderPage extends UserPage {
 
         VBox bodyBox = new VBox();
         bodyBox.getChildren().add(cardSection);
-//        VBox.setMargin(cardSection, new Insets(10, 0, 10, 0));
 
         ScrollPane contentPane = new ScrollPane(bodyBox);
         contentPane.setFitToWidth(true);
         contentPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
-        contentPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); // Hidden by default
+        contentPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
         body = new StackPane();
         body.getChildren().add(contentPane);

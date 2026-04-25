@@ -1,33 +1,3 @@
-.root {
-    -fx-background-color: #F0EDED;
-}
-
-.logo-button {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-padding: 0 0 0 0;
-}
-
-.header {
-    -fx-background-color: #F0EDED;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); /* Floating effect */
-}
-
-.header .button{
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-font-size: 14px;
-    -fx-cursor: hand;
-    -fx-padding: 5 10 5 10;
-}
-
-.order-label {
-    -fx-text-fill: #FE6C01;
-    -fx-font-family: Arial;
-    -fx-font-size: 25;
-    -fx-font-weight: bold;
-}
-
 .search-field {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -156,7 +126,6 @@
     -fx-background-radius: 10;
     -fx-border-color: transparent;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
-    -fx-transition: all 0.2s ease-in-out; /* Smooth transition */
 }
 
 /* Hide the scroll bar */

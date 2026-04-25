@@ -3,20 +3,21 @@ package com.duoqlo.duoqlostore.view;
 import com.duoqlo.duoqlostore.controller.CartController;
 import com.duoqlo.duoqlostore.controller.Navigator;
 import com.duoqlo.duoqlostore.model.CartItem;
+import com.duoqlo.duoqlostore.model.Payment;
 import com.duoqlo.duoqlostore.model.ProductDAO;
 import com.duoqlo.duoqlostore.model.User;
-import javafx.animation.PauseTransition;
+import javafx.animation.ScaleTransition;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
 import java.io.File;
@@ -36,9 +37,9 @@ class CartRow extends BorderPane {
     private double subTotal;
     private ImageView imageView;
 
-    private Runnable onRemoveCallBack;
+    private Runnable onRemove;
 
-    public CartRow(CartItem cartItem, Runnable onRemoveCallBack) {
+    public CartRow(CartItem cartItem) {
         this.cartItem = cartItem;
         this.productName = cartItem.getProductName();
         this.category = cartItem.getCategory();
@@ -47,11 +48,12 @@ class CartRow extends BorderPane {
         this.subTotal = cartItem.getSubTotal();
         this.unitPrice = subTotal / quantity;
         this.imageView = new ImageView();
-        this.onRemoveCallBack = onRemoveCallBack;
 
         setImageView();
         create();
     }
+
+    public void setOnRemove(Runnable onRemove) { this.onRemove = onRemove; }
 
     public String getCategory() { return this.category; }
 
@@ -79,7 +81,7 @@ class CartRow extends BorderPane {
             return null;
         }
 
-        // Get all image files
+        //Get all image files
         File[] imageFiles = directory.listFiles((dir, name) -> {
             String lower = name.toLowerCase();
             return lower.endsWith(".jpg") ||
@@ -93,10 +95,9 @@ class CartRow extends BorderPane {
             return null;
         }
 
-        // Get the first image
+        // et the first image
         File firstImage = imageFiles[0];
 
-        // Load and return the image
         return new Image(firstImage.toURI().toString());
     }
 
@@ -149,8 +150,8 @@ class CartRow extends BorderPane {
 
         Button removeButton = new PrimaryButton("Remove");
         removeButton.setOnAction(e -> {
-            if(onRemoveCallBack != null) {
-                onRemoveCallBack.run();
+            if(onRemove != null) {
+                onRemove.run();
             }
         });
 
@@ -165,6 +166,8 @@ class CartRow extends BorderPane {
         this.setLeft(imageView);
         this.setCenter(contentBox);
         this.setRight(rightBox);
+
+        this.getStyleClass().add("cart-row");
     }
 }
 
@@ -177,13 +180,20 @@ public class CartPage extends UserPage{
     private StackPane body;
     private BorderPane root;
 
+    private Label totalItemValue;
+    private Label itemTotalValue;
+    private Label shippingValue;
+    private Label totalValue;
+
     private int totalItems = 0;
     private double total;
 
+    private VBox checkoutBox;
+
+    private boolean isBuyNowMode = false;
+
     public CartPage(CartController controller) {
         this.controller = controller;
-
-        totalItems = controller.getTotalItems();
     }
 
     @Override
@@ -204,44 +214,53 @@ public class CartPage extends UserPage{
         controller.openProfilePage();
     }
 
-    private StackPane buildHeader(){
+    public void setBuyNowMode() { this.isBuyNowMode = true; }
+
+    private HBox buildHeader(){
         Label label = new Label("CART PAGE");
-        label.getStyleClass().add("cart-label");
+        label.getStyleClass().add("page-label");
         HBox labelBox = new HBox(label);
         labelBox.setAlignment(Pos.CENTER);
 
-        StackPane header = createHeaderBox(labelBox, false);
+        header = createHeaderBox(labelBox, false);
 
         return header;
     }
 
-    public ScrollPane buildItemBox(){
+    private ScrollPane buildItemBox(){
         VBox itemBox = new VBox();
         itemBox.setPrefWidth(700);
         itemBox.setMaxWidth(700);
         itemBox.setFillWidth(true);
-        for (CartItem cartItem: controller.getCartItemList()) {
-            CartRow cartRow = new CartRow(cartItem, () -> {
-                boolean removed = controller.removeFromCart(cartItem.getProductSizeId());
+        if(!isBuyNowMode) {
+            for (CartItem cartItem : controller.getCartItemList()) {
+                CartRow cartRow = new CartRow(cartItem);
+                cartRow.setOnRemove(() -> {
+                    boolean removed = controller.removeFromCart(cartItem.getProductSizeId());
 
-                if (removed) {
-                    refreshPage();
-                } else {
-                    System.out.println("Error");
-                }
-            });
-            cartRow.getStyleClass().add("cart-row");
+                    if (removed) {
+                        refreshPage();
+                    } else {
+                        System.out.println("Error");
+                    }
+                });
+                itemBox.getChildren().add(cartRow);
+            }
+        } else {
+            CartRow cartRow = new CartRow(controller.getTempCartItem());
             itemBox.getChildren().add(cartRow);
         }
+
         itemBox.getStyleClass().add("item-box");
 
         ScrollPane itemContainer = new ScrollPane(itemBox);
         itemContainer.setFitToWidth(true);
+        itemContainer.setFitToHeight(true);
         itemContainer.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         return itemContainer;
     }
 
-    public Region createLine(){
+    private Region createLine(){
         Region line = new Region();
         line.setStyle("-fx-background-color: #EBEBEB");
         line.setMaxHeight(3);
@@ -249,7 +268,7 @@ public class CartPage extends UserPage{
         return line;
     }
 
-    private BorderPane buildContentRow(Label leftLabel, Label rightLabel) {
+    private BorderPane buildSumContentRow(Label leftLabel, Label rightLabel) {
         BorderPane rowPane = new BorderPane();
         rowPane.setLeft(leftLabel);
         rowPane.setRight(rightLabel);
@@ -259,12 +278,27 @@ public class CartPage extends UserPage{
         return rowPane;
     }
 
-    public VBox buildSummaryBox() {
-        double itemTotal = controller.getSubTotal();
+    private void setSummaryValue() {
+        double itemTotal;
         double shippingFee = 50;
-        total = itemTotal + shippingFee;
 
-        // Section Title
+        if(!isBuyNowMode) {
+            totalItems = controller.getTotalItems();
+            itemTotal = controller.getSubTotal();
+            total = itemTotal + shippingFee;
+        } else {
+            totalItems = 1;
+            itemTotal = controller.getTempCartItem().getSubTotal();
+            total = itemTotal + shippingFee;
+        }
+
+        totalItemValue.setText(String.valueOf(totalItems));
+        itemTotalValue.setText(showPrice(itemTotal));
+        shippingValue.setText(showPrice(shippingFee));
+        totalValue.setText(showPrice(total));
+    }
+
+    private VBox buildSummaryBox() {
         Region leftLine = createLine();
         Region rightLine = createLine();
 
@@ -281,31 +315,28 @@ public class CartPage extends UserPage{
         HBox.setMargin(title, new Insets(0,5,0,5));
         HBox.setMargin(rightLine, new Insets(0,0,0,5));
 
-        // Total Items
         Label totalItemLabel = new Label(" Total items");
-        Label totalItemValue = new Label(String.valueOf(totalItems));
-        BorderPane totalItemBox = buildContentRow(totalItemLabel, totalItemValue);
+        totalItemValue = new Label();
+        BorderPane totalItemBox = buildSumContentRow(totalItemLabel, totalItemValue);
         totalItemBox.getStyleClass().add("summary-details-box");
 
-        // Item's total
         Label itemTotalLabel = new Label("Item's total");
-        Label itemTotalValue = new Label(showPrice(itemTotal));
-        BorderPane itemTotalBox = buildContentRow(itemTotalLabel, itemTotalValue);
+        itemTotalValue = new Label();
+        BorderPane itemTotalBox = buildSumContentRow(itemTotalLabel, itemTotalValue);
         itemTotalBox.getStyleClass().add("summary-details-box");
 
-        // Shipping Fee
         Label shippingLabel = new Label("Shipping Fee");
-        Label shippingValue = new Label(showPrice(shippingFee));
-        BorderPane shippingBox = buildContentRow(shippingLabel, shippingValue);
+        shippingValue = new Label();
+        BorderPane shippingBox = buildSumContentRow(shippingLabel, shippingValue);
         shippingBox.getStyleClass().add("summary-details-box");
 
-        // Total
         Label totalLabel = new Label("TOTAL");
-        Label totalValue = new Label(showPrice(total));
-        BorderPane totalBox = buildContentRow(totalLabel, totalValue);
+        totalValue = new Label();
+        BorderPane totalBox = buildSumContentRow(totalLabel, totalValue);
         totalBox.getStyleClass().add("total-box");
 
-        // Container
+        setSummaryValue();
+
         VBox container = new VBox(20);
         container.setPrefWidth(300);
         container.getChildren().addAll(
@@ -320,25 +351,80 @@ public class CartPage extends UserPage{
         return container;
     }
 
-    public Button buildCheckoutButton() {
-        Button checkoutButton = new PrimaryButton("Checkout");
-        checkoutButton.setOnAction(e -> {
-            alert = new AlertMsg(AlertType.CONFIRMATION);
-            alert.show(body, "Confirm to checkout?", Pos.CENTER);
-            alert.setOnConfirm(() -> {
+    private VBox buildCheckoutBox() {
+        Button closeButton = new Button("✕");
+        closeButton.getStyleClass().add("close-button");
+        closeButton.setOnAction(e -> closeCheckoutBox());
 
-                body.getChildren().add(createLoadingPane(new Label("Processing checkout...")));
+        HBox closeButtonBox = new HBox(closeButton);
+        closeButtonBox.setAlignment(Pos.CENTER_RIGHT);
 
-                // Wait for 3 seconds
-                PauseTransition pause = new PauseTransition(Duration.seconds(3));
-                pause.setOnFinished(event -> {
-                    if (controller.handleOrder(total, totalItems)) {
-                        controller.handleCheckOut();
-                    }
-                });
-                pause.play();
-            });
+        Label paymentLabel = new Label("Payment Method: ");
+        paymentLabel.setStyle("-fx-font-size: 14");
+
+        ComboBox<Payment> paymentCombo = new ComboBox<>();
+        paymentCombo.getItems().addAll(Payment.values());
+        paymentCombo.getStyleClass().add("payment-combo");
+
+        HBox paymentBox = new HBox(5);
+        paymentBox.getChildren().addAll(paymentLabel, paymentCombo);
+        paymentBox.setAlignment(Pos.CENTER);
+
+        Button confirmButton = new SecondaryButton("Confirm");
+        confirmButton.setOnAction(e -> {
+            Payment paymentMethod = paymentCombo.getValue();
+
+            if (controller.handleOrder(total, totalItems, paymentMethod)) {
+                controller.handleCheckOut();
+            }
         });
+
+        Button cancelButton = new PrimaryButton("Cancel");
+        cancelButton.setOnAction(e -> closeCheckoutBox());
+
+        HBox buttonBox = new HBox(5);
+        buttonBox.getChildren().addAll(confirmButton, cancelButton);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        VBox checkoutBox = new VBox(10);
+        checkoutBox.getStyleClass().add("checkout-box");
+        checkoutBox.setAlignment(Pos.CENTER);
+        checkoutBox.getChildren().addAll(closeButtonBox, paymentBox, buttonBox);
+        checkoutBox.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+
+        VBox.setMargin(buttonBox, new Insets(5, 0, 0, 0));
+
+        return checkoutBox;
+    }
+
+    private void showCheckoutBox() {
+        checkoutBox = buildCheckoutBox();
+
+        body.getChildren().add(checkoutBox);
+        checkoutBox.toFront();
+
+        ScaleTransition modalScaleIn = new ScaleTransition(Duration.millis(300), checkoutBox);
+        modalScaleIn.setFromX(0.8);
+        modalScaleIn.setFromY(0.8);
+        modalScaleIn.setToX(1);
+        modalScaleIn.setToY(1);
+        modalScaleIn.play();
+    }
+
+    private void closeCheckoutBox() {
+        ScaleTransition modalScaleOut = new ScaleTransition(Duration.millis(200), checkoutBox);
+        modalScaleOut.setToX(0);
+        modalScaleOut.setToY(0);
+        modalScaleOut.setOnFinished(e -> {
+            body.getChildren().remove(checkoutBox);
+            checkoutBox = null;
+        });
+        modalScaleOut.play();
+    }
+
+    private Button buildCheckoutButton() {
+        Button checkoutButton = new PrimaryButton("Checkout");
+        checkoutButton.setOnAction(e -> showCheckoutBox());
 
         return checkoutButton;
     }
@@ -379,7 +465,7 @@ public class CartPage extends UserPage{
         return contentBox;
     }
 
-    public HBox buildEmptyCartBox() {
+    private HBox buildEmptyCartBox() {
         Label emptyLabel = new Label("Cart is empty");
         emptyLabel.getStyleClass().add("empty-cart");
 
@@ -390,7 +476,20 @@ public class CartPage extends UserPage{
         return emptyLabelBox;
     }
 
+    private Rectangle buildOverlay() {
+        Rectangle overlay = new Rectangle();
+        overlay.setFill(Color.rgb(0, 0, 0, 0.3));
+
+        overlay.widthProperty().bind(body.widthProperty());
+        overlay.heightProperty().bind(body.heightProperty());
+
+        return overlay;
+    }
+
     private void loadCartAsync() {
+        body.getChildren().clear();
+        body.getChildren().addAll(buildOverlay(), createLoadingPane(new Label()));
+
         Task<List<CartItem>> task = new Task<>() {
             @Override
             protected List<CartItem> call() {
@@ -404,7 +503,7 @@ public class CartPage extends UserPage{
 
             body.getChildren().clear();
 
-            if (cartItems == null || cartItems.isEmpty()) {
+            if ((cartItems == null || cartItems.isEmpty()) && !isBuyNowMode) {
                 body.getChildren().add(buildEmptyCartBox());
             } else {
                 totalItems = controller.getTotalItems();
@@ -421,7 +520,6 @@ public class CartPage extends UserPage{
     }
 
     private void refreshPage() {
-        // Update the UI
         StackPane body = (StackPane) root.getCenter();
         body.getChildren().clear();
         loadCartAsync();

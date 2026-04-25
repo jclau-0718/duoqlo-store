@@ -1,1058 +1,1083 @@
-package com.duoqlo.duoqlostore.view;
-
-import com.duoqlo.duoqlostore.AppConfig;
-import com.duoqlo.duoqlostore.controller.ImageCacheService;
-import com.duoqlo.duoqlostore.controller.UserDashController;
-import com.duoqlo.duoqlostore.model.*;
-
-import javafx.animation.*;
-import javafx.beans.binding.Bindings;
-import javafx.beans.value.ChangeListener;
-import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.util.Duration;
-import org.kordamp.ikonli.javafx.FontIcon;
-
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-class ImageCarousel {
-    private int currentIndex = 0;
-    private List<Image> images = new ArrayList<>();
-
-    public void setImages(List<Image> images) {
-        this.images = images;
-        this.currentIndex = 0;
-    }
-
-    public Image getCurrentImage() {
-        if (images == null || images.isEmpty()) return null;
-        return images.get(currentIndex);
-    }
-
-    public boolean hasNext() {
-        return images != null && currentIndex < images.size() - 1;
-    }
-
-    public boolean hasPrevious() {
-        return images != null && currentIndex > 0;
-    }
-
-    public Image next() {
-        if (hasNext()) {
-            currentIndex++;
+    package com.duoqlo.duoqlostore.view;
+    
+    import com.duoqlo.duoqlostore.AppConfig;
+    import com.duoqlo.duoqlostore.controller.ImageCacheService;
+    import com.duoqlo.duoqlostore.controller.UserDashController;
+    import com.duoqlo.duoqlostore.model.*;
+    
+    import javafx.animation.*;
+    import javafx.beans.binding.Bindings;
+    import javafx.beans.value.ChangeListener;
+    import javafx.concurrent.Task;
+    import javafx.event.ActionEvent;
+    import javafx.geometry.Insets;
+    import javafx.geometry.Pos;
+    import javafx.scene.Scene;
+    import javafx.scene.control.*;
+    import javafx.scene.image.Image;
+    import javafx.scene.image.ImageView;
+    import javafx.scene.layout.*;
+    import javafx.scene.paint.Color;
+    import javafx.scene.shape.Rectangle;
+    import javafx.util.Duration;
+    import org.kordamp.ikonli.javafx.FontIcon;
+    
+    import java.io.File;
+    import java.util.*;
+    import java.util.concurrent.ExecutorService;
+    import java.util.concurrent.Executors;
+    
+    class ImageCarousel {
+        private int currentIndex = 0;
+        private List<Image> images = new ArrayList<>();
+    
+        public void setImages(List<Image> images) {
+            this.images = images;
+            this.currentIndex = 0;
         }
-        return getCurrentImage();
-    }
-
-    public Image previous() {
-        if (hasPrevious()) {
-            currentIndex--;
+    
+        public Image getCurrentImage() {
+            if (images == null || images.isEmpty()) return null;
+            return images.get(currentIndex);
         }
-        return getCurrentImage();
+    
+        public boolean hasNext() {
+            return images != null && currentIndex < images.size() - 1;
+        }
+    
+        public boolean hasPrevious() {
+            return images != null && currentIndex > 0;
+        }
+    
+        public Image next() {
+            if (hasNext()) {
+                currentIndex++;
+            }
+            return getCurrentImage();
+        }
+    
+        public Image previous() {
+            if (hasPrevious()) {
+                currentIndex--;
+            }
+            return getCurrentImage();
+        }
     }
-}
+    
+    public class UserDashboard extends UserPage {
+        private final ExecutorService executor = Executors.newFixedThreadPool(2);
+    
+        private UserDashController controller;
+        private StackPane body;
+        private Rectangle overlay;
 
-public class UserDashboard extends UserPage {
-    private final ExecutorService executor = Executors.newFixedThreadPool(2);
+        private HBox catMenu;
+    
+        private BorderPane expandedCard;
+        private ScaleTransition modalScaleIn;
+        private ScaleTransition modalScaleOut;
+    
+        private Label loadingLabel = new Label("");
+        private StackPane loadingPane = createLoadingPane(loadingLabel);
+    
+        private TilePane productTiles;
+        private Label stockLabel;
+    
+        private ComboBox<String> sizeCombo;
+        private ComboBox<String> categoryCombo;
+        private ComboBox<String> priceCombo;
+        private ComboBox<String> sortCombo;
+        private ChangeListener<String> sortComboListener;
+    
+        private Button minusQtyBtn;
+        private Button plusQtyBtn;
+    
+        private HBox sortBox;
+    
+        private int sidePad = 63;
+    
+        private double cardWidth = 195;
+        private double cardHeight = cardWidth + 160;
+        private double enlargedWidth = cardWidth + 354;
+        private double enlargedHeight = enlargedWidth + 200;
+    
+        private Label qtyErrorLabel = new Label("Maximum stock reached.");
+        private Label priceLabel;
+        private double unitPrice;
+    
+        private TextField quantityField;
+        private int productQuantity = 1;
+    
+        private String currentFilter = "ALL";
+        private String sizeSelected;
+        private boolean isSizesSelected = false;
+        private boolean[] isDisabled = {false};
+    
+        public UserDashboard(UserDashController controller) {
+            this.controller = controller;
+        }
+    
+        @Override
+        public User getUser() { return controller.getUser(); }
+    
+        @Override
+        public void openCartPage() {
+            controller.openCartPage();
+        }
+    
+        @Override
+        public void openOrdersPage() {
+            controller.openOrdersPage();
+        }
+    
+        @Override
+        public void openProfilePage() {
+            controller.openProfilePage();
+        }
+    
+        public StackPane getBody() { return this.body; }
+    
+        public HBox buildHeader() {
+            //Category Buttons
+            ToggleButton allButton = new ToggleButton("ALL");
+            ToggleButton womenButton = new ToggleButton("WOMEN");
+            ToggleButton menButton = new ToggleButton("MEN");
+    
+            ToggleGroup categoryGroup = new ToggleGroup();
+            allButton.setToggleGroup(categoryGroup);
+            womenButton.setToggleGroup(categoryGroup);
+            menButton.setToggleGroup(categoryGroup);
+    
+            allButton.setSelected(true);
+    
+            //Category Menu
+            catMenu = new HBox(65);
+            catMenu.setMinWidth(235);
+            catMenu.getStyleClass().add("category-menu");
+            catMenu.setAlignment(Pos.BOTTOM_CENTER);
+            catMenu.setPadding(new Insets(5));
+    
+            catMenu.getChildren().addAll(allButton, womenButton, menButton);
+    
+            allButton.setOnAction(e -> {
+                currentFilter = "ALL";
+                loadAllProducts();
+            });
+    
+            menButton.setOnAction(e -> {
+                currentFilter = "MEN";
+                loadProductsByGender(currentFilter);
+            });
+    
+            womenButton.setOnAction(e -> {
+                currentFilter = "WOMEN";
+                loadProductsByGender(currentFilter);
+            });
+    
+            searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+                if(newVal.isEmpty()) {
+                    if(currentFilter.equals("ALL")) {
+                        loadAllProducts();
+                    } else {
+                        loadProductsByGender(currentFilter);
+                    }
+                }
+            });
+    
+            searchField.setOnAction(e -> enterButton.fire());
+    
+            enterButton.setOnAction(e -> {
+                String text = searchField.getText();
+                loadProductsByName(text);
+            });
+    
+            header = createHeaderBox(catMenu, true);
+    
+            return header;
+        }
+    
+        public BorderPane buildFilterBar() {
+            int tbPad = 20;
+    
+            sizeCombo = new ComboBox<>();
+            sizeCombo.setPromptText("All sizes");
+            sizeCombo.setPrefWidth(120);
+            sizeCombo.getStyleClass().add("filter-combo");
+    
+            categoryCombo = new ComboBox<>();
+            categoryCombo.setPromptText("All categories");
+            categoryCombo.setPrefWidth(150);
+            categoryCombo.getStyleClass().add("filter-combo");
+    
+            priceCombo = new ComboBox<>();
+            priceCombo.setPromptText("All prices");
+            priceCombo.setPrefWidth(150);
+            priceCombo.getStyleClass().add("filter-combo");
+    
+            FontIcon sortIcon = new FontIcon("fas-sort");
+            sortIcon.setIconSize(16);
+            sortIcon.setIconColor(AppConfig.themeColor);
+            sortCombo = createSortCombo();
+            sortBox = createSortBox(sortCombo);
+    
+            HBox filterBox = new HBox(10, sizeCombo, categoryCombo, priceCombo);
+            filterBox.getStyleClass().add("filter-box");
+    
+            BorderPane filterBar = new BorderPane();
+            filterBar.setLeft(filterBox);
+            filterBar.setRight(sortBox);
+    
+            filterBar.setPadding(new Insets(tbPad, 0, tbPad, 0));
+            return filterBar;
+        }
+    
+        public ScrollPane buildBodyScrollPane() {
+            productTiles = new TilePane();
+            productTiles.setHgap(15);
+            productTiles.setVgap(20);
+            productTiles.setAlignment(Pos.CENTER_LEFT);
 
-    private UserDashController controller;
-    private StackPane body;
-    private Rectangle overlay;
+            VBox productContainer = new VBox(productTiles);
+            productContainer.setFillWidth(true);
+            productContainer.setAlignment(Pos.CENTER);
 
-    private BorderPane expandedCardModal;
-    private ScaleTransition modalScaleIn;
-    private ScaleTransition modalScaleOut;
+            BorderPane filterBar = buildFilterBar();
+    
+            VBox productSection = new VBox(filterBar, productContainer);
+            VBox.setMargin(productContainer, new Insets(0, sidePad, 0, sidePad));
+            productSection.setFillWidth(true);
+            VBox.setMargin(filterBar, new Insets(0, sidePad, 0, sidePad));
+    
+            ScrollPane scrollPane = new ScrollPane(productSection);
+            scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
-    private Label loadingLabel = new Label("");
-    private StackPane loadingPane = createLoadingPane(loadingLabel);
-
-    private TilePane productTiles;
-    private Label stockLabel;
-
-    private ComboBox<String> sizeCombo;
-    private ComboBox<String> categoryCombo;
-    private ComboBox<String> priceCombo;
-    private ComboBox<String> sortCombo;
-    private ChangeListener<String> sortComboListener;
-
-    private Button minusQtyBtn;
-    private Button plusQtyBtn;
-
-    private HBox sortBox;
-
-    private int sidePad = 63;
-
-    private double cardWidth = 197;
-    private double cardHeight = cardWidth + 180;
-    private double enlargedWidth = cardWidth + 354;
-    private double enlargedHeight = enlargedWidth + 200;
-
-    private Label qtyErrorLabel = new Label("Maximum stock reached.");
-    private Label priceLabel;
-    private double unitPrice;
-
-    private TextField quantityField;
-    private int productQuantity = 1;
-
-    private String currentFilter = "ALL";
-    private String sizeSelected;
-    private boolean isSizesSelected = false;
-    private boolean[] isDisabled = {false};
-
-    public UserDashboard(UserDashController controller) {
-        this.controller = controller;
-    }
-
-    @Override
-    public User getUser() { return controller.getUser(); }
-
-    @Override
-    public void openCartPage() {
-        controller.openCartPage();
-    }
-
-    @Override
-    public void openOrdersPage() {
-        controller.openOrdersPage();
-    }
-
-    @Override
-    public void openProfilePage() {
-        controller.openProfilePage();
-    }
-
-    public StackPane getBody() { return this.body; }
-
-    public StackPane buildHeader() {
-        //Category Buttons
-        ToggleButton allButton = new ToggleButton("ALL");
-        ToggleButton womenButton = new ToggleButton("WOMEN");
-        ToggleButton menButton = new ToggleButton("MEN");
-
-        ToggleGroup categoryGroup = new ToggleGroup();
-        allButton.setToggleGroup(categoryGroup);
-        womenButton.setToggleGroup(categoryGroup);
-        menButton.setToggleGroup(categoryGroup);
-
-        allButton.setSelected(true);
-
-        //Category Menu
-        HBox catMenu = new HBox(80);
-        catMenu.getStyleClass().add("category-menu");
-        catMenu.setAlignment(Pos.BOTTOM_CENTER);
-        catMenu.setPadding(new Insets(5));
-
-        catMenu.getChildren().addAll(allButton, womenButton, menButton);
-
-        allButton.setOnAction(e -> {
-            currentFilter = "ALL";
-            loadAllProducts();
-        });
-
-        menButton.setOnAction(e -> {
-            currentFilter = "MEN";
-            loadProductsByGender(currentFilter);
-        });
-
-        womenButton.setOnAction(e -> {
-            currentFilter = "WOMEN";
-            loadProductsByGender(currentFilter);
-        });
-
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if(newVal.isEmpty()) {
-                if(currentFilter.equals("ALL")) {
-                    loadAllProducts();
+            return scrollPane;
+        }
+    
+        private void loadAllDataOnce() {
+            loadingPane.setVisible(true);
+    
+            Task<Void> preloadTask = controller.createPreloadTask(() -> {
+                loadAllProducts();
+                setupSizeMenu();
+                setupCategoryMenu();
+                setupPriceMenu();
+                setupSortingMenu();
+                loadingPane.setVisible(false);
+            });
+    
+            loadingLabel.textProperty().bind(preloadTask.messageProperty());
+    
+            executor.submit(preloadTask);
+        }
+    
+        private void setupSizeMenu() {
+            List<String> sizeList = controller.getDistinctSizes();
+            sizeCombo.getItems().clear();
+            sizeCombo.getItems().add("All sizes");
+            sizeCombo.getItems().addAll(sizeList);
+            sizeCombo.getSelectionModel().clearSelection();
+            sizeCombo.setValue(null);
+            sizeCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal.toLowerCase().contains("all")) {
+                    controller.setSizeSelected(null);
+                    sizeCombo.getStyleClass().remove("selected");
                 } else {
-                    loadProductsByGender(currentFilter);
+                    controller.setSizeSelected(newVal);
+                    sizeCombo.getStyleClass().add("selected");
                 }
-            }
-        });
-
-        searchField.setOnAction(e -> enterButton.fire());
-
-        enterButton.setOnAction(e -> {
-            String text = searchField.getText();
-            loadProductsByName(text);
-        });
-
-        header = createHeaderBox(catMenu, true);
-
-        return header;
-    }
-
-    public BorderPane buildFilterBar() {
-        int tbPad = 20;
-
-        sizeCombo = new ComboBox<>();
-        sizeCombo.setPromptText("All sizes");
-        sizeCombo.setPrefWidth(120);
-        sizeCombo.getStyleClass().add("filter-combo");
-
-        categoryCombo = new ComboBox<>();
-        categoryCombo.setPromptText("All categories");
-        categoryCombo.setPrefWidth(150);
-        categoryCombo.getStyleClass().add("filter-combo");
-
-        priceCombo = new ComboBox<>();
-        priceCombo.setPromptText("All prices");
-        priceCombo.setPrefWidth(150);
-        priceCombo.getStyleClass().add("filter-combo");
-
-        FontIcon sortIcon = new FontIcon("fas-sort");
-        sortIcon.setIconSize(16);
-        sortIcon.setIconColor(AppConfig.themeColor);
-        sortCombo = createSortCombo();
-        sortBox = createSortBox(sortCombo);
-
-        HBox filterBox = new HBox(10, sizeCombo, categoryCombo, priceCombo);
-        filterBox.getStyleClass().add("filter-box");
-
-        BorderPane filterBar = new BorderPane();
-        filterBar.setLeft(filterBox);
-        filterBar.setRight(sortBox);
-
-        filterBar.setPadding(new Insets(tbPad, 0, tbPad, 0));
-        return filterBar;
-    }
-
-    public ScrollPane buildBodyScrollPane() {
-        productTiles = new TilePane();
-        productTiles.setHgap(15);
-        productTiles.setVgap(20);
-        productTiles.setPrefColumns(4);
-        productTiles.setAlignment(Pos.CENTER_LEFT);
-
-        VBox productContainer = new VBox(productTiles);
-        productContainer.setAlignment(Pos.CENTER);
-
-        BorderPane filterBar = buildFilterBar();
-
-        VBox productSection = new VBox(filterBar, productContainer);
-        VBox.setMargin(productContainer, new Insets(0, sidePad, 0, sidePad));
-        VBox.setMargin(filterBar, new Insets(0, sidePad, 0, sidePad));
-
-        ScrollPane scrollPane = new ScrollPane(productSection);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-
-        return scrollPane;
-    }
-
-    private void loadAllDataOnce() {
-        loadingPane.setVisible(true);
-
-        Task<Void> preloadTask = controller.createPreloadTask(() -> {
-            loadAllProducts();
-            setupSizeMenu();
-            setupCategoryMenu();
-            setupPriceMenu();
-            setupSortingMenu();
-            loadingPane.setVisible(false);
-        });
-
-        loadingLabel.textProperty().bind(preloadTask.messageProperty());
-
-        executor.submit(preloadTask);
-    }
-
-    private void setupSizeMenu() {
-        List<String> sizeList = controller.getDistinctSizes();
-        sizeCombo.getItems().clear();
-        sizeCombo.getItems().add("All sizes");
-        sizeCombo.getItems().addAll(sizeList);
-        sizeCombo.getSelectionModel().clearSelection();
-        sizeCombo.setValue(null);
-        sizeCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal.toLowerCase().contains("all")) {
-                controller.setSizeSelected(null);
-                sizeCombo.getStyleClass().remove("selected");
-            } else {
-                controller.setSizeSelected(newVal);
-                sizeCombo.getStyleClass().add("selected");
-            }
-            applyFilters();
-        });
-    }
-
-    private void setupCategoryMenu() {
-        Set<String> uniqueCategories = controller.getUniqueCategories();
-
-        categoryCombo.getItems().clear();
-        categoryCombo.getItems().add("All categories");
-        categoryCombo.getItems().addAll(uniqueCategories);
-        categoryCombo.getSelectionModel().clearSelection();
-        categoryCombo.setValue(null);
-
-        categoryCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && newVal.toLowerCase().contains("all")) {
-                controller.setCategorySelected(null);
-                categoryCombo.getStyleClass().remove("selected");
-            } else {
-                controller.setCategorySelected(newVal.toUpperCase());
-                if(!categoryCombo.getStyleClass().contains("selected")) {
-                    categoryCombo.getStyleClass().add("selected");
-                }
-            }
-            applyFilters();
-        });
-
-
-    }
-
-    private void setupPriceMenu() {
-        List<String> priceRanges = Arrays.asList("Below RM30", "RM30 - RM40", "Above RM40");
-        priceCombo.getItems().clear();
-        priceCombo.getItems().add("All prices");
-        priceCombo.getItems().addAll(priceRanges);
-        priceCombo.getSelectionModel().clearSelection();
-        priceCombo.setValue(null);
-        priceCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if(newVal.toLowerCase().contains("all")) {
-                controller.setPriceSelected(null);
-                priceCombo.getStyleClass().remove("selected");
-            } else {
-                controller.setPriceSelected(newVal);
-                priceCombo.getStyleClass().add("selected");
-            }
-            applyFilters();
-        });
-    }
-
-    private void setupSortingMenu() {
-        List<String> sortingList = new ArrayList<>();
-
-        sortingList.add("Name (A - Z)");
-        sortingList.add("Name (Z - A)");
-        sortingList.add("Price (Low - High)");
-        sortingList.add("Price (High - Low)");
-
-        sortCombo.getItems().addAll(sortingList);
-
-        sortComboListener = (obs, oldVal, newVal) -> {
-            if (newVal != null && !newVal.isEmpty()) {
-                boolean hasResetButton = sortBox.getChildren().stream()
-                        .anyMatch(node -> node.getStyleClass().contains("reset-button"));
-
-                if (!hasResetButton) {
-                    sortBox.getChildren().add(createResetButton());
-                }
-
-                controller.setSortingSelected(newVal);
-                sortCombo.getStyleClass().add("selected");
                 applyFilters();
-            }
-        };
-
-        sortCombo.valueProperty().addListener(sortComboListener);
-    }
-
-    private void applyFilters() {
-        controller.applyProdFilters();
-        displayProducts(controller.getFilteredProducts());
-    }
-
-    private Button createResetButton() {
-        FontIcon xIcon = new FontIcon("fas-times");
-        xIcon.setIconSize(16);
-        Button resetButton = new Button("", xIcon);
-        resetButton.getStyleClass().add("reset-button");
-        resetButton.setOnAction(e -> {
-            sortCombo.valueProperty().removeListener(sortComboListener);
-
-            sortCombo.setValue(null);
-            sortCombo.setPromptText("Sort by");
-            sortCombo.setPrefWidth(60);
-            sortCombo.getStyleClass().remove("selected");
-
-            controller.setSortingSelected(null);
-
-            sortBox.getChildren().remove(resetButton);
-
-            applyFilters();
-
-            sortCombo.valueProperty().addListener(sortComboListener);
-        });
-
-        return resetButton;
-    }
-
-    private void displayProducts(List<Product> products) {
-        productTiles.getChildren().clear();
-
-        if (!products.isEmpty()) {
-            for (Product product : products) {
-                VBox productCard = createProductCard(product);
-                productTiles.getChildren().add(productCard);
-            }
-        } else {
-            Label noProductsLabel = new Label("No products available");
-            noProductsLabel.getStyleClass().add("no-products");
-            productTiles.getChildren().add(noProductsLabel);
+            });
         }
-    }
-
-    private void loadAllProducts() {
-        controller.loadAllProducts();
-        displayProducts(controller.getDisplayedProducts());
-    }
-
-    private void loadProductsByGender(String gender) {
-        controller.loadProductsByGender(gender);
-        displayProducts(controller.getDisplayedProducts());
-    }
-
-    private void loadProductsByName(String name) {
-        controller.loadProductsByName(name, currentFilter);
-        displayProducts(controller.getDisplayedProducts());
-    }
-
-    private VBox createProductCard(Product product) {
-        ImageView productImage = new ImageView();
-        productImage.setFitWidth(cardWidth - 3);
-        productImage.setPreserveRatio(true);
-
-        StackPane imageContainer = createImageContainer(product, productImage);
-
-        Label genderLabel = new Label(product.getGender());
-        genderLabel.getStyleClass().add("gender");
-
-        Label nameLabel = new Label(product.getName());
-        nameLabel.getStyleClass().add("product-name");
-        nameLabel.setWrapText(true);
-        nameLabel.setMaxWidth(cardWidth - 10);
-
-        List<ProductSize> sizes = controller.getCachedProductSizes(product.getId());
-        double lowestPrice = sizes.stream().mapToDouble(ProductSize::getPrice).min().orElse(0);
-        Label priceLabel = new Label(showPrice(lowestPrice));
-        priceLabel.getStyleClass().add("price");
-
-        VBox card = new VBox();
-        card.setPrefSize(cardWidth, cardHeight);
-        card.setMaxSize(cardWidth, cardHeight);
-        card.setMinSize(cardWidth, cardHeight);
-
-        card.getStyleClass().add("product-card");
-        card.getChildren().addAll(imageContainer, genderLabel, nameLabel, priceLabel);
-
-        VBox.setMargin(genderLabel, new Insets(8, 0, 0, 8));
-        VBox.setMargin(nameLabel, new Insets(5, 8, 0, 8));
-        VBox.setMargin(priceLabel, new Insets(0, 8, 5, 8));
-
-        if (product.hasStock()) {
-            addToolTip(card, "Click for more details.");
-
-            card.setOnMouseEntered(e -> {
-                TranslateTransition lift = new TranslateTransition(Duration.millis(200), card);
-                lift.setToY(-5);
-                lift.play();
+    
+        private void setupCategoryMenu() {
+            Set<String> uniqueCategories = controller.getUniqueCategories();
+    
+            categoryCombo.getItems().clear();
+            categoryCombo.getItems().add("All categories");
+            categoryCombo.getItems().addAll(uniqueCategories);
+            categoryCombo.getSelectionModel().clearSelection();
+            categoryCombo.setValue(null);
+    
+            categoryCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal != null && newVal.toLowerCase().contains("all")) {
+                    controller.setCategorySelected(null);
+                    categoryCombo.getStyleClass().remove("selected");
+                } else {
+                    controller.setCategorySelected(newVal.toUpperCase());
+                    if(!categoryCombo.getStyleClass().contains("selected")) {
+                        categoryCombo.getStyleClass().add("selected");
+                    }
+                }
+                applyFilters();
             });
-
-            card.setOnMouseExited(e -> {
-                TranslateTransition lift = new TranslateTransition(Duration.millis(200), card);
-                lift.setToY(0);
-                lift.play();
+    
+    
+        }
+    
+        private void setupPriceMenu() {
+            List<String> priceRanges = Arrays.asList("Below RM30", "RM30 - RM40", "Above RM40");
+            priceCombo.getItems().clear();
+            priceCombo.getItems().add("All prices");
+            priceCombo.getItems().addAll(priceRanges);
+            priceCombo.getSelectionModel().clearSelection();
+            priceCombo.setValue(null);
+            priceCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+                if(newVal.toLowerCase().contains("all")) {
+                    controller.setPriceSelected(null);
+                    priceCombo.getStyleClass().remove("selected");
+                } else {
+                    controller.setPriceSelected(newVal);
+                    priceCombo.getStyleClass().add("selected");
+                }
+                applyFilters();
             });
+        }
+    
+        private void setupSortingMenu() {
+            List<String> sortingList = new ArrayList<>();
+    
+            sortingList.add("Name (A - Z)");
+            sortingList.add("Name (Z - A)");
+            sortingList.add("Price (Low - High)");
+            sortingList.add("Price (High - Low)");
+    
+            sortCombo.getItems().addAll(sortingList);
+    
+            sortComboListener = (obs, oldVal, newVal) -> {
+                if (newVal != null && !newVal.isEmpty()) {
+                    boolean hasResetButton = sortBox.getChildren().stream()
+                            .anyMatch(node -> node.getStyleClass().contains("reset-button"));
+    
+                    if (!hasResetButton) {
+                        sortBox.getChildren().add(createResetButton());
+                    }
+    
+                    controller.setSortingSelected(newVal);
+                    sortCombo.getStyleClass().add("selected");
+                    applyFilters();
+                }
+            };
+    
+            sortCombo.valueProperty().addListener(sortComboListener);
+        }
+    
+        private void applyFilters() {
+            controller.applyProdFilters();
+            displayProducts(controller.getFilteredProducts());
+        }
+    
+        private Button createResetButton() {
+            FontIcon xIcon = new FontIcon("fas-times");
+            xIcon.setIconSize(16);
+            Button resetButton = new Button("", xIcon);
+            resetButton.getStyleClass().add("reset-button");
+            resetButton.setOnAction(e -> {
+                sortCombo.valueProperty().removeListener(sortComboListener);
+    
+                sortCombo.setValue(null);
+                sortCombo.setPromptText("Sort by");
+                sortCombo.setPrefWidth(60);
+                sortCombo.getStyleClass().remove("selected");
+    
+                controller.setSortingSelected(null);
+    
+                sortBox.getChildren().remove(resetButton);
+    
+                applyFilters();
+    
+                sortCombo.valueProperty().addListener(sortComboListener);
+            });
+    
+            return resetButton;
+        }
+    
+        private void displayProducts(List<Product> products) {
+            productTiles.getChildren().clear();
+    
+            if (!products.isEmpty()) {
+                for (Product product : products) {
+                    Pane productCard = createProductCard(product);
+                    productTiles.getChildren().add(productCard);
+                }
+            } else {
+                Label noProductsLabel = new Label("No products available");
+                noProductsLabel.getStyleClass().add("no-products");
+                productTiles.getChildren().add(noProductsLabel);
+            }
+        }
+    
+        private void loadAllProducts() {
+            controller.loadAllProducts();
+            displayProducts(controller.getDisplayedProducts());
+        }
+    
+        private void loadProductsByGender(String gender) {
+            controller.loadProductsByGender(gender);
+            displayProducts(controller.getDisplayedProducts());
+        }
+    
+        private void loadProductsByName(String name) {
+            controller.loadProductsByName(name, currentFilter);
+            displayProducts(controller.getDisplayedProducts());
+        }
+    
+        private Pane createProductCard(Product product) {
+            ImageView productImage = new ImageView();
+            productImage.setFitWidth(cardWidth - 3);
+            productImage.setPreserveRatio(true);
+    
+            StackPane imageContainer = createImageContainer(product, productImage);
+    
+            Label genderLabel = new Label(product.getGender());
+            genderLabel.getStyleClass().add("gender");
+    
+            Label nameLabel = new Label(product.getName());
+            nameLabel.getStyleClass().add("product-name");
+            nameLabel.setWrapText(true);
+            nameLabel.setMaxWidth(cardWidth - 10);
+    
+            List<ProductSize> sizes = controller.getCachedProductSizes(product.getId());
+            double lowestPrice = sizes.stream().mapToDouble(ProductSize::getPrice).min().orElse(0);
+            Label priceLabel = new Label(showPrice(lowestPrice));
+            priceLabel.getStyleClass().add("price");
+    
+            VBox card = new VBox();
+            card.setPrefWidth(cardWidth);
+            card.setMaxWidth(cardWidth);
 
-            card.setOnMouseClicked(e -> {
-                if (e.getClickCount() == 1) {
-                    showExpandedCard(product);
+            card.setPrefHeight(cardHeight);
+            card.setMaxHeight(cardHeight);
+
+            card.getStyleClass().add("product-card");
+            card.getChildren().addAll(imageContainer, genderLabel, nameLabel, priceLabel);
+    
+            VBox.setMargin(genderLabel, new Insets(8, 0, 0, 8));
+            VBox.setMargin(nameLabel, new Insets(5, 8, 0, 8));
+            VBox.setMargin(priceLabel, new Insets(0, 8, 5, 8));
+    
+            if (product.hasStock()) {
+                addToolTip(card, "Click for more details.");
+    
+                card.setOnMouseEntered(e -> {
+                    TranslateTransition lift = new TranslateTransition(Duration.millis(200), card);
+                    lift.setToY(-5);
+                    lift.play();
+                });
+    
+                card.setOnMouseExited(e -> {
+                    TranslateTransition lift = new TranslateTransition(Duration.millis(200), card);
+                    lift.setToY(0);
+                    lift.play();
+                });
+    
+                card.setOnMouseClicked(e -> {
+                    if (e.getClickCount() == 1) {
+                        showExpandedCard(product);
+                    }
+                });
+    
+                return card;
+    
+            } else {
+                addToolTip(card, "Sold out for now — restocking soon!");
+    
+                card.getStyleClass().add("sold-out");
+    
+                imageContainer.setOnMouseEntered(null);
+                imageContainer.setOnMouseExited(null);
+    
+                Label soldOutLabel = new Label("SOLD OUT");
+                soldOutLabel.getStyleClass().add("sold-out");
+    
+                StackPane soldOutStack = new StackPane();
+                soldOutStack.setPrefSize(cardWidth, cardHeight);
+                soldOutStack.getChildren().addAll(card, soldOutLabel);
+                StackPane.setAlignment(soldOutLabel, Pos.CENTER);
+    
+                return soldOutStack;
+            }
+        }
+    
+        private StackPane createImageContainer(Product product, ImageView productImage) {
+            ImageCarousel carousel = new ImageCarousel();
+    
+            String imagePath = product.getImagePath();
+            List<Image> cachedImages = ImageCacheService.getInstance().getImages(imagePath);
+            if (imagePath != null && !imagePath.isEmpty() && cachedImages != null) {
+                carousel.setImages(cachedImages);
+                Image firstImage = carousel.getCurrentImage();
+                if (firstImage != null) {
+                    productImage.setImage(firstImage);
+                }
+            } else {
+                productImage.setImage(new Image(getClass().getResourceAsStream("/images/placeholder.png")));
+                if (imagePath != null && !imagePath.isEmpty()) {
+                    loadImageAsync(productImage, imagePath, carousel);
+                }
+            }
+    
+            Button rightButton = new Button();
+            rightButton.setGraphic(new FontIcon("fas-chevron-right"));
+            rightButton.getStyleClass().add("right-button");
+            rightButton.setVisible(false);
+            rightButton.setMaxHeight(Double.MAX_VALUE);
+    
+            rightButton.setOnAction(e -> {
+                Image nextImage = carousel.next();
+                if(nextImage != null) {
+                    productImage.setImage(nextImage);
                 }
             });
-
-            return card;
-
-        } else {
-            addToolTip(card, "Sold out for now — restocking soon!");
-
-            card.getStyleClass().add("sold-out");
-
-            imageContainer.setOnMouseEntered(null);
-            imageContainer.setOnMouseExited(null);
-
-            Label soldOutLabel = new Label("SOLD OUT");
-            soldOutLabel.getStyleClass().add("sold-out");
-
-            StackPane soldOutStack = new StackPane();
-            soldOutStack.getChildren().addAll(card, soldOutLabel);
-            StackPane.setAlignment(soldOutLabel, Pos.CENTER);
-
-            VBox wrapper = new VBox(soldOutStack);
-
-            return wrapper;
-        }
-    }
-
-    private StackPane createImageContainer(Product product, ImageView productImage) {
-        ImageCarousel carousel = new ImageCarousel();
-
-        String imagePath = product.getImagePath();
-        List<Image> cachedImages = ImageCacheService.getInstance().getImages(imagePath);
-        if (imagePath != null && !imagePath.isEmpty() && cachedImages != null) {
-            carousel.setImages(cachedImages);
-            Image firstImage = carousel.getCurrentImage();
-            if (firstImage != null) {
-                productImage.setImage(firstImage);
-            }
-        } else {
-            productImage.setImage(new Image(getClass().getResourceAsStream("/images/placeholder.png")));
-            if (imagePath != null && !imagePath.isEmpty()) {
-                loadImageAsync(productImage, imagePath, carousel);
-            }
-        }
-
-        Button rightButton = new Button();
-        rightButton.setGraphic(new FontIcon("fas-chevron-right"));
-        rightButton.getStyleClass().add("right-button");
-        rightButton.setVisible(false);
-        rightButton.setMaxHeight(Double.MAX_VALUE);
-
-        rightButton.setOnAction(e -> {
-            Image nextImage = carousel.next();
-            if(nextImage != null) {
-                productImage.setImage(nextImage);
-            }
-        });
-
-        rightButton.disableProperty().bind(
-                Bindings.createBooleanBinding(
-                        () -> !carousel.hasNext(),
-                        productImage.imageProperty()
-                )
-        );
-
-        Button leftButton = new Button();
-        leftButton.setGraphic(new FontIcon("fas-chevron-left"));
-        leftButton.getStyleClass().add("left-button");
-        leftButton.setVisible(false);
-        leftButton.setMaxHeight(Double.MAX_VALUE);
-
-        leftButton.setOnAction(e -> {
-            Image prevImage = carousel.previous();
-            if(prevImage != null) {
-                productImage.setImage(prevImage);
-            }
-        });
-
-        leftButton.disableProperty().bind(
-                Bindings.createBooleanBinding(
-                        () -> !carousel.hasPrevious(),
-                        productImage.imageProperty()
-                )
-        );
-
-        StackPane imageContainer = new StackPane(productImage);
-        imageContainer.getChildren().addAll(leftButton, rightButton);
-        imageContainer.setAlignment(leftButton, Pos.CENTER_LEFT);
-        imageContainer.setAlignment(rightButton, Pos.CENTER_RIGHT);
-
-        imageContainer.setOnMouseEntered(e -> {
-            leftButton.setVisible(true);
-            rightButton.setVisible(true);
-        });
-
-        imageContainer.setOnMouseExited(e -> {
+    
+            rightButton.disableProperty().bind(
+                    Bindings.createBooleanBinding(
+                            () -> !carousel.hasNext(),
+                            productImage.imageProperty()
+                    )
+            );
+    
+            Button leftButton = new Button();
+            leftButton.setGraphic(new FontIcon("fas-chevron-left"));
+            leftButton.getStyleClass().add("left-button");
             leftButton.setVisible(false);
-            rightButton.setVisible(false);
-        });
-
-        return imageContainer;
-    }
-
-    private void loadImageAsync(ImageView imageView, String imagePath, ImageCarousel carousel) {
-        Task<List<Image>> loadTask = new Task<>() {
-            @Override
-            protected List<Image> call() throws Exception {
-                List<Image> images = new ArrayList<>();
-
-
-                if (imagePath != null && !imagePath.isEmpty()) {
-                    File folder = new File(imagePath);
-
-                    if (folder.exists() && folder.isDirectory()) {
-                        File[] files = folder.listFiles((dir, name) ->
-                                name.toLowerCase().endsWith(".jpg") ||
-                                name.toLowerCase().endsWith(".png") ||
-                                name.toLowerCase().endsWith(".jpeg")
-                        );
-
-                        if (files != null) {
-                            for (File file : files) {
-                                Image img = new Image(file.toURI().toString(), false);
-                                images.add(img);
+            leftButton.setMaxHeight(Double.MAX_VALUE);
+    
+            leftButton.setOnAction(e -> {
+                Image prevImage = carousel.previous();
+                if(prevImage != null) {
+                    productImage.setImage(prevImage);
+                }
+            });
+    
+            leftButton.disableProperty().bind(
+                    Bindings.createBooleanBinding(
+                            () -> !carousel.hasPrevious(),
+                            productImage.imageProperty()
+                    )
+            );
+    
+            StackPane imageContainer = new StackPane(productImage);
+            imageContainer.getChildren().addAll(leftButton, rightButton);
+            imageContainer.setAlignment(leftButton, Pos.CENTER_LEFT);
+            imageContainer.setAlignment(rightButton, Pos.CENTER_RIGHT);
+    
+            imageContainer.setOnMouseEntered(e -> {
+                leftButton.setVisible(true);
+                rightButton.setVisible(true);
+            });
+    
+            imageContainer.setOnMouseExited(e -> {
+                leftButton.setVisible(false);
+                rightButton.setVisible(false);
+            });
+    
+            return imageContainer;
+        }
+    
+        private void loadImageAsync(ImageView imageView, String imagePath, ImageCarousel carousel) {
+            Task<List<Image>> loadTask = new Task<>() {
+                @Override
+                protected List<Image> call() throws Exception {
+                    List<Image> images = new ArrayList<>();
+    
+    
+                    if (imagePath != null && !imagePath.isEmpty()) {
+                        File folder = new File(imagePath);
+    
+                        if (folder.exists() && folder.isDirectory()) {
+                            File[] files = folder.listFiles((dir, name) ->
+                                    name.toLowerCase().endsWith(".jpg") ||
+                                    name.toLowerCase().endsWith(".png") ||
+                                    name.toLowerCase().endsWith(".jpeg")
+                            );
+    
+                            if (files != null) {
+                                for (File file : files) {
+                                    Image img = new Image(file.toURI().toString(), false);
+                                    images.add(img);
+                                }
                             }
                         }
                     }
+    
+                    if (images.isEmpty()) {
+                        images.add(new Image(
+                                getClass().getResourceAsStream("/images/placeholder.png")
+                        ));
+                    }
+    
+                    return images;
                 }
-
-                if (images.isEmpty()) {
-                    images.add(new Image(
-                            getClass().getResourceAsStream("/images/placeholder.png")
-                    ));
+            };
+    
+            loadTask.setOnSucceeded(_ -> {
+                List<Image> images = loadTask.getValue();
+    
+                ImageCacheService.getInstance().putImages(imagePath, images);
+    
+                carousel.setImages(images);
+    
+                Image firstImage = carousel.getCurrentImage();
+                if (firstImage != null) {
+                    imageView.setImage(firstImage);
                 }
-
-                return images;
-            }
-        };
-
-        loadTask.setOnSucceeded(_ -> {
-            List<Image> images = loadTask.getValue();
-
-            ImageCacheService.getInstance().putImages(imagePath, images);
-
-            carousel.setImages(images);
-
-            Image firstImage = carousel.getCurrentImage();
-            if (firstImage != null) {
-                imageView.setImage(firstImage);
-            }
-        });
-
-        executor.submit(loadTask);
-    }
-
-    private HBox getSizeButtons(List<ProductSize> productSizes) {
-        HBox sizeButtons = new HBox(8);
-        sizeButtons.setAlignment(Pos.CENTER_LEFT);
-
-        if (productSizes != null && !productSizes.isEmpty()) {
-            for (ProductSize size : productSizes) {
-                Button button = new Button(size.getSize());
-                if (size.getStockQuantity() <= 0) {
-                    isDisabled[0] = true;
-                    button.addEventFilter(ActionEvent.ACTION, e -> e.consume());
-                    button.getStyleClass().add("disabled");
+            });
+    
+            executor.submit(loadTask);
+        }
+    
+        private HBox getSizeButtons(List<ProductSize> productSizes) {
+            HBox sizeButtons = new HBox(8);
+            sizeButtons.setAlignment(Pos.CENTER_LEFT);
+    
+            if (productSizes != null && !productSizes.isEmpty()) {
+                for (ProductSize size : productSizes) {
+                    Button button = new Button(size.getSize());
+                    if (size.getStockQuantity() <= 0) {
+                        isDisabled[0] = true;
+                        button.addEventFilter(ActionEvent.ACTION, e -> e.consume());
+                        button.getStyleClass().add("disabled");
+                    }
+    
+                    button.getStyleClass().add("size-button");
+                    button.setUserData(size);
+                    sizeButtons.getChildren().add(button);
                 }
-
-                button.getStyleClass().add("size-button");
-                button.setUserData(size);
-                sizeButtons.getChildren().add(button);
+                return sizeButtons;
             }
-            return sizeButtons;
+    
+            return null;
         }
+    
+        private void showExpandedCard(Product product) {
+            if (expandedCard != null) {
+                closeExpandedCard();
+            }
+    
+            List<ProductSize> productSizes = controller.getCachedProductSizes(product.getId());
 
-        return null;
-    }
+            expandedCard = createExpandedCardContent(product, productSizes);
 
-    private void showExpandedCard(Product product) {
-        if (expandedCardModal != null) {
-            closeExpandedCard();
+            body.getChildren().add(expandedCard);
+            expandedCard.toFront();
+    
+            centerExpandedCard();
+    
+            body.widthProperty().addListener((obs, oldVal, newVal) -> centerExpandedCard());
+            body.heightProperty().addListener((obs, oldVal, newVal) -> centerExpandedCard());
+    
+            modalScaleIn = new ScaleTransition(Duration.millis(300), expandedCard);
+            modalScaleIn.setFromX(0.8);
+            modalScaleIn.setFromY(0.8);
+            modalScaleIn.setToX(1);
+            modalScaleIn.setToY(1);
+            modalScaleIn.play();
+    
+            overlay.setVisible(true);
+    
+            overlay.setOnMouseClicked(e -> closeExpandedCard());
         }
-
-        List<ProductSize> productSizes = controller.getCachedProductSizes(product.getId());
-
-        BorderPane enlargedCard = createExpandedCardContent(product, productSizes);
-        expandedCardModal = enlargedCard;
-
-        body.getChildren().add(expandedCardModal);
-        expandedCardModal.toFront();
-
-        centerExpandedCard();
-
-        body.widthProperty().addListener((obs, oldVal, newVal) -> centerExpandedCard());
-        body.heightProperty().addListener((obs, oldVal, newVal) -> centerExpandedCard());
-
-        modalScaleIn = new ScaleTransition(Duration.millis(300), expandedCardModal);
-        modalScaleIn.setFromX(0.8);
-        modalScaleIn.setFromY(0.8);
-        modalScaleIn.setToX(1);
-        modalScaleIn.setToY(1);
-        modalScaleIn.play();
-
-        overlay.setVisible(true);
-
-        overlay.setOnMouseClicked(e -> closeExpandedCard());
-    }
-
-    private BorderPane createExpandedCardContent(Product product, List<ProductSize> productSizes) {
-        ImageCarousel carousel = new ImageCarousel();
-
-        Button closeButton = new Button("✕");
-        closeButton.getStyleClass().add("close-button");
-        closeButton.setOnAction(e -> closeExpandedCard());
-
-        HBox headerBox = new HBox(closeButton);
-        headerBox.setAlignment(Pos.TOP_RIGHT);
-
-        ImageView productImage = new ImageView();
-        productImage.setFitWidth(230);
-        productImage.setPreserveRatio(true);
-        productImage.setSmooth(true);
-
-        String imagePath = product.getImagePath();
-        List<Image> cachedImages = ImageCacheService.getInstance().getImages(imagePath);
-        if (imagePath != null && !imagePath.isEmpty() && cachedImages != null) {
-            carousel.setImages(cachedImages);
-            Image firstImage = carousel.getCurrentImage();
-            if (firstImage != null) {
-                productImage.setImage(firstImage);
-            }
-        } else {
-            productImage.setImage(new Image(getClass().getResourceAsStream("/images/placeholder.png")));
-            if (imagePath != null && !imagePath.isEmpty()) {
-                loadImageAsync(productImage, imagePath, carousel);
-            }
-        }
-
-        StackPane imageContainer = createImageContainer(product, productImage);
-        imageContainer.setAlignment(Pos.CENTER);
-
-        Label genderLabel = new Label(product.getGender());
-        genderLabel.getStyleClass().add("gender");
-        genderLabel.setStyle("");
-
-        Label nameLabel = new Label(product.getName());
-        nameLabel.getStyleClass().add("expanded-product-name");
-        nameLabel.setWrapText(true);
-
-        Label descriptionLabel = new Label(product.getDescription() != null ? product.getDescription() : "No description available");
-        descriptionLabel.setWrapText(true);
-        descriptionLabel.getStyleClass().add("description");
-
-        unitPrice = productSizes.stream().mapToDouble(ProductSize::getPrice).min().orElse(0);
-        priceLabel = new Label(showPrice(unitPrice));
-        priceLabel.getStyleClass().add("expanded-price");
-
-        Label sizeLabel = new Label("Select size:");
-        sizeLabel.getStyleClass().add("select-size");
-
-        HBox sizeButtonBox = getSizeButtons(productSizes);
-        if (sizeButtonBox != null) {
-            sizeButtonBox.setAlignment(Pos.CENTER_LEFT);
-            sizeButtonBox.setPadding(new Insets(5, 0, 5, 0));
-        }
-
-        stockLabel = new Label();
-        stockLabel.getStyleClass().add("stock");
-        stockLabel.setVisible(false);
-        stockLabel.setManaged(false);
-        stockLabel.setStyle("");
-
-        BorderPane sizeStockPane = new BorderPane();
-        sizeStockPane.setLeft(sizeButtonBox);
-        sizeStockPane.setRight(stockLabel);
-
-        Label selectQuantityLabel = new Label("Select quantity: ");
-        selectQuantityLabel.getStyleClass().add("select-quantity");
-
-        quantityField = new TextField();
-        quantityField.setMaxWidth(30);
-        quantityField.setText("1");
-        quantityField.getStyleClass().add("quantity-field");
-        quantityField.setAlignment(Pos.CENTER);
-
-        quantityField.textProperty().addListener((obs, oldVal, newVal) -> {
-            // Allow only digits
-            if (newVal != null && !newVal.matches("\\d*")) {
-                quantityField.setText(oldVal);
-                return;
-            }
-
-            if(newVal.equals("0")) {
-                productQuantity = 1;
-                quantityField.setText("1");
-                return;
-            }
-
-            // Handle empty string
-            if (newVal == null || newVal.isEmpty()) {
-                productQuantity = 1;
-                quantityField.setText("1");
-                updatePriceLabel();
-                return;
-            }
-
-            // Valid number
-            int newQuantity = Integer.parseInt(newVal);
-            if (newQuantity > 0) {
-                productQuantity = newQuantity;
-                checkStock(product.getId());
-                updatePriceLabel();
-            }
-        });
-
-        minusQtyBtn = new Button("–");
-        minusQtyBtn.setDisable(true);
-        minusQtyBtn.setOnAction(e -> {
-            quantityField.setFocusTraversable(false);
-
-            productQuantity--;
-            quantityField.setText(String.valueOf(productQuantity));
-            updatePriceLabel();
-            checkStock(product.getId());
-
-            minusQtyBtn.requestFocus();
-
-        });
-
-        plusQtyBtn = new Button("+");
-        plusQtyBtn.setOnAction(e -> {
-            quantityField.setFocusTraversable(false);
-
-            productQuantity++;
-            quantityField.setText(String.valueOf(productQuantity));
-            updatePriceLabel();
-            checkStock(product.getId());
-
-            plusQtyBtn.requestFocus();
-
-        });
-
-        HBox qtyActionBox = new HBox();
-        qtyActionBox.getStyleClass().add("quantity-box");
-        qtyActionBox.getChildren().addAll(minusQtyBtn, quantityField, plusQtyBtn);
-        qtyActionBox.setAlignment(Pos.CENTER);
-        qtyActionBox.setDisable(true);
-
-        HBox quantityBox = new HBox(5);
-        quantityBox.getChildren().addAll(selectQuantityLabel, qtyActionBox);
-        quantityBox.setAlignment(Pos.CENTER_LEFT);
-
-        qtyErrorLabel.getStyleClass().add("quantity-error");
-        qtyErrorLabel.setText("Select size first");
-        qtyErrorLabel.setVisible(true);
-        qtyErrorLabel.setManaged(true);
-
-        BorderPane quantityPane = new BorderPane();
-        quantityPane.setLeft(quantityBox);
-        quantityPane.setRight(qtyErrorLabel);
-
-        PrimaryButton addToCartButton = new PrimaryButton("Add to Cart");
-        addToCartButton.setFontSize(16);
-        addToCartButton.setOnAction(e -> {
-            if(!isSizesSelected) {
-                stockLabel.setText("Size is required.");
-                stockLabel.setStyle("-fx-text-fill: red");
-                stockLabel.setVisible(true);
-                stockLabel.setManaged(true);
-                return;
+    
+        private BorderPane createExpandedCardContent(Product product, List<ProductSize> productSizes) {
+            ImageCarousel carousel = new ImageCarousel();
+    
+            Button closeButton = new Button("✕");
+            closeButton.getStyleClass().add("close-button");
+            closeButton.setOnAction(e -> closeExpandedCard());
+    
+            HBox headerBox = new HBox(closeButton);
+            headerBox.setAlignment(Pos.TOP_RIGHT);
+    
+            ImageView productImage = new ImageView();
+            productImage.setFitWidth(230);
+            productImage.setPreserveRatio(true);
+            productImage.setSmooth(true);
+    
+            String imagePath = product.getImagePath();
+            List<Image> cachedImages = ImageCacheService.getInstance().getImages(imagePath);
+            if (imagePath != null && !imagePath.isEmpty() && cachedImages != null) {
+                carousel.setImages(cachedImages);
+                Image firstImage = carousel.getCurrentImage();
+                if (firstImage != null) {
+                    productImage.setImage(firstImage);
+                }
             } else {
+                productImage.setImage(new Image(getClass().getResourceAsStream("/images/placeholder.png")));
+                if (imagePath != null && !imagePath.isEmpty()) {
+                    loadImageAsync(productImage, imagePath, carousel);
+                }
+            }
+    
+            StackPane imageContainer = createImageContainer(product, productImage);
+            imageContainer.setAlignment(Pos.CENTER);
+    
+            Label genderLabel = new Label(product.getGender());
+            genderLabel.getStyleClass().add("gender");
+            genderLabel.setStyle("");
+    
+            Label nameLabel = new Label(product.getName());
+            nameLabel.getStyleClass().add("expanded-product-name");
+            nameLabel.setWrapText(true);
+    
+            Label descriptionLabel = new Label(product.getDescription() != null ? product.getDescription() : "No description available");
+            descriptionLabel.setWrapText(true);
+            descriptionLabel.getStyleClass().add("description");
+    
+            unitPrice = productSizes.stream().mapToDouble(ProductSize::getPrice).min().orElse(0);
+            priceLabel = new Label(showPrice(unitPrice));
+            priceLabel.getStyleClass().add("expanded-price");
+    
+            Label sizeLabel = new Label("Select size:");
+            sizeLabel.getStyleClass().add("select-size");
+    
+            HBox sizeButtonBox = getSizeButtons(productSizes);
+            if (sizeButtonBox != null) {
+                sizeButtonBox.setAlignment(Pos.CENTER_LEFT);
+                sizeButtonBox.setPadding(new Insets(5, 0, 5, 0));
+            }
+    
+            stockLabel = new Label();
+            stockLabel.getStyleClass().add("stock");
+            stockLabel.setVisible(false);
+            stockLabel.setManaged(false);
+            stockLabel.setStyle("");
+    
+            BorderPane sizeStockPane = new BorderPane();
+            sizeStockPane.setLeft(sizeButtonBox);
+            sizeStockPane.setRight(stockLabel);
+    
+            Label selectQuantityLabel = new Label("Select quantity: ");
+            selectQuantityLabel.getStyleClass().add("select-quantity");
+    
+            quantityField = new TextField();
+            quantityField.setMaxWidth(30);
+            quantityField.setText("1");
+            quantityField.getStyleClass().add("quantity-field");
+            quantityField.setAlignment(Pos.CENTER);
+    
+            quantityField.textProperty().addListener((obs, oldVal, newVal) -> {
+                //Allow only digits
+                if (newVal != null && !newVal.matches("\\d*")) {
+                    quantityField.setText(oldVal);
+                    return;
+                }
+    
+                if(newVal.equals("0")) {
+                    productQuantity = 1;
+                    quantityField.setText("1");
+                    return;
+                }
+    
+                //Handle empty string
+                if (newVal == null || newVal.isEmpty()) {
+                    productQuantity = 1;
+                    quantityField.setText("1");
+                    updatePriceLabel();
+                    return;
+                }
+    
+                //Valid number
+                int newQuantity = Integer.parseInt(newVal);
+                if (newQuantity > 0) {
+                    productQuantity = newQuantity;
+                    checkStock(product.getId());
+                    updatePriceLabel();
+                }
+            });
+    
+            minusQtyBtn = new Button("–");
+            minusQtyBtn.setDisable(true);
+            minusQtyBtn.setOnAction(e -> {
+                quantityField.setFocusTraversable(false);
+    
+                productQuantity--;
+                quantityField.setText(String.valueOf(productQuantity));
+                updatePriceLabel();
+                checkStock(product.getId());
+    
+                minusQtyBtn.requestFocus();
+    
+            });
+    
+            plusQtyBtn = new Button("+");
+            plusQtyBtn.setOnAction(e -> {
+                quantityField.setFocusTraversable(false);
+    
+                productQuantity++;
+                quantityField.setText(String.valueOf(productQuantity));
+                updatePriceLabel();
+                checkStock(product.getId());
+    
+                plusQtyBtn.requestFocus();
+    
+            });
+    
+            HBox qtyActionBox = new HBox();
+            qtyActionBox.getStyleClass().add("quantity-box");
+            qtyActionBox.getChildren().addAll(minusQtyBtn, quantityField, plusQtyBtn);
+            qtyActionBox.setAlignment(Pos.CENTER);
+            qtyActionBox.setDisable(true);
+    
+            HBox quantityBox = new HBox(5);
+            quantityBox.getChildren().addAll(selectQuantityLabel, qtyActionBox);
+            quantityBox.setAlignment(Pos.CENTER_LEFT);
+    
+            qtyErrorLabel.getStyleClass().add("quantity-error");
+            qtyErrorLabel.setText("Select size first");
+            qtyErrorLabel.setVisible(true);
+            qtyErrorLabel.setManaged(true);
+    
+            BorderPane quantityPane = new BorderPane();
+            quantityPane.setLeft(quantityBox);
+            quantityPane.setRight(qtyErrorLabel);
+    
+            PrimaryButton addToCartButton = new PrimaryButton("Add to Cart");
+            addToCartButton.setFontSize(16);
+            addToCartButton.setOnAction(e -> {
+                if(!isSizesSelected) {
+                    stockLabel.setText("Size is required.");
+                    stockLabel.setStyle("-fx-text-fill: red");
+                    stockLabel.setVisible(true);
+                    stockLabel.setManaged(true);
+                    return;
+                } else {
+                    int productSizeId = controller.getSizeId(product.getId(), sizeSelected);
+                    productQuantity = Integer.parseInt(quantityField.getText());
+                    double subTotal = Double.parseDouble(priceLabel.getText().substring(3));
+    
+                    if (controller.addToCart(productSizeId, productQuantity, subTotal)) {
+                        AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
+                        successAlert.show(body, "Added to cart!", Pos.CENTER);
+                        closeExpandedCard();
+                    } else {
+                        AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
+                        errorAlert.show(body, "Failed to add cart", Pos.CENTER);
+                    }
+                }
+    
+                closeExpandedCard();
+            });
+
+            SecondaryButton buyNowButton = new SecondaryButton("Buy Now");
+            buyNowButton.setFontSize(16);
+            buyNowButton.setOnAction(e -> {
                 int productSizeId = controller.getSizeId(product.getId(), sizeSelected);
                 productQuantity = Integer.parseInt(quantityField.getText());
                 double subTotal = Double.parseDouble(priceLabel.getText().substring(3));
 
-                if (controller.addToCart(productSizeId, productQuantity, subTotal)) {
-                    AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
-                    successAlert.show(body, "Added to cart!", Pos.CENTER);
-                    closeExpandedCard();
-                } else {
-                    AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
-                    errorAlert.show(body, "", Pos.CENTER);
-                }
-            }
-
-            closeExpandedCard();
-        });
-
-        SecondaryButton continueButton = new SecondaryButton("Continue Shopping");
-        continueButton.setFontSize(16);
-        continueButton.setOnAction(e -> closeExpandedCard());
-
-        HBox buttonBox = new HBox(15, addToCartButton, continueButton);
-        buttonBox.setAlignment(Pos.BOTTOM_CENTER);
-
-        if (sizeButtonBox != null) {
-            for (javafx.scene.Node node : sizeButtonBox.getChildren()) {
-                if (node instanceof Button) {
-                    Button sizeButton = (Button) node;
-                    String sizeText = sizeButton.getText();
-
-                    for (ProductSize ps : productSizes) {
-                        if (ps.getSize().equals(sizeText)) {
-                            int stock = ps.getStockQuantity();
-
-                            sizeButton.setOnMouseEntered(e -> {
-                                updateStockLabel(stock);
-                                unitPrice = ps.getPrice();
-                                priceLabel.setText(showPrice(unitPrice));
-                            });
-
-                            sizeButton.setOnMouseExited(e -> {
-                                if (!isSizesSelected) {
-                                    stockLabel.setVisible(false);
-                                    stockLabel.setManaged(false);
-                                }
-                            });
-
-                            sizeButton.setOnAction(e -> {
-                                qtyActionBox.setDisable(false);
-
-                                qtyErrorLabel.setText("");
-                                qtyErrorLabel.setVisible(false);
-                                qtyErrorLabel.setManaged(false);
-
-                                isSizesSelected = true;
-                                sizeSelected = sizeButton.getText();
-
-                                updateStockLabel(stock);
-
-                                unitPrice = ps.getPrice();
-                                priceLabel.setText(showPrice(unitPrice));
-                                resetQtyField();
-
-                                for (javafx.scene.Node n : sizeButtonBox.getChildren()) {
-                                    if (n instanceof Button) {
-                                        n.getStyleClass().remove("selected");
+                controller.openBuyNowPage(productSizeId, productQuantity, subTotal);
+            });
+    
+            HBox buttonBox = new HBox(15, addToCartButton, buyNowButton);
+            buttonBox.setAlignment(Pos.BOTTOM_CENTER);
+    
+            if (sizeButtonBox != null) {
+                for (javafx.scene.Node node : sizeButtonBox.getChildren()) {
+                    if (node instanceof Button) {
+                        Button sizeButton = (Button) node;
+                        String sizeText = sizeButton.getText();
+    
+                        for (ProductSize ps : productSizes) {
+                            if (ps.getSize().equals(sizeText)) {
+                                int stock = ps.getStockQuantity();
+    
+                                sizeButton.setOnMouseEntered(e -> {
+                                    updateStockLabel(stock);
+                                    unitPrice = ps.getPrice();
+                                    priceLabel.setText(showPrice(unitPrice));
+                                });
+    
+                                sizeButton.setOnMouseExited(e -> {
+                                    if (!isSizesSelected) {
+                                        stockLabel.setVisible(false);
+                                        stockLabel.setManaged(false);
                                     }
-                                }
-                                sizeButton.getStyleClass().add("selected");
-                            });
-                            break;
+                                });
+    
+                                sizeButton.setOnAction(e -> {
+                                    qtyActionBox.setDisable(false);
+    
+                                    qtyErrorLabel.setText("");
+                                    qtyErrorLabel.setVisible(false);
+                                    qtyErrorLabel.setManaged(false);
+    
+                                    isSizesSelected = true;
+                                    sizeSelected = sizeButton.getText();
+    
+                                    updateStockLabel(stock);
+    
+                                    unitPrice = ps.getPrice();
+                                    priceLabel.setText(showPrice(unitPrice));
+                                    resetQtyField();
+    
+                                    for (javafx.scene.Node n : sizeButtonBox.getChildren()) {
+                                        if (n instanceof Button) {
+                                            n.getStyleClass().remove("selected");
+                                        }
+                                    }
+                                    sizeButton.getStyleClass().add("selected");
+                                });
+                                break;
+                            }
                         }
                     }
                 }
             }
+    
+            VBox contentBox = new VBox(5);
+            contentBox.getChildren().addAll(
+                    imageContainer,
+                    genderLabel,
+                    nameLabel,
+                    descriptionLabel,
+                    priceLabel,
+                    sizeLabel,
+                    sizeStockPane,
+                    quantityPane
+            );
+            VBox.setMargin(genderLabel, new Insets(10, 0, 10, 0));
+            VBox.setMargin(quantityPane, new Insets(10, 0, 10, 0));
+    
+            BorderPane card = new BorderPane();
+            card.setMinSize(504, 704);
+            card.setPrefSize(enlargedWidth, enlargedHeight);
+            card.setMaxSize(enlargedWidth, enlargedHeight);
+            card.getStyleClass().add("expanded-product-card");
+    
+            card.setTop(headerBox);
+            card.setCenter(contentBox);
+            card.setBottom(buttonBox);
+    
+            return card;
         }
-
-        VBox contentBox = new VBox(5);
-        contentBox.getChildren().addAll(
-                imageContainer,
-                genderLabel,
-                nameLabel,
-                descriptionLabel,
-                priceLabel,
-                sizeLabel,
-                sizeStockPane,
-                quantityPane
-        );
-        VBox.setMargin(genderLabel, new Insets(10, 0, 10, 0));
-        VBox.setMargin(quantityPane, new Insets(10, 0, 10, 0));
-
-        BorderPane card = new BorderPane();
-        card.setPrefSize(enlargedWidth, enlargedHeight);
-        card.setMaxSize(enlargedWidth, enlargedHeight);
-        card.setMinSize(enlargedWidth, enlargedHeight);
-        card.getStyleClass().add("expanded-product-card");
-
-        card.setTop(headerBox);
-        card.setCenter(contentBox);
-        card.setBottom(buttonBox);
-
-        return card;
-    }
-
-    private boolean updateStockLabel(int stock) {
-        boolean hasStock = false;
-
-        if (stock > 0) {
-            stockLabel.setText("In-stock");
-            stockLabel.setStyle("-fx-text-fill: #28a745; ");
-            hasStock = true;
-        } else {
-            stockLabel.setText("Out of stock");
-            stockLabel.setStyle("-fx-text-fill: red");
-            hasStock = false;
+    
+        private boolean updateStockLabel(int stock) {
+            boolean hasStock = false;
+    
+            if (stock > 0) {
+                stockLabel.setText("In-stock");
+                stockLabel.setStyle("-fx-text-fill: #28a745; ");
+                hasStock = true;
+            } else {
+                stockLabel.setText("Out of stock");
+                stockLabel.setStyle("-fx-text-fill: red");
+                hasStock = false;
+            }
+    
+            stockLabel.setVisible(true);
+            stockLabel.setManaged(true);
+    
+            return hasStock;
         }
-
-        stockLabel.setVisible(true);
-        stockLabel.setManaged(true);
-
-        return hasStock;
-    }
-
-    private void updatePriceLabel() {
-        int qty = Integer.parseInt(quantityField.getText());
-
-        double totalPrice = unitPrice * qty;
-
-        priceLabel.setText(showPrice(totalPrice));
-    }
-
-    private void resetQtyField() {
-        quantityField.setText("1");
-        productQuantity = 1;
-    }
-
-    private void checkStock(int productId) {
-        int maxStock = controller.getMaxStock(productId);
-        productQuantity = Integer.parseInt(quantityField.getText());
-
-        if (productQuantity == 1) {
-            minusQtyBtn.setDisable(true);
-        } else {
-            minusQtyBtn.setDisable(false);
+    
+        private void updatePriceLabel() {
+            int qty = Integer.parseInt(quantityField.getText());
+    
+            double totalPrice = unitPrice * qty;
+    
+            priceLabel.setText(showPrice(totalPrice));
         }
-
-        if (productQuantity >= maxStock) {
-            plusQtyBtn.setDisable(true);
-            quantityField.setText(String.valueOf(maxStock));
-            qtyErrorLabel.setVisible(true);
-            qtyErrorLabel.setManaged(true);
-        } else {
-            plusQtyBtn.setDisable(false);
-            qtyErrorLabel.setVisible(false);
-            qtyErrorLabel.setManaged(false);
+    
+        private void resetQtyField() {
+            quantityField.setText("1");
+            productQuantity = 1;
         }
-    }
-
-    private void centerExpandedCard() {
-        if (expandedCardModal != null && body != null) {
-            double centerX = (body.getWidth() - expandedCardModal.getWidth()) / 2;
-            double centerY = (body.getHeight() - expandedCardModal.getHeight()) / 2;
-            expandedCardModal.setLayoutX(centerX);
-            expandedCardModal.setLayoutY(centerY);
+    
+        private void checkStock(int productId) {
+            int maxStock = controller.getMaxStock(productId);
+            productQuantity = Integer.parseInt(quantityField.getText());
+    
+            if (productQuantity == 1) {
+                minusQtyBtn.setDisable(true);
+            } else {
+                minusQtyBtn.setDisable(false);
+            }
+    
+            if (productQuantity >= maxStock) {
+                plusQtyBtn.setDisable(true);
+                quantityField.setText(String.valueOf(maxStock));
+                qtyErrorLabel.setVisible(true);
+                qtyErrorLabel.setManaged(true);
+            } else {
+                plusQtyBtn.setDisable(false);
+                qtyErrorLabel.setVisible(false);
+                qtyErrorLabel.setManaged(false);
+            }
         }
-    }
+    
+        private void centerExpandedCard() {
+            if (expandedCard != null && body != null) {
+                double centerX = (body.getWidth() - expandedCard.getWidth()) / 2;
+                double centerY = (body.getHeight() - expandedCard.getHeight()) / 2;
+                expandedCard.setLayoutX(centerX);
+                expandedCard.setLayoutY(centerY);
+            }
+        }
+    
+        private void closeExpandedCard() {
+            if (expandedCard != null) {
+                modalScaleOut = new ScaleTransition(Duration.millis(200), expandedCard);
+                modalScaleOut.setToX(0);
+                modalScaleOut.setToY(0);
+                modalScaleOut.setOnFinished(e -> {
+                    body.getChildren().remove(expandedCard);
+                    expandedCard = null;
+                    overlay.setVisible(false);
+                    overlay.setOnMouseClicked(null);
+                });
+                modalScaleOut.play();
+            }
+        }
+    
+        public void exit() {
+            executor.shutdownNow();
+    
+            controller.cleanup();
+            controller = null;
+        }
+    
+        public Scene initialize() {
+            body = new StackPane();
+            body.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            body.setMinSize(0, 0);
 
-    private void closeExpandedCard() {
-        if (expandedCardModal != null) {
-            modalScaleOut = new ScaleTransition(Duration.millis(200), expandedCardModal);
-            modalScaleOut.setToX(0);
-            modalScaleOut.setToY(0);
-            modalScaleOut.setOnFinished(e -> {
-                body.getChildren().remove(expandedCardModal);
-                expandedCardModal = null;
-                overlay.setVisible(false);
-                overlay.setOnMouseClicked(null);
+            overlay = new Rectangle();
+            overlay.setFill(Color.rgb(0, 0, 0, 0.3));
+            overlay.setVisible(false);
+            overlay.widthProperty().bind(body.widthProperty());
+            overlay.heightProperty().bind(body.heightProperty());
+    
+            loadingPane = createLoadingPane(loadingLabel);
+    
+            ScrollPane bodyScrollPane = buildBodyScrollPane();
+            bodyScrollPane.setFitToWidth(true);
+            bodyScrollPane.prefWidthProperty().bind(body.widthProperty());
+
+            body.getChildren().addAll(bodyScrollPane, overlay, loadingPane);
+
+            BorderPane root = new BorderPane();
+            root.setTop(buildHeader());
+            root.setCenter(body);
+
+            Scene scene = setScene(root, "user-dash");
+
+            catMenu.spacingProperty().bind(scene.widthProperty().divide(20));
+
+            scene.windowProperty().addListener((obs, oldWin, newWin) -> {
+                if (newWin != null) {
+                    newWin.setOnShown(e -> {
+                        double available = body.getWidth() - (sidePad * 2) - 20;
+                        int cols = Math.max(1, (int) (available / (cardWidth + productTiles.getHgap())));
+                        productTiles.setPrefColumns(cols);
+                    });
+                }
             });
-            modalScaleOut.play();
+    
+            loadAllDataOnce();
+    
+            return scene;
         }
     }
-
-    public void exit() {
-        executor.shutdownNow();
-
-        controller.cleanup();
-        controller = null;
-    }
-
-    public Scene initialize() {
-        body = new StackPane();
-
-        overlay = new Rectangle();
-        overlay.setFill(Color.rgb(0, 0, 0, 0.3));
-        overlay.setVisible(false);
-
-        overlay.widthProperty().bind(body.widthProperty());
-        overlay.heightProperty().bind(body.heightProperty());
-
-        loadingPane = createLoadingPane(loadingLabel);
-
-        ScrollPane bodyScrollPane = buildBodyScrollPane();
-
-        body.getChildren().addAll(bodyScrollPane, overlay, loadingPane);
-
-        BorderPane root = new BorderPane();
-        root.setTop(buildHeader());
-        root.setCenter(body);
-
-        Scene scene = setScene(root, "user-dash");
-
-        loadAllDataOnce();
-
-        return scene;
-    }
-}
-
+    

@@ -10,6 +10,28 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.WeekFields;
 
 public class SalesDAO {
+    public double getTotalRevenue() {
+        String sql = """
+                SELECT
+                    COALESCE(SUM(oi.sub_total), 0) AS total_revenue
+                FROM orderitem oi
+                JOIN orders o ON oi.order_id = o.order_id
+                WHERE o.status = 'DONE';
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            return rs.getDouble("total_revenue");
+
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+
+        return 0;
+    }
+
     public ObservableList<SalesRecord> getDailySales() {
         ObservableList<SalesRecord> sales = FXCollections.observableArrayList();
 
@@ -22,9 +44,10 @@ public class SalesDAO {
             FROM (
                 SELECT 
                     strftime('%Y-%m-%d', order_date) AS date,
-                    SUM(total_price) AS revenue,
-                    COUNT(order_id) AS total_orders
-                FROM orders
+                    SUM(oi.sub_total) AS revenue,
+                    COUNT(DISTINCT o.order_id) AS total_orders
+                FROM orders o
+                JOIN orderitem oi ON o.order_id = oi.order_id
                 WHERE status = 'DONE'
                 GROUP BY date
             ) o
@@ -74,7 +97,7 @@ public class SalesDAO {
                 strftime('%Y-%W', o.order_date) AS week,
                 SUM(oi.quantity) AS items_sold,
                 COUNT(DISTINCT o.order_id) AS total_orders,
-                SUM(DISTINCT o.total_price) AS revenue
+                SUM(oi.sub_total) AS revenue
             FROM orders o
             JOIN orderitem oi ON o.order_id = oi.order_id
             WHERE o.status = 'DONE'
@@ -119,9 +142,10 @@ public class SalesDAO {
             FROM (
                 SELECT 
                     strftime('%Y-%m', order_date) AS month,
-                    SUM(total_price) AS revenue,
-                    COUNT(order_id) AS total_orders
-                FROM orders
+                    SUM(oi.sub_total) AS revenue,
+                    COUNT(DISTINCT o.order_id) AS total_orders
+                FROM orders o
+                JOIN orderitem oi ON o.order_id = oi.order_id
                 WHERE status = 'DONE'
                 GROUP BY month
             ) o
@@ -169,14 +193,18 @@ public class SalesDAO {
              SELECT
                  g.gender AS label,
                  COALESCE(SUM(oi.quantity), 0) AS items_sold,
-                 COALESCE(COUNT(DISTINCT o.order_id), 0) AS total_orders,
+                 COALESCE(COUNT(DISTINCT oi.order_id), 0) AS total_orders,
                  COALESCE(SUM(oi.sub_total), 0) AS revenue
              FROM gender g
              LEFT JOIN product p ON g.gender_id = p.gender_id
              LEFT JOIN productsize ps ON p.product_id = ps.product_id
-             LEFT JOIN orderitem oi ON ps.productsize_id = oi.productsize_id
-             LEFT JOIN orders o ON oi.order_id = o.order_id AND o.status = 'DONE'
-             GROUP BY g.gender
+             LEFT JOIN (
+                 SELECT oi.productsize_id, oi.quantity, oi.sub_total, oi.order_id
+                 FROM orderitem oi
+                 INNER JOIN orders o ON oi.order_id = o.order_id
+                 WHERE o.status = 'DONE'
+             ) oi ON ps.productsize_id = oi.productsize_id
+             GROUP BY g.gender_id, g.gender
              ORDER BY g.display_order;
              """;
 
@@ -206,18 +234,31 @@ public class SalesDAO {
         ObservableList<SalesRecord> sales = FXCollections.observableArrayList();
 
         String sql = """
-            SELECT
-                c.category_name AS label,
-                COALESCE(SUM(oi.quantity), 0) AS items_sold,
-                COALESCE(COUNT(DISTINCT o.order_id), 0) AS total_orders,
-                COALESCE(SUM(oi.sub_total), 0) AS revenue
-            FROM category c
-            LEFT JOIN product p ON c.category_id = p.category_id
-            LEFT JOIN productsize ps ON p.product_id = ps.product_id
-            LEFT JOIN orderitem oi ON ps.productsize_id = oi.productsize_id
-            LEFT JOIN orders o ON oi.order_id = o.order_id AND o.status = 'DONE'
-            GROUP BY c.category_name
-            ORDER BY revenue DESC;
+            
+                SELECT
+                  c.category_name AS label,
+                  COALESCE(SUM(oi.quantity), 0) AS items_sold,
+                  COALESCE((
+                      SELECT COUNT(DISTINCT oi2.order_id)
+                      FROM orderitem oi2
+                      INNER JOIN orders o2 ON oi2.order_id = o2.order_id
+                      INNER JOIN productsize ps2 ON oi2.productsize_id = ps2.productsize_id
+                      INNER JOIN product p2 ON ps2.product_id = p2.product_id
+                      WHERE p2.category_id = c.category_id
+                      AND o2.status = 'DONE'
+                  ), 0) AS total_orders,
+                  COALESCE(SUM(oi.sub_total), 0) AS revenue
+              FROM category c
+              LEFT JOIN product p ON c.category_id = p.category_id
+              LEFT JOIN productsize ps ON p.product_id = ps.product_id
+              LEFT JOIN (
+                  SELECT oi.productsize_id, oi.quantity, oi.sub_total, oi.order_id
+                  FROM orderitem oi
+                  INNER JOIN orders o ON oi.order_id = o.order_id
+                  WHERE o.status = 'DONE'
+              ) oi ON ps.productsize_id = oi.productsize_id
+              GROUP BY c.category_id, c.category_name
+              ORDER BY revenue DESC;
             """;
 
         try (Connection conn = ConnectDB.connect();
@@ -254,14 +295,17 @@ public class SalesDAO {
 
         String sql = """
             SELECT
-            %s AS label,
-            SUM(oi.quantity) AS items_sold,
-            COUNT(DISTINCT o.order_id) AS total_orders,
-            SUM(oi.sub_total) AS revenue
+                %s AS label,
+                SUM(agg.quantity) AS items_sold,
+                COUNT(DISTINCT agg.order_id) AS total_orders,
+                SUM(agg.sub_total) AS revenue
             FROM orders o
-            JOIN orderitem oi ON o.order_id = oi.order_id
-            JOIN productsize ps ON oi.productsize_id = ps.productsize_id
-            JOIN product p ON ps.product_id = p.product_id
+            JOIN (
+                SELECT oi.order_id, oi.quantity, oi.sub_total, ps.product_id
+                FROM orderitem oi
+                JOIN productsize ps ON oi.productsize_id = ps.productsize_id
+            ) agg ON o.order_id = agg.order_id
+            JOIN product p ON agg.product_id = p.product_id
             JOIN gender g ON p.gender_id = g.gender_id
             JOIN category c ON p.category_id = c.category_id
             WHERE o.status = 'DONE'

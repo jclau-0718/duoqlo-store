@@ -55,6 +55,16 @@ public class UserDashController {
         Navigator.goTo(profilePage.initialize());
     }
 
+    public void openBuyNowPage(int productSizeId, int quantity, double subTotal) {
+        CartController cartController = new CartController(this.user);
+        cartController.setTempCartItem(productSizeId, quantity, subTotal);
+
+        CartPage cartPage = new CartPage(cartController);
+        cartPage.setBuyNowMode();
+
+        Navigator.goTo(cartPage.initialize());
+    }
+
     public Task<Void> createPreloadTask(Runnable onSuccess) {
         Task<Void> preloadTask = new Task<>() {
             @Override
@@ -358,4 +368,6 @@ public class UserDashController {
     public boolean addToCart(int productSizeId, int quantity, double subTotal) {
         return this.cartController.addCartItem(productSizeId, quantity, subTotal);
     }
+
+
 }

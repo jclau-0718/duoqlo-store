@@ -153,6 +153,10 @@ public class AdminDashController {
         return this.orders.size();
     }
 
+    public double getTotalRevenue() {
+        return salesDAO.getTotalRevenue();
+    }
+
     public void setCustomers() {
         this.customers = FXCollections.observableArrayList(
                 users.stream()
@@ -328,15 +332,20 @@ public class AdminDashController {
         return orderDAO.setOrderAsDone(orderId);
     }
 
-    public double getTotalRevenue() {
-        double totalRevenue = 0;
+    public void cleanup() {
+        users.clear();
+        customers.clear();
+        admins.clear();
+        products.clear();
+        genders.clear();
+        categories.clear();
+        orders.clear();
+        sales.clear();
 
-        for(Order order: orders) {
-            if(order.getStatus().equals("DONE")) {
-                totalRevenue += order.getTotalPrice();
-            }
-        }
-
-        return totalRevenue;
+        userDAO = null;
+        productDAO = null;
+        orderDAO = null;
+        salesDAO = null;
+        loggedInAdmin = null;
     }
 }

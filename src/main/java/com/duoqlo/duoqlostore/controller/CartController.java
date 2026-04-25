@@ -6,6 +6,7 @@ import javafx.animation.PauseTransition;
 import javafx.geometry.Pos;
 import javafx.util.Duration;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CartController {
@@ -16,6 +17,8 @@ public class CartController {
     private User user;
     private Cart cart;
     private List<CartItem> cartItemList;
+
+    private CartItem tempCartItem;
 
     public CartController(User user) {
         this.user = user;
@@ -134,26 +137,19 @@ public class CartController {
         return cartDAO.removeCartItem(productSizeId);
     }
 
-    public void handleCheckOut() {
-        UserDashController dashController = new UserDashController(this.user);
-
-        UserDashboard userDash = new UserDashboard(dashController);
-        Navigator.goTo(userDash.initialize());
-
-        PauseTransition delay = new PauseTransition(Duration.millis(100));
-        delay.setOnFinished(delayEvent -> {
-            AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
-            successAlert.show(userDash.getBody(), "Order Confirmed!", Pos.TOP_CENTER);
-        });
-        delay.play();
+    public void setTempCartItem(int productSizeId, int quantity, double subTotal) {
+        tempCartItem = new CartItem(productSizeId, quantity, subTotal);
     }
 
-    public boolean handleOrder(double totalPrice, int totalItems) {
+    public CartItem getTempCartItem() { return this.tempCartItem; }
+
+    public boolean handleOrder(double totalPrice, int totalItems, Payment paymentMethod) {
         Order order = new Order();
         order.setUserId(user.getId());
         order.setTotalItems(totalItems);
         order.setTotalPrice(totalPrice);
         order.setShippingAddress(user.getFullAddress());
+        order.setPaymentMethod(paymentMethod);
 
         Order insertedOrder = orderDAO.insertOrder(order);
         if (insertedOrder != null) {
@@ -182,6 +178,20 @@ public class CartController {
         clearCart();
 
         return allSuccessful;
+    }
+
+    public void handleCheckOut() {
+        UserDashController dashController = new UserDashController(this.user);
+
+        UserDashboard userDash = new UserDashboard(dashController);
+        Navigator.goTo(userDash.initialize());
+
+        PauseTransition delay = new PauseTransition(Duration.millis(100));
+        delay.setOnFinished(delayEvent -> {
+            AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
+            successAlert.show(userDash.getBody(), "Order Confirmed!", Pos.TOP_CENTER);
+        });
+        delay.play();
     }
 
     public void clearCart() {

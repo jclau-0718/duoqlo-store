@@ -64,12 +64,6 @@
             buildColumns();
         }
 
-        private <T> void setColWidth(TableColumn<SalesRecord, T> column, int width) {
-            column.setMinWidth(width);
-            column.setPrefWidth(width);
-            column.setMaxWidth(width);
-        }
-    
         private void buildColumns() {
             TableColumn<SalesRecord, String> labelCol = new TableColumn<>(labelTitle);
             labelCol.setCellValueFactory(data ->
@@ -99,7 +93,8 @@
             ordersCol.setCellValueFactory(data ->
                     new SimpleIntegerProperty(data.getValue().getOrders()).asObject());
 
-            setColWidth(labelCol, 200);
+            labelCol.setPrefWidth(200);
+            labelCol.setMaxWidth(200);
     
             getColumns().addAll(labelCol, revenueCol, itemsSoldCol, ordersCol);
     
@@ -134,7 +129,7 @@
 
         private GridPane contentGrid;
 
-        private VBox tableDisplayBox = new VBox();
+        private VBox tableDisplayBox = new VBox(10);
         private SalesTableView salesTable;
 
         //Filter Group
@@ -591,7 +586,7 @@
             chart.setTitle(title);
             chart.setLegendVisible(false);
             chart.setAnimated(false);
-            chart.setPrefHeight(300);
+            chart.setPrefHeight(400);
             chart.getStyleClass().add("sales-chart");
     
             return chart;
@@ -600,7 +595,6 @@
         private BarChart<String, Number> buildBarChart(String title, String xLabel, String yLabel) {
             CategoryAxis xAxis = new CategoryAxis();
             xAxis.setLabel(xLabel);
-            xAxis.setTickLabelRotation(-45);
 
             NumberAxis yAxis = new NumberAxis();
             yAxis.setLabel(yLabel);
@@ -613,7 +607,7 @@
             chart.setTitle(title);
             chart.setLegendVisible(false);
             chart.setAnimated(false);
-            chart.setPrefHeight(300);
+            chart.setPrefHeight(400);
             chart.getStyleClass().add("sales-chart");
 
             return chart;
@@ -660,10 +654,10 @@
             contentGrid.add(chartBox, 1, 0);
 
             ColumnConstraints col1 = new ColumnConstraints();
-            col1.setPercentWidth(50);
+            col1.setPercentWidth(45);
 
             ColumnConstraints col2 = new ColumnConstraints();
-            col2.setPercentWidth(50);
+            col2.setPercentWidth(55);
 
             contentGrid.getColumnConstraints().addAll(col1, col2);
             GridPane.setValignment(tableDisplayBox, VPos.TOP);

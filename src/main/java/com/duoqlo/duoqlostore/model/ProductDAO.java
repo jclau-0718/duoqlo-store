@@ -439,6 +439,36 @@ public class ProductDAO {
         return null;
     }
 
+    public String getGender(int productSizeId) {
+        String sql = """
+                SELECT
+                    g.gender
+                FROM productsize ps
+                JOIN product p ON ps.product_id = p.product_id
+                JOIN gender g ON p.gender_id = g.gender_id
+                WHERE ps.productsize_id = ?;
+                """;
+
+        try (Connection conn = ConnectDB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, productSizeId);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("gender");
+            }
+
+            return "";
+
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+
+        return "";
+    }
+
     public ObservableList<Gender> getAllGenders() {
         ObservableList<Gender> genders = FXCollections.observableArrayList();
 

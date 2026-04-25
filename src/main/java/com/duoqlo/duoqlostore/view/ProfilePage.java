@@ -74,14 +74,14 @@ public class ProfilePage extends UserPage {
         Navigator.goTo(this.initialize());
     }
 
-    private StackPane buildHeader() {
+    private HBox buildHeader() {
         Label label = new Label("PROFILE");
-        label.getStyleClass().add("profile-label");
+        label.getStyleClass().add("page-label");
 
         HBox labelBox = new HBox(label);
         labelBox.setAlignment(Pos.CENTER);
 
-        StackPane header = createHeaderBox(labelBox, false);
+        header = createHeaderBox(labelBox, false);
 
         return header;
     }
@@ -409,8 +409,8 @@ public class ProfilePage extends UserPage {
 
         controller.setupAddressTracker(postcodeField, cityField, stateField);
 
-        Button updateAddressButton = new Button("UPDATE");
-        updateAddressButton.getStyleClass().add("primary-button");
+        PrimaryButton updateAddressButton = new PrimaryButton("Update");
+        updateAddressButton.setFontSize(15);
         updateAddressButton.setDefaultButton(true);
         updateAddressButton.setOnAction(e -> {
             getNewAddr();
@@ -429,8 +429,8 @@ public class ProfilePage extends UserPage {
     private VBox buildCredentialsBox() {
         VBox textfieldBox = new VBox(7, usernameBox, passwordBox, confirmPassBox);
 
-        Button updateCredButton = new Button("UPDATE");
-        updateCredButton.getStyleClass().add("primary-button");
+        PrimaryButton updateCredButton = new PrimaryButton("Update");
+        updateCredButton.setFontSize(15);
         updateCredButton.setDefaultButton(true);
         updateCredButton.setOnAction(e -> {
             getNewCred();
@@ -455,16 +455,12 @@ public class ProfilePage extends UserPage {
         VBox optionBox = buildOptionBox();
         optionBox.setAlignment(Pos.CENTER);
 
-        optionBox.setMinHeight(rowHeight);
         optionBox.setPrefHeight(rowHeight);
-        optionBox.setMaxHeight(rowHeight);
 
         editBox = buildInfoBox();
         editBox.getStyleClass().add("edit-box");
 
-        editBox.setMinHeight(rowHeight);
         editBox.setPrefHeight(rowHeight);
-        editBox.setMaxHeight(rowHeight);
 
         GridPane boxGrid = new GridPane();
         boxGrid.setVgap(35);

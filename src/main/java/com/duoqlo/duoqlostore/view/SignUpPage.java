@@ -264,7 +264,7 @@ public class SignUpPage extends AuthPage{
     }
 
     public VBox buildLoginDetailsBox() {
-        HBox titleSection = createSectionTitle("Login Details");
+        HBox titleSection = createSectionTitle("Log In Details");
 
         Label description = new Label("Use these details to log in to your account.");
         description.getStyleClass().add("description");
@@ -281,11 +281,11 @@ public class SignUpPage extends AuthPage{
     }
 
     public HBox buildLoginDetailsButtonBox() {
-        SecondaryButton backButton = new SecondaryButton("BACK");
+        SecondaryButton backButton = new SecondaryButton("Back");
         backButton.setFontSize(18);
         backButton.setMaxWidth(Double.MAX_VALUE);
 
-        PrimaryButton signUpButton = new PrimaryButton("SIGN UP");
+        PrimaryButton signUpButton = new PrimaryButton("Sign Up");
         signUpButton.setFontSize(18);
         signUpButton.getStyleClass().add("primary-button");
         signUpButton.setMaxWidth(Double.MAX_VALUE);

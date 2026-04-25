@@ -5,7 +5,10 @@ import com.duoqlo.duoqlostore.model.TableCreator;
 import com.duoqlo.duoqlostore.model.UserDAO;
 import com.duoqlo.duoqlostore.view.*;
 import javafx.application.Application;
+import javafx.geometry.Rectangle2D;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
+
 import java.io.IOException;
 
 public class Main extends Application {
@@ -29,9 +32,19 @@ public class Main extends Application {
 
         stage.setTitle("DUOQLO");
         Navigator.goTo(logInPage.initialize());
+
+        Rectangle2D screenBounds = Screen.getPrimary().getBounds();
+        stage.setX(screenBounds.getMinX());
+        stage.setY(screenBounds.getMinY());
+        stage.setWidth(screenBounds.getWidth());
+        stage.setHeight(screenBounds.getHeight()-50);
+
         stage.show();
         stage.centerOnScreen();
         stage.setMaximized(true);
+
+        stage.setMinWidth(800);
+        stage.setMinHeight(900);
     }
 
     @Override

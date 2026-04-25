@@ -6,9 +6,7 @@ public class CartItem {
     private int productSizeId;
     private int productQuantity;
     private double subTotal;
-    private String addedDate;
 
-    // Usage: CartRow
     private String productName;
     private String category;
     private String size;
@@ -17,6 +15,16 @@ public class CartItem {
 
     public CartItem(int cartId, int productSizeId, int productQuantity, double subTotal) {
         this.cartId = cartId;
+        this.productSizeId = productSizeId;
+        this.productQuantity = productQuantity;
+        this.subTotal = subTotal;
+
+        setProductName();
+        setCategory();
+        setSize();
+    }
+
+    public CartItem(int productSizeId, int productQuantity, double subTotal) {
         this.productSizeId = productSizeId;
         this.productQuantity = productQuantity;
         this.subTotal = subTotal;
@@ -43,6 +51,12 @@ public class CartItem {
     public double getSubTotal() { return this.subTotal; }
 
     public String getSize() { return this.size; }
+
+    public void setProductSizeId(int productSizeId) { this.productSizeId = productSizeId; }
+
+    public void setProductQuantity(int productQuantity) { this.productQuantity = productQuantity; }
+
+    public void setSubTotal(double subTotal) { this.subTotal = subTotal; }
 
     public void setProductName() {
         String productName = productDAO.getProductName(productSizeId);

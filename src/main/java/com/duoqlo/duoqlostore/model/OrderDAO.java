@@ -13,8 +13,8 @@ import java.util.List;
 public class OrderDAO {
     public Order insertOrder(Order order) {
         String sql = """
-                INSERT INTO orders(user_id, total_items, total_price, shipping_add) 
-                VALUES (?, ?, ?, ?);
+                INSERT INTO orders(user_id, total_items, total_price, shipping_add, payment_method) 
+                VALUES (?, ?, ?, ?, ?);
                 """;
 
         try (Connection conn = ConnectDB.connect();
@@ -24,6 +24,7 @@ public class OrderDAO {
             pstmt.setInt(2, order.getTotalItems());
             pstmt.setDouble(3, order.getTotalPrice());
             pstmt.setString(4, order.getShippingAddress());
+            pstmt.setString(5, order.getPaymentMethod().name());
 
             int affectedRows = pstmt.executeUpdate();
 
@@ -217,7 +218,8 @@ public class OrderDAO {
                         rs.getInt("total_items"),
                         rs.getDouble("total_price"),
                         rs.getString("status"),
-                        rs.getString("shipping_add")
+                        rs.getString("shipping_add"),
+                        Payment.valueOf(rs.getString("payment_method"))
                 );
 
                 orders.add(order);

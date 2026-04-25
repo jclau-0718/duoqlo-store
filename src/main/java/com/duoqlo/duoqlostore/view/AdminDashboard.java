@@ -269,6 +269,7 @@ class UserTableView extends TableView<User> {
         TableUtils.addColToolTip(addressCol);
 
         setColWidth(statusCol, 100);
+        setColWidth(actionsCol, 250);
 
         setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
     }
@@ -551,7 +552,12 @@ public class AdminDashboard extends ApplicationPage {
         PrimaryButton logOutButton = new PrimaryButton("LOG OUT");
         logOutButton.setFontSize(18);
         logOutButton.setRadius(10);
-        logOutButton.setOnAction(e -> Navigator.goTo(new LogInPage().initialize()));
+        logOutButton.setOnAction(e -> {
+            controller.cleanup();
+            controller = null;
+
+            Navigator.goTo(new LogInPage().initialize());
+        });
 
         StackPane header = new StackPane(); //Button-to-Button space
         header.getStyleClass().add("header");
@@ -639,7 +645,7 @@ public class AdminDashboard extends ApplicationPage {
         FontIcon backIcon = new FontIcon("far-caret-square-left");
         backIcon.setIconSize(16);
         backIcon.setIconColor(Color.web("#A1A1A1"));
-        backButton = new Button("Back To Table", backIcon);
+        Button backButton = new Button("Back to Table", backIcon);
         backButton.getStyleClass().add("back-button");
         backButton.setVisible(false);
 
@@ -776,10 +782,6 @@ public class AdminDashboard extends ApplicationPage {
             });
 
             VBox content = signUpPage.getContentForAdmin(mainTableBox);
-
-            content.getStylesheets().add(
-                    getClass().getResource("/css/signup-page.css").toExternalForm()
-            );
 
             switchMainTableBox(content);
         });
@@ -1365,8 +1367,6 @@ public class AdminDashboard extends ApplicationPage {
 
         setTitleLabel("PRODUCTS");
 
-        switchBodyLastNode(mainTableBox);
-
         removeSalesAction();
 
         showButtonBox("+ Add Product");
@@ -1384,9 +1384,12 @@ public class AdminDashboard extends ApplicationPage {
             switchMainTableBox(uploader.show());
         });
 
-        showGendersCategories();
-
+        switchBodyLastNode(mainTableBox);
         showProductTable();
+
+        if(!bodyVBox.getChildren().contains(genderCategoryGrid)) {
+            showGendersCategories();
+        }
     }
 
     private void buildOrderTable() {
@@ -1401,6 +1404,7 @@ public class AdminDashboard extends ApplicationPage {
         TableColumn<Order, String> orderDateCol = new TableColumn<>("Order Date");
         TableColumn<Order, Integer> totalItemsCol = new TableColumn<>("Total Items");
         TableColumn<Order, Double> totalPriceCol = new TableColumn<>("Total Price (RM)");
+        TableColumn<Order, String> paymentMethodCol = new TableColumn<>("Payment Method");
         TableColumn<Order, String> statusCol = new TableColumn<>("Status");
         TableColumn<Order, Void> actionsCol = new TableColumn<>("Actions");
 
@@ -1427,6 +1431,9 @@ public class AdminDashboard extends ApplicationPage {
 
         totalPriceCol.setCellValueFactory(data ->
                 new SimpleDoubleProperty(data.getValue().getTotalPrice()).asObject());
+
+        paymentMethodCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getPaymentMethod().name()));
 
         statusCol.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getStatus()));
@@ -1482,19 +1489,23 @@ public class AdminDashboard extends ApplicationPage {
                     }
 
                     doneButton.setOnAction(e -> {
-                        if(controller.setOrderAsDone(order.getOrderId())) {
-                            AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
-                            successAlert.show(body, "Order set as done.", Pos.TOP_CENTER);
+                        AlertMsg confirmAlert = new AlertMsg(AlertType.CONFIRMATION);
+                        confirmAlert.show(body, "Confirm order is done?", Pos.TOP_CENTER);
+                        confirmAlert.setOnConfirm(() -> {
+                            if(controller.setOrderAsDone(order.getOrderId())) {
+                                AlertMsg successAlert = new AlertMsg(AlertType.SUCCESS);
+                                successAlert.show(body, "Order set as done.", Pos.TOP_CENTER);
 
-                            refreshStatCards();
+                                refreshStatCards();
 
-                            refreshOrderPage();
-                        } else {
-                            AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
-                            errorAlert.show(body, "Error! Please try again.", Pos.TOP_CENTER);
-                        }
+                                refreshOrderPage();
+                            } else {
+                                AlertMsg errorAlert = new AlertMsg(AlertType.ERROR);
+                                errorAlert.show(body, "Error! Please try again.", Pos.TOP_CENTER);
+                            }
+                        });
                     });
-                    doneButton.getStyleClass().add("set-done-button");
+                    doneButton.getStyleClass().add("done-button");
 
                     viewButton.setOnAction(e -> {
                         showOrderDetails(order);
@@ -1507,16 +1518,18 @@ public class AdminDashboard extends ApplicationPage {
         });
 
         setOrderColWidth(orderIdCol, 80);
-        setOrderColWidth(userIdCol, 100);
+        setOrderColWidth(userIdCol, 90);
         setOrderColWidth(fullNameCol, 150);
         setOrderColWidth(shipAddrCol, 200);
         setOrderColWidth(orderDateCol, 110);
         setOrderColWidth(totalPriceCol, 150);
-        setOrderColWidth(actionsCol, 200);
+        setOrderColWidth(paymentMethodCol, 170);
+        setOrderColWidth(statusCol, 100);
+        setOrderColWidth(actionsCol, 160);
 
         orderTable.getColumns().addAll(orderIdCol, userIdCol, usernameCol,
                 fullNameCol, shipAddrCol, orderDateCol, totalItemsCol,
-                totalPriceCol, statusCol, actionsCol
+                totalPriceCol, paymentMethodCol, statusCol, actionsCol
         );
 
         TableUtils.addColToolTip(usernameCol);
@@ -1556,6 +1569,7 @@ public class AdminDashboard extends ApplicationPage {
 
         TableColumn<OrderItem, Integer> productIdCol = new TableColumn<>("Product ID");
         TableColumn<OrderItem, String> productNameCol = new TableColumn<>("Product Name");
+        TableColumn<OrderItem, String> genderCol = new TableColumn<>("Gender");
         TableColumn<OrderItem, String> categoryCol = new TableColumn<>("Category");
         TableColumn<OrderItem, String> sizeCol = new TableColumn<>("Size");
         TableColumn<OrderItem, Integer> quantityCol = new TableColumn<>("Quantity");
@@ -1566,6 +1580,9 @@ public class AdminDashboard extends ApplicationPage {
 
         productNameCol.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getProductName()));
+
+        genderCol.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getGender()));
 
         categoryCol.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getCategory()));
@@ -1580,8 +1597,8 @@ public class AdminDashboard extends ApplicationPage {
                 new SimpleDoubleProperty(data.getValue().getSubTotal()).asObject());
 
         orderItemTable.getColumns().addAll(
-                productIdCol, productNameCol, categoryCol,
-                sizeCol, quantityCol, subtotalCol);
+                productIdCol, productNameCol, genderCol,
+                categoryCol, sizeCol, quantityCol, subtotalCol);
 
         orderItemTable.setItems(controller.getOrderItems(orderId));
 
@@ -1648,7 +1665,7 @@ public class AdminDashboard extends ApplicationPage {
         firstSeparator.setMinHeight(3);
         firstSeparator.setPrefHeight(3);
         firstSepBox.setMinHeight(3);
-        firstSepBox.setMaxWidth(Double.MAX_VALUE); // make HBox stretch full width
+        firstSepBox.setMaxWidth(Double.MAX_VALUE);
 
         secondSeparator.setMinHeight(3);
         secondSeparator.setPrefHeight(3);
@@ -1661,7 +1678,10 @@ public class AdminDashboard extends ApplicationPage {
         String orderDateText = "Order Date: " + order.getOrderDateString();
         Label orderDateLabel = new Label(orderDateText);
 
-        String totalItemText = "Total Items: " + String.valueOf(order.getTotalItems());
+        String paymentText = "Payment Method: " + order.getPaymentMethod().name();
+        Label paymentLabel = new Label(paymentText);
+
+        String totalItemText = "Total Items: " + order.getTotalItems();
         Label totalItemLabel = new Label(totalItemText);
 
         Label orderItemsLabel = new Label("Order Items:");
@@ -1687,8 +1707,8 @@ public class AdminDashboard extends ApplicationPage {
                 customerDetailsLabel, firstSepBox,
                 userIdLabel, usernameLabel, fullNameLabel,
                 orderDetailsLabel, secondSepBox,
-                shipAddrLabel, orderDateLabel, totalItemLabel,
-                orderItemsLabel, orderItemTable,
+                shipAddrLabel, orderDateLabel, paymentLabel,
+                totalItemLabel, orderItemsLabel, orderItemTable,
                 totalLabel
         );
 
@@ -1751,6 +1771,7 @@ public class AdminDashboard extends ApplicationPage {
     private void removeSalesAction() {
         if (buttonPane.getLeft() == salesFilterSection) {
             buttonPane.setLeft(null);
+            buttonPane.setLeft(backButton);
         }
 
         if(buttonPane.getRight() == exportButton) {
@@ -1765,7 +1786,7 @@ public class AdminDashboard extends ApplicationPage {
     
     private void switchBodyLastNode(Pane pane) {
         bodyVBox.getChildren().remove(3);
-        bodyVBox.getChildren().add(pane);
+        bodyVBox.getChildren().add(3, pane);
     }
 
     private void showEmptyDisplayBox() {
@@ -1837,13 +1858,6 @@ public class AdminDashboard extends ApplicationPage {
         titleBox.setManaged(false);
 
         addButton.setVisible(false);
-
-//        addBtnWasVisible = false;
-//        if (addBtnWasVisible) {
-//            addButton.setVisible(true);
-//        } else {
-//            addButton.setVisible(false);
-//        }
 
         backButton = buildBackButton();
         backButton.setOnAction(e -> backToTable());

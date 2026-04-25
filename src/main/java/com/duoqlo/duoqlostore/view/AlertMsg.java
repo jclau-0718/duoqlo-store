@@ -5,16 +5,13 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.Window;
 import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 public class AlertMsg {
-
     private AlertType type;
 
     private FontIcon icon;
@@ -25,7 +22,7 @@ public class AlertMsg {
 
     private VBox popupBox = new VBox();
 
-    public AlertMsg() {};
+    public AlertMsg() {}
 
     public AlertMsg(AlertType type) {
         this.type = type;
@@ -34,10 +31,6 @@ public class AlertMsg {
 
     public void setOnConfirm(Runnable onConfirm) {
         this.onConfirm = onConfirm;
-    }
-
-    public void setOnCancel(Runnable onCancel) {
-        this.onCancel = onCancel;
     }
 
     private void setupInfo() {
@@ -73,9 +66,14 @@ public class AlertMsg {
         icon.setIconColor(color);
     }
 
-    public void setAlertType(AlertType type) {
-        this.type = type;
-        setupInfo();
+    public void setTitle(Label title) {
+        switch (type) {
+            case INFORMATION -> title.setText("INFORMATION");
+            case CONFIRMATION -> title.setText("CONFIRM?");
+            case WARNING -> title.setText("WARNING");
+            case ERROR -> title.setText("ERROR");
+            case SUCCESS -> title.setText("SUCCESS");
+        }
     }
 
     public void show(StackPane root, String text, Pos pos) {
@@ -98,14 +96,23 @@ public class AlertMsg {
         closeButton.setStyle("""
                 -fx-background-color: transparent;
                     -fx-text-fill: #666;
-                    -fx-font-size: 14px;
+                    -fx-font-size: 16;
                     -fx-cursor: hand;
                     -fx-font-weight: bold;
                     -fx-padding: 0
                 """);
 
-        HBox closeHBox = new HBox(closeButton);
-        closeHBox.setAlignment(Pos.CENTER_RIGHT);
+        Label title = new Label();
+        setTitle(title);
+        title.setStyle("""
+                -fx-font-size: 15;
+                -fx-text-fill: %s;
+                -fx-font-weight: bold;
+                """.formatted(rgb));
+
+        BorderPane topPane = new BorderPane();
+        topPane.setLeft(title);
+        topPane.setRight(closeButton);
 
         closeButton.setOnAction(e -> {
             exitAnimation();
@@ -113,35 +120,28 @@ public class AlertMsg {
             root.getChildren().remove(popupBox);
         });
 
-        Label label = new Label(text);
-        label.setStyle("""
+        Label alertLabel = new Label(text);
+        alertLabel.setStyle("""
                 -fx-font-size: 15;
                 -fx-text-fill: %s;
                 """.formatted(rgb));
-        label.setWrapText(true);
+        alertLabel.setWrapText(true);
 
-        HBox contentBox = new HBox(icon, label);
-        contentBox.setAlignment(Pos.CENTER);
+        HBox contentBox = new HBox(icon, alertLabel);
+        contentBox.setAlignment(Pos.CENTER_LEFT);
         HBox.setMargin(icon, new Insets(0, 20, 0, 0));
 
-        popupBox.getChildren().addAll(closeHBox, contentBox);
+        popupBox.getChildren().addAll(topPane, contentBox);
         popupBox.setStyle("""
                 -fx-background-color: white;
                 -fx-background-radius: 10;
-                -fx-padding: 5 10 20 10;
+                -fx-padding: 10 10 20 25;
                 -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 0);
                 """);
 
         if (type == AlertType.CONFIRMATION) {
-            Button confirmButton = new Button("Confirm");
-            confirmButton.setStyle("""
-                    -fx-background-color: #FE6C01;
-                    -fx-background-radius: 5;
-                    -fx-border-color: #FE6C01;
-                    -fx-border-radius: 5;
-                    -fx-text-fill: white;
-                    -fx-font-size: 10;
-                    """);
+            PrimaryButton confirmButton = new PrimaryButton("Confirm");
+            confirmButton.setFontSize(12);
             confirmButton.setOnAction(e -> {
                 if (onConfirm != null) {
                     onConfirm.run();
@@ -150,15 +150,8 @@ public class AlertMsg {
                 exitAnimation().play();
             });
 
-            Button cancelButton = new Button("Cancel");
-            cancelButton.setStyle("""
-                    -fx-background-color: white;
-                    -fx-background-radius: 5;
-                    -fx-border-color: #FE6C01;
-                    -fx-border-radius: 5;
-                    -fx-text-fill: #FE6C01;
-                    -fx-font-size: 10;
-                    """);
+            SecondaryButton cancelButton = new SecondaryButton("Cancel");
+            cancelButton.setFontSize(12);
             cancelButton.setOnAction(e -> {
                 if (onCancel != null) {
                     onCancel.run();
@@ -177,8 +170,15 @@ public class AlertMsg {
         popupBox.setMaxHeight(100);
         popupBox.setPrefWidth(250);
         popupBox.setMaxWidth(300);
+
+        popupBox.setMaxHeight(120);
+
         VBox.setVgrow(contentBox, Priority.ALWAYS);
-        VBox.setMargin(contentBox, new Insets(10, 0, 0, 0));
+        if(type == AlertType.CONFIRMATION) {
+            VBox.setMargin(contentBox, new Insets(10, 0, 10, 0));
+        } else {
+            VBox.setMargin(contentBox, new Insets(10, 0, 0, 0));
+        }
 
         root.getChildren().add(popupBox);
         StackPane.setAlignment(popupBox, pos);
@@ -191,7 +191,7 @@ public class AlertMsg {
 
     private void popUpAnimation() {
         popupBox.setOpacity(0);     //Start invisible
-        popupBox.setTranslateY(-5); //5px above
+        popupBox.setTranslateY(-5); //Start at 5px above
 
         //Fade in
         FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), popupBox);
@@ -212,7 +212,7 @@ public class AlertMsg {
             //Wait for 5 seconds
             PauseTransition pause = new PauseTransition(Duration.seconds(3));
 
-            // Chain all animations
+            //Chain all animations
             SequentialTransition fullAnimation = new SequentialTransition(
                     enterAnimation,
                     pause,
@@ -224,7 +224,7 @@ public class AlertMsg {
     }
 
     private FadeTransition exitAnimation() {
-        // Fade out animation
+        //Fade out animation
         FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), popupBox);
         fadeOut.setFromValue(1);
         fadeOut.setToValue(0);

@@ -1,15 +1,12 @@
 package com.duoqlo.duoqlostore.view;
 
-import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 
 import java.util.Objects;
 
 public class ApplicationPage {
-
     protected String showPrice(double amount) {
         return String.format("RM %.2f", amount);
     }
@@ -21,13 +18,11 @@ public class ApplicationPage {
 
         String cssPath = "/css/"+cssFileName+".css";
 
-        scene.getStylesheets().add(
-                Objects.requireNonNull(
-                        getClass().getResource(cssPath)
-                ).toExternalForm()
+        scene.getStylesheets().addAll(
+                Objects.requireNonNull(getClass().getResource("/css/app-page.css")).toExternalForm(),
+                Objects.requireNonNull(getClass().getResource(cssPath)).toExternalForm()
         );
 
-//        Platform.runLater(() -> {root.requestFocus();}); //Remove initial focus on Username TextField
         root.setOnMouseClicked(e -> root.requestFocus()); //Allow unfocus on TextField
 
         return scene;

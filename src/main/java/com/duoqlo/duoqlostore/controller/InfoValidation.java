@@ -10,7 +10,7 @@ import javafx.scene.layout.VBox;
 
 import java.util.Map;
 
-public class InfoValidation {
+public class    InfoValidation {
     private UserDAO userDAO = new UserDAO();
     private PostcodeService postcodeService = new PostcodeService();
 

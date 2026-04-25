@@ -404,7 +404,7 @@
 .close-button {
     -fx-background-color: transparent;
     -fx-text-fill: #666;
-    -fx-font-size: 20px;
+    -fx-font-size: 20;
     -fx-cursor: hand;
     -fx-font-weight: bold;
     -fx-padding: 0

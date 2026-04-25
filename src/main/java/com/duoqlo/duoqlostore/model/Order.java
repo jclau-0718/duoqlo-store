@@ -16,6 +16,7 @@ public class Order {
     private double totalPrice;
     private String status;
     private String shippingAddress;
+    private Payment paymentMethod;
     private List<OrderItem> orderItemList = new ArrayList<>();
 
     public Order(){}
@@ -35,7 +36,7 @@ public class Order {
     }
 
     public Order(int orderId, User user, LocalDateTime orderDateTime, int totalItems,
-                 double totalPrice, String status, String shippingAddress) {
+                 double totalPrice, String status, String shippingAddress, Payment paymentMethod) {
         this.orderId = orderId;
         this.user = user;
         this.userId = user.getId();
@@ -45,6 +46,7 @@ public class Order {
         this.totalPrice = totalPrice;
         this.status = status;
         this.shippingAddress = shippingAddress;
+        this.paymentMethod = paymentMethod;
     }
 
     public int getOrderId() { return this.orderId; }
@@ -67,6 +69,8 @@ public class Order {
 
     public String getShippingAddress() { return this.shippingAddress; }
 
+    public Payment getPaymentMethod() { return this.paymentMethod; }
+
     public List<OrderItem> getOrderItemList() { return this.orderItemList; }
 
     public void setOrderId(int orderId) { this.orderId = orderId; }
@@ -87,5 +91,5 @@ public class Order {
 
     public void setShippingAddress(String shippingAddress) { this.shippingAddress = shippingAddress; }
 
-    public void setOrderItemList(List<OrderItem> orderItemList) { this.orderItemList = orderItemList; }
+    public void setPaymentMethod(Payment paymentMethod) { this.paymentMethod = paymentMethod; }
 }

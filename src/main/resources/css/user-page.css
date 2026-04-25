@@ -1,0 +1,14 @@
+.header .button{
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-padding: 5 10 5 10;
+}
+
+.page-label {
+    -fx-text-fill: #FE6C01;
+    -fx-font-family: Arial;
+    -fx-font-size: 25;
+    -fx-font-weight: bold;
+}

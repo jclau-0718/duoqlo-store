@@ -1,33 +1,3 @@
-.root {
-    -fx-background-color: #F0EDED;
-}
-
-.logo-button {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-padding: 0 0 0 0;
-}
-
-.profile-label {
-    -fx-text-fill: #FE6C01;
-    -fx-font-family: Arial;
-    -fx-font-size: 25;
-    -fx-font-weight: bold;
-}
-
-.header {
-    -fx-background-color: #F0EDED;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); /* Floating effect */
-}
-
-.header .button{
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-font-size: 14px;
-    -fx-cursor: hand;
-    -fx-padding: 5 10 5 10;
-}
-
 .search-button.ikonli-font-icon {
     -fx-stroke-width: 0.1;
 }
@@ -167,13 +137,13 @@
     -fx-cursor: hand;
 }
 
-.primary-button {
-    -fx-border-radius: 5;
-    -fx-border-width: 2;
-    -fx-background-color: #FE6C01;          /* orange color */
-    -fx-border-color: #FE6C01;
-    -fx-text-fill: white;
-    -fx-font-family: Arial;
-    -fx-font-size: 15;
-    -fx-cursor: hand;
-}
+/*.primary-button {*/
+/*    -fx-border-radius: 5;*/
+/*    -fx-border-width: 2;*/
+/*    -fx-background-color: #FE6C01;          !* orange color *!*/
+/*    -fx-border-color: #FE6C01;*/
+/*    -fx-text-fill: white;*/
+/*    -fx-font-family: Arial;*/
+/*    -fx-font-size: 15;*/
+/*    -fx-cursor: hand;*/
+/*}*/

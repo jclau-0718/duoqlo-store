@@ -38,6 +38,8 @@ public class OrderItem {
 
     public String getProductSize() { return this.product.getSize(); }
 
+    public String getGender() { return productDAO.getGender(this.productSizeId); }
+
     public String getCategory() {
         return this.product.getCategory();
     }

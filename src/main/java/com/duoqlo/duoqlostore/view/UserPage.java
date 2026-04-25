@@ -15,6 +15,8 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -33,7 +35,7 @@ public abstract class UserPage extends ApplicationPage {
     public abstract void openOrdersPage();
     public abstract void openProfilePage();
 
-    protected StackPane header;
+    protected HBox header;
     protected TextField searchField;
     protected HBox searchBar;
     protected Button enterButton;
@@ -51,6 +53,19 @@ public abstract class UserPage extends ApplicationPage {
         this.searchBar = createSearchBar();
     }
 
+    @Override
+    protected Scene setScene(Parent root, String cssFileName) {
+        Scene scene = super.setScene(root, cssFileName);
+
+        scene.getStylesheets().add(
+                Objects.requireNonNull(
+                        getClass().getResource("/css/user-page.css")
+                ).toExternalForm()
+        );
+
+        return scene;
+    }
+
     public void addToolTip(Node node, String text) {
         Tooltip tooltip = new Tooltip(text);
         tooltip.setShowDelay(javafx.util.Duration.seconds(1));
@@ -64,7 +79,7 @@ public abstract class UserPage extends ApplicationPage {
         Tooltip.install(node, tooltip);
     }
 
-    public StackPane createHeaderBox(HBox middleHBox, boolean withSearch) {
+    public HBox createHeaderBox(HBox middleBox, boolean withSearch) {
         int sidePad = 35;
         int logoHeight = 35;
 
@@ -83,13 +98,21 @@ public abstract class UserPage extends ApplicationPage {
             Navigator.openUserDashboard(dashController);
         });
 
-        middleHBox.setMaxWidth(Region.USE_PREF_SIZE);
+        HBox leftBox = new HBox(logoButton);
+        leftBox.setAlignment(Pos.CENTER_LEFT);
+        leftBox.setMinWidth(Region.USE_PREF_SIZE);
+        HBox.setMargin(logoButton, new Insets(0, 0, 0, sidePad));
+
+        middleBox.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(middleBox, Priority.ALWAYS);
 
         //Cart Button
         FontIcon cartIcon = new FontIcon("fas-shopping-cart");
         cartIcon.setIconSize(iconSize);
         cartIcon.setIconColor(AppConfig.themeColor);
         Button cartButton = new Button("", cartIcon);
+        cartButton.setMinWidth(Region.USE_PREF_SIZE);
+        cartButton.setMaxWidth(Region.USE_PREF_SIZE);
         cartButton.setOnAction(e -> openCartPage());
 
         //Orders Button
@@ -97,6 +120,8 @@ public abstract class UserPage extends ApplicationPage {
         receiptIcon.setIconSize(iconSize);
         receiptIcon.setIconColor(AppConfig.themeColor);
         Button ordersButton = new Button("", receiptIcon);
+        ordersButton.setMinWidth(Region.USE_PREF_SIZE);
+        ordersButton.setMaxWidth(Region.USE_PREF_SIZE);
         ordersButton.setOnAction(e -> openOrdersPage());
 
         //Profile Button
@@ -104,6 +129,8 @@ public abstract class UserPage extends ApplicationPage {
         profileIcon.setIconSize(iconSize);
         profileIcon.setIconColor(AppConfig.themeColor);
         profileButton = new Button("", profileIcon);
+        profileButton.setMinWidth(Region.USE_PREF_SIZE);
+        profileButton.setMaxWidth(Region.USE_PREF_SIZE);
 
         createPopUpContainer();
 
@@ -123,10 +150,8 @@ public abstract class UserPage extends ApplicationPage {
         profileButton.setOnAction(e -> showPopUp());
 
         HBox actionBox = new HBox(10);
-        actionBox.setMinWidth(300);
-        actionBox.setPrefWidth(300);
-        actionBox.setMaxWidth(300);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
+        actionBox.setMinWidth(Region.USE_COMPUTED_SIZE);
 
         if(withSearch) {
             actionBox.getChildren().add(this.searchBar);
@@ -134,20 +159,13 @@ public abstract class UserPage extends ApplicationPage {
 
         actionBox.getChildren().addAll(cartButton, ordersButton, profileButton);
 
-        header = new StackPane(); //Button-to-Button space
+        header = new HBox(leftBox, middleBox, actionBox);
+        header.setAlignment(Pos.CENTER);
+        header.setPadding(new Insets(20));
         header.getStyleClass().add("header");
         header.setMaxWidth(Double.MAX_VALUE);
         header.setPrefHeight(10);
-        header.setPadding(new Insets(20)); //Space between all button and HBox edge
-
-        header.getChildren().addAll(logoButton, middleHBox, actionBox);
-
-        StackPane.setAlignment(logoButton, Pos.CENTER_LEFT);
-        StackPane.setAlignment(middleHBox, Pos.CENTER);
-        StackPane.setAlignment(actionBox, Pos.CENTER_RIGHT);
-
-        StackPane.setMargin(logoButton, new Insets(0, 0, 0, sidePad));
-        StackPane.setMargin(actionBox, new Insets(0, sidePad, 0, 0));
+        HBox.setMargin(actionBox, new Insets(0, sidePad, 0, 0));
 
         return header;
     }
@@ -269,7 +287,7 @@ public abstract class UserPage extends ApplicationPage {
         Platform.runLater(() -> {
             Bounds bounds = profileButton.localToScreen(profileButton.getBoundsInLocal());
 
-            // Ensure popup container has proper width
+            //Ensure popup container has proper width
             popupContainer.applyCss();
             popupContainer.layout();
 
@@ -301,7 +319,8 @@ public abstract class UserPage extends ApplicationPage {
     }
 
     public HBox createSearchBar(){
-        int searchBarLength = 250;
+        int searchBarWidth = 250;
+
         FontIcon searchIcon = new FontIcon("fas-search");
         searchIcon.setIconColor(AppConfig.themeColor);
         searchIcon.setIconSize(iconSize);
@@ -322,19 +341,14 @@ public abstract class UserPage extends ApplicationPage {
         searchBar.setPadding(Insets.EMPTY);
         searchBar.getStyleClass().add("search-bar");
         searchBar.setMaxHeight(10);
-        searchBar.setMinWidth(searchBarLength);
-        searchBar.setPrefWidth(searchBarLength);
-        searchBar.setMaxWidth(searchBarLength);
+        searchBar.setPrefWidth(searchBarWidth);
+        searchBar.setMaxWidth(searchBarWidth);
 
         searchBar.getChildren().addAll(searchIcon, searchField, enterButton);
         HBox.setHgrow(searchField, Priority.ALWAYS);
 
         HBox.setMargin(searchIcon, new Insets(0, 3, 0, 8));
         HBox.setMargin(enterButton, new Insets(0, 5, 0, 0));
-        ListView<String> suggestionList = new ListView<>();
-
-        VBox searchVBox = new VBox();
-        searchVBox.getChildren().addAll(searchBar, suggestionList);
 
         searchField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if(newVal) {
@@ -363,8 +377,6 @@ public abstract class UserPage extends ApplicationPage {
 
         box.getChildren().addAll(spinner, loadingLabel);
         pane.getChildren().add(box);
-
-        pane.setVisible(false);
 
         return pane;
     }
