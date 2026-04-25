@@ -1,18 +1,15 @@
-# DUOQLO Store
-
-
+# DUOQLO
 ## 📁 Project Structure
 - products/ -> Stores product images
-- controller/ -> Stores controller classes that handles UI logic
-- model/ -> Stores data classes and database logic
-- view/ -> Stores JavaFX UI pages
+- src/main/.../controller/ -> Stores controller classes that handles UI logic
+- src/main/.../model/ -> Stores data classes and database logic
+- src/main/.../view/ -> Stores JavaFX UI pages
+- src/main/.../resources/css -> Stores all the css files for UI pages
 
-### controller/
-Handles logic operations and connects the UI with the backend logic.
+## 🗄️ Database
+This application uses **SQLite** as its database system.
 
-
-
-## User Guide
+## 👤 User Guide
 - [Sign Up Account](#sign-up-account)
 - [Log In](#log-in)
 - [Purchase Products (Add to Cart)](#purchase-products-add-to-cart)
@@ -69,7 +66,7 @@ Handles logic operations and connects the UI with the backend logic.
 1. Click on the orange 👤 icon at the top right
 2. Click "Log Out"
 
-## Admin Guide
+## 🛠️ Admin Guide
 - [Default Admin Account](#default-admin-account)
 - [Log In](#log-in)
 - [View Customer/Admin Data](#view-customer-admin-data)
