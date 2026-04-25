@@ -1,4 +1,17 @@
-# DUOQLO
+# DUOQLO Store
+
+
+## 📁 Project Structure
+- products/ -> Stores product images
+- controller/ -> Stores controller classes that handles UI logic
+- model/ -> Stores data classes and database logic
+- view/ -> Stores JavaFX UI pages
+
+### controller/
+Handles logic operations and connects the UI with the backend logic.
+
+
+
 ## User Guide
 - [Sign Up Account](#sign-up-account)
 - [Log In](#log-in)
